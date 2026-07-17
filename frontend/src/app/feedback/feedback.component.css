@@ -1,0 +1,49 @@
+:host {
+  --navy: #5A7F52;
+  --navy-lt: #74A868;
+  --border: #C8D5C0;
+  --bg: #F2F5EF;
+  --text-1: #2A3C2A;
+  --text-2: #5A7A5A;
+  --text-3: #9AB89A;
+  --badge-bg: #E6EFE2;
+}
+
+* { box-sizing: border-box; }
+.dashboard-shell { min-height: 100vh; background: var(--bg); }
+
+.top-navbar { display: flex; align-items: center; gap: 24px; background: linear-gradient(135deg, #2E5430, #4A7A52); padding: 10px 24px; }
+.nav-logo { width: 32px; height: 32px; background: #fff; border-radius: 8px; padding: 4px; }
+.nav-logo img { width: 100%; height: 100%; object-fit: contain; }
+.nav-links { display: flex; gap: 20px; flex: 1; }
+.nav-link { color: rgba(255,255,255,.8); font-size: 13px; text-decoration: none; }
+.nav-link:hover { color: #fff; }
+.nav-logout { color: rgba(255,255,255,.8); font-size: 13px; text-decoration: none; }
+
+.page-body { max-width: 1000px; margin: 0 auto; padding: 28px 20px; }
+.page-header h1 { font-size: 21px; font-weight: 700; color: var(--text-1); margin: 0 0 6px; }
+.page-header p { font-size: 13px; color: var(--text-2); margin: 0 0 20px; }
+
+.content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+.card { background: #fff; border: 1.5px solid var(--border); border-radius: 12px; padding: 22px; }
+.card h3 { font-size: 14.5px; color: var(--text-1); margin: 0 0 14px; }
+
+.success-banner { background: #E7F5EA; color: #2E7D32; border: 1px solid #B9E6C0; border-radius: 8px; padding: 10px 12px; font-size: 12.5px; margin-bottom: 14px; }
+
+.field-group { margin-bottom: 14px; }
+.field-group label { font-size: 12px; font-weight: 600; color: var(--text-2); display: block; margin-bottom: 5px; }
+input, select, textarea { width: 100%; border: 1.5px solid var(--border); border-radius: 8px; padding: 9px 12px; font-size: 13px; color: var(--text-1); background: #F6FAF4; outline: none; font-family: inherit; resize: vertical; }
+
+.btn-primary { background: var(--navy); color: #fff; border: none; border-radius: 8px; padding: 10px 22px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.btn-primary:hover:not(:disabled) { background: var(--navy-lt); }
+.btn-outline { background: transparent; color: var(--navy); border: 1.5px solid var(--navy); border-radius: 8px; padding: 9px 18px; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+.faq-item { border-bottom: 1px solid var(--border); padding: 12px 0; cursor: pointer; }
+.faq-item:last-child { border-bottom: none; }
+.faq-q { display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 600; color: var(--text-1); }
+.faq-toggle { color: var(--navy); font-weight: 700; }
+.faq-a { font-size: 12.5px; color: var(--text-2); margin: 8px 0 0; line-height: 1.6; }
+
+@media (max-width: 800px) {
+  .content-grid { grid-template-columns: 1fr; }
+}

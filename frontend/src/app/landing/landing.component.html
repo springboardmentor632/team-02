@@ -1,0 +1,72 @@
+<div class="landing-shell">
+
+  <!-- NAVBAR -->
+  <nav class="landing-navbar">
+    <div class="brand">
+      <div class="brand-logo"><img src="logo.png" alt="logo" /></div>
+      <span class="brand-text">Government Policy<br />Intelligence Platform</span>
+    </div>
+    <div class="nav-links">
+      <a routerLink="/policy-search">Policies</a>
+      <a routerLink="/policy-search">Schemes</a>
+      <a routerLink="/login">About</a>
+    </div>
+    <div class="nav-actions">
+      <a routerLink="/login" class="btn-login">Login</a>
+      <a routerLink="/login" class="btn-register">Register Now</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <span class="hero-badge">⚡ Powered by Government Open Data Portal</span>
+    <h1>Discover. Understand.<br />Access Government Policies</h1>
+    <p>Your intelligent platform to search, compare, and track Central & State Government schemes, policies, and welfare programmes in one place.</p>
+
+    <div class="hero-search">
+      <input type="text" [(ngModel)]="searchQuery" placeholder="Search policies, schemes, departments..." (keyup.enter)="onSearch()" />
+      <button (click)="onSearch()">Search</button>
+    </div>
+
+    <div class="trending-row">
+      <span *ngFor="let t of trending" class="trend-tag">{{ t }}</span>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats-strip">
+    <div class="stat-item" *ngFor="let s of stats">
+      <span class="stat-value">{{ s.value }}</span>
+      <span class="stat-label">{{ s.label }}</span>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features-section">
+    <h2>Everything you need to navigate government services</h2>
+    <div class="features-grid">
+      <a routerLink="/login" class="feature-card" *ngFor="let f of features">
+        <div class="feature-icon">{{ f.icon }}</div>
+        <h4>{{ f.title }}</h4>
+        <p>{{ f.desc }}</p>
+      </a>
+    </div>
+  </section>
+
+  <!-- STAKEHOLDERS -->
+  <section class="stakeholders-section">
+    <h2>Designed for every stakeholder</h2>
+    <div class="stakeholders-grid">
+      <a routerLink="/login" class="stakeholder-card" *ngFor="let s of stakeholders">
+        <div class="stakeholder-icon">{{ s.icon }}</div>
+        <h5>{{ s.label }}</h5>
+        <p>{{ s.desc }}</p>
+      </a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="landing-footer">
+    <p>Government Policy & Public Scheme Intelligence Platform · © 2026</p>
+  </footer>
+</div>

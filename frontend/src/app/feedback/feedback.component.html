@@ -1,0 +1,63 @@
+<div class="dashboard-shell">
+
+  <nav class="top-navbar">
+    <div class="nav-logo"><img src="logo.png" alt="logo" /></div>
+    <div class="nav-links">
+      <a routerLink="/dashboard" class="nav-link">Dashboard</a>
+      <a routerLink="/policy-search" class="nav-link">Policy Search</a>
+      <a routerLink="/policy-detail" class="nav-link">Policy Detail</a>
+      <a routerLink="/eligibility" class="nav-link">Eligibility Checker</a>
+      <a routerLink="/comparison" class="nav-link">Comparison</a>
+      <a routerLink="/admin-dashboard" class="nav-link">Admin Dashboard</a>
+    </div>
+    <a routerLink="/login" class="nav-logout">⏻ Logout</a>
+  </nav>
+
+  <div class="page-body">
+    <div class="page-header">
+      <h1>Feedback & Support</h1>
+      <p>Report issues, ask questions, or share feedback with our team</p>
+    </div>
+
+    <div class="content-grid">
+      <div class="card">
+        <h3>Contact Support</h3>
+        <div *ngIf="submitted" class="success-banner">Thank you! Your message has been submitted.</div>
+
+        <form #fbForm="ngForm" (ngSubmit)="onSubmit(fbForm)" novalidate *ngIf="!submitted">
+          <div class="field-group">
+            <label>Category</label>
+            <select name="category" [(ngModel)]="category">
+              <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Subject</label>
+            <input type="text" name="subject" [(ngModel)]="subject" placeholder="Brief summary of your query" required />
+          </div>
+          <div class="field-group">
+            <label>Message</label>
+            <textarea name="message" [(ngModel)]="message" rows="5" placeholder="Describe your issue or feedback in detail..." required></textarea>
+          </div>
+          <button type="submit" class="btn-primary" [disabled]="submitting">
+            <span *ngIf="!submitting">Submit</span>
+            <span *ngIf="submitting">Submitting...</span>
+          </button>
+        </form>
+
+        <button class="btn-outline" *ngIf="submitted" (click)="submitted = false">Submit Another</button>
+      </div>
+
+      <div class="card">
+        <h3>Frequently Asked Questions</h3>
+        <div class="faq-item" *ngFor="let f of faqs" (click)="toggleFaq(f)">
+          <div class="faq-q">
+            <span>{{ f.q }}</span>
+            <span class="faq-toggle">{{ f.open ? '−' : '+' }}</span>
+          </div>
+          <p class="faq-a" *ngIf="f.open">{{ f.a }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

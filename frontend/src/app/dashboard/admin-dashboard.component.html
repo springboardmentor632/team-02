@@ -1,0 +1,103 @@
+<div class="dashboard-shell">
+
+  <nav class="top-navbar">
+    <div class="nav-logo"><img src="logo.png" alt="logo" /></div>
+    <div class="nav-links">
+      <a routerLink="/dashboard" class="nav-link">Dashboard</a>
+      <a routerLink="/policy-search" class="nav-link">Policy Search</a>
+      <a routerLink="/policy-detail" class="nav-link">Policy Detail</a>
+      <a routerLink="/eligibility" class="nav-link">Eligibility Checker</a>
+      <a routerLink="/comparison" class="nav-link">Comparison</a>
+      <a routerLink="/admin-dashboard" class="nav-link active">Admin Dashboard</a>
+    </div>
+    <a routerLink="/login" class="nav-logout">⏻ Logout</a>
+  </nav>
+
+  <div class="body-layout">
+
+    <aside class="sidebar sidebar-dark">
+      <div class="sidebar-user">
+        <div class="avatar">AD</div>
+        <div>
+          <div class="user-name">Admin Panel</div>
+          <div class="user-sub">Super Administrator</div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <p class="sidebar-heading">ANALYTICS</p>
+        <a routerLink="/admin-dashboard" class="sidebar-link active">📈 Overview</a>
+        <a routerLink="/admin/users" class="sidebar-link">👥 User Management</a>
+        <a routerLink="/admin/policies" class="sidebar-link">📋 Policy Management</a>
+        <a routerLink="/admin/schemes" class="sidebar-link">🎁 Scheme Management</a>
+      </div>
+
+      <div class="sidebar-section">
+        <p class="sidebar-heading">REPORTS</p>
+        <a routerLink="/reports" class="sidebar-link">📊 Analytics Reports</a>
+        <a routerLink="/admin/audit-logs" class="sidebar-link">🕒 Audit Logs</a>
+        <a routerLink="/admin/export" class="sidebar-link">⬇️ Export Data</a>
+      </div>
+
+      <div class="sidebar-section">
+        <p class="sidebar-heading">SYSTEM</p>
+        <a routerLink="/notifications" class="sidebar-link">🔔 Notifications</a>
+        <a routerLink="/settings" class="sidebar-link">⚙️ Settings</a>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <div>
+          <h1>Admin Dashboard</h1>
+          <p>Platform-wide overview · Data as of July 2026</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn-outline">⬇ Export</button>
+          <button class="btn-primary">+ Add Policy</button>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card" *ngFor="let s of stats">
+          <span class="stat-value">{{ s.value }}</span>
+          <p class="stat-label">{{ s.label }}</p>
+          <p class="stat-sub" [class.stat-danger]="s.danger">{{ s.sub }}</p>
+        </div>
+      </div>
+
+      <div class="content-grid">
+        <div class="card">
+          <h3>User Registrations by Role</h3>
+          <div class="role-row" *ngFor="let r of roleStats">
+            <div class="role-top">
+              <span>{{ r.role }}</span>
+              <span>{{ r.count }}</span>
+            </div>
+            <div class="role-bar-bg">
+              <div class="role-bar-fill" [style.width.%]="r.percent"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Recent Policy Submissions</h3>
+          <table class="admin-table">
+            <thead>
+              <tr><th>Policy Name</th><th>Ministry</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of submissions">
+                <td>{{ p.name }}</td>
+                <td>{{ p.ministry }}</td>
+                <td>
+                  <span class="status-pill" [class]="'pill-' + p.status.toLowerCase()">{{ p.status }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

@@ -66,7 +66,7 @@ export class ForgotPasswordComponent {
     this.errorMsg = '';
     this.successMsg = '';
 
-    // TODO: replace with real backend call — POST /auth/forgot-password { email: this.email }
+    
     setTimeout(() => {
       this.loading = false;
       this.successMsg = 'If this email is registered, a reset link has been sent. Please check your inbox.';

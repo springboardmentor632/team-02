@@ -1,0 +1,55 @@
+<div class="dashboard-shell">
+
+  <nav class="top-navbar">
+    <div class="nav-logo"><img src="logo.png" alt="logo" /></div>
+    <div class="nav-links">
+      <a routerLink="/dashboard" class="nav-link">Dashboard</a>
+      <a routerLink="/policy-search" class="nav-link">Policy Search</a>
+      <a routerLink="/policy-detail" class="nav-link">Policy Detail</a>
+      <a routerLink="/eligibility" class="nav-link">Eligibility Checker</a>
+      <a routerLink="/comparison" class="nav-link">Comparison</a>
+      <a routerLink="/admin-dashboard" class="nav-link">Admin Dashboard</a>
+    </div>
+    <a routerLink="/login" class="nav-logout">⏻ Logout</a>
+  </nav>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <h1>Reports Dashboard</h1>
+        <p>Generate and download policy, scheme, and activity reports</p>
+      </div>
+      <button class="btn-primary" (click)="generateNewReport()" [disabled]="generating">
+        <span *ngIf="!generating">+ Generate New Report</span>
+        <span *ngIf="generating">Generating...</span>
+      </button>
+    </div>
+
+    <div class="filter-tabs">
+      <button class="filter-btn" *ngFor="let cat of categories" [class.filter-active]="selectedCategory === cat" (click)="setCategory(cat)">
+        {{ cat }}
+      </button>
+    </div>
+
+    <div class="card">
+      <table class="report-table" *ngIf="filteredReports.length > 0">
+        <thead>
+          <tr><th>Report Name</th><th>Category</th><th>Generated On</th><th>Format</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of filteredReports">
+            <td>{{ r.name }}</td>
+            <td><span class="scheme-badge">{{ r.category }}</span></td>
+            <td>{{ r.generatedOn }}</td>
+            <td>{{ r.format }}</td>
+            <td><button class="btn-outline btn-sm" (click)="downloadReport(r)">Download</button></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="empty-state" *ngIf="filteredReports.length === 0">
+        <p>No reports found for this category.</p>
+      </div>
+    </div>
+  </div>
+</div>
