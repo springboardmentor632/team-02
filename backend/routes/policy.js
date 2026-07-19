@@ -1,0 +1,54 @@
+const express = require('express');
+const Policy = require('../models/policy');
+const { authenticate, authorize } = require('../middleware/auth');
+
+const router = express.Router();
+
+router.get('/', authenticate, async (req, res, next) => {
+  try {
+    const filters = {};
+    if (req.query.category) filters.category = req.query.category;
+    if (req.query.state) filters.state = req.query.state;
+    if (req.query.ministry) filters.ministry = req.query.ministry;
+    if (req.query.status) filters.status = req.query.status;
+    if (req.query.q) filters.title = { $regex: req.query.q, $options: 'i' };
+
+    const policies = await Policy.find(filters).sort({ publishedAt: -1 });
+    res.json({ policies });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/', authenticate, authorize('Administrator', 'Government Official'), async (req, res, next) => {
+  try {
+    const policy = await Policy.create({
+      ...req.body,
+      author: req.user._id,
+      status: req.body.status || 'Draft',
+    });
+    res.status(201).json({ policy });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.put('/:id', authenticate, authorize('Administrator', 'Government Official'), async (req, res, next) => {
+  try {
+    const policy = await Policy.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json({ policy });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete('/:id', authenticate, authorize('Administrator', 'Government Official'), async (req, res, next) => {
+  try {
+    await Policy.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Policy deleted' });
+  } catch (err) {
+    next(err);
+  }
+});
+
+module.exports = router;

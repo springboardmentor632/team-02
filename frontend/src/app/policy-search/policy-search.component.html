@@ -1,0 +1,127 @@
+<div class="dashboard-shell">
+
+  <nav class="top-navbar">
+    <div class="nav-logo"><img src="logo.png" alt="logo" /></div>
+    <div class="nav-links">
+      <a routerLink="/dashboard" class="nav-link">Dashboard</a>
+      <a routerLink="/policy-search" class="nav-link active">Policy Search</a>
+      <a routerLink="/policy-detail" class="nav-link">Policy Detail</a>
+      <a routerLink="/eligibility" class="nav-link">Eligibility Checker</a>
+      <a routerLink="/comparison" class="nav-link">Comparison</a>
+      <a routerLink="/admin-dashboard" class="nav-link">Admin Dashboard</a>
+    </div>
+    <a routerLink="/login" class="nav-logout">⏻ Logout</a>
+  </nav>
+
+  <div class="search-hero">
+    <h1>Policy & Scheme Search</h1>
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input type="text" [(ngModel)]="searchQuery" placeholder="Search policies, schemes, ministries..." (keyup.enter)="onSearch()" />
+      <button class="btn-search" (click)="onSearch()">Search</button>
+    </div>
+    <div class="category-pills">
+      <button
+        class="pill"
+        *ngFor="let c of categories"
+        [class.pill-active]="activeCategory === c"
+        (click)="setCategory(c)">
+        {{ c }}
+      </button>
+    </div>
+  </div>
+
+  <div class="body-layout">
+
+    <!-- FILTERS SIDEBAR -->
+    <aside class="filters-panel">
+      <h3>Filters</h3>
+
+      <div class="filter-group">
+        <label>Ministry / Department</label>
+        <select [(ngModel)]="ministryFilter">
+          <option>All Ministries</option>
+          <option>Ministry of Health & Family Welfare</option>
+          <option>Ministry of Agriculture</option>
+          <option>Ministry of Education</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>State</label>
+        <select [(ngModel)]="stateFilter">
+          <option>All States</option>
+          <option>Delhi</option>
+          <option>Rajasthan</option>
+          <option>Maharashtra</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Policy Type</label>
+        <select [(ngModel)]="typeFilter">
+          <option>All Types</option>
+          <option>Scheme</option>
+          <option>Regulation</option>
+          <option>Circular</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Status</label>
+        <div class="checkbox-row">
+          <label><input type="checkbox" [(ngModel)]="statusActive" /> Active</label>
+        </div>
+        <div class="checkbox-row">
+          <label><input type="checkbox" [(ngModel)]="statusArchived" /> Archived</label>
+        </div>
+        <div class="checkbox-row">
+          <label><input type="checkbox" [(ngModel)]="statusDraft" /> Draft</label>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label>Publication Date</label>
+        <input type="text" placeholder="From: YYYY-MM" />
+        <input type="text" placeholder="To: YYYY-MM" style="margin-top: 8px;" />
+      </div>
+
+      <button class="btn-apply" (click)="applyFilters()">Apply Filters</button>
+      <button class="btn-clear" (click)="clearAll()">Clear All</button>
+    </aside>
+
+    <!-- RESULTS -->
+    <main class="results-panel">
+      <div class="results-header">
+        <p>Showing <strong>{{ totalResults }}</strong> results for "{{ searchQuery }}"</p>
+        <select class="sort-select">
+          <option>Sort: Most Relevant</option>
+          <option>Sort: Newest First</option>
+          <option>Sort: A-Z</option>
+        </select>
+      </div>
+
+      <div class="result-card" *ngFor="let r of results">
+        <div class="result-icon">{{ r.icon }}</div>
+        <div class="result-body">
+          <div class="result-top">
+            <h3>{{ r.name }}</h3>
+            <div class="result-badges">
+              <span class="badge-status">{{ r.status }}</span>
+              <span class="badge-scope">{{ r.scope }}</span>
+            </div>
+          </div>
+          <p class="result-ministry">{{ r.ministry }}</p>
+          <p class="result-desc">{{ r.desc }}</p>
+          <div class="tag-row">
+            <span class="tag" *ngFor="let t of r.tags">{{ t }}</span>
+          </div>
+        </div>
+        <div class="result-actions">
+          <a [routerLink]="['/policy-detail']" class="btn-view">View Details</a>
+          <button class="btn-save">🔖 Save</button>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

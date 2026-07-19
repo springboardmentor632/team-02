@@ -1,0 +1,84 @@
+<div class="dashboard-shell">
+
+  <nav class="top-navbar">
+    <div class="nav-logo"><img src="logo.png" alt="logo" /></div>
+    <div class="nav-links">
+      <a routerLink="/dashboard" class="nav-link">Dashboard</a>
+      <a routerLink="/policy-search" class="nav-link">Policy Search</a>
+      <a routerLink="/policy-detail" class="nav-link">Policy Detail</a>
+      <a routerLink="/eligibility" class="nav-link">Eligibility Checker</a>
+      <a routerLink="/comparison" class="nav-link active">Comparison</a>
+      <a routerLink="/admin-dashboard" class="nav-link">Admin Dashboard</a>
+    </div>
+    <a routerLink="/login" class="nav-logout">⏻ Logout</a>
+  </nav>
+
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <h1>Scheme Comparison</h1>
+        <p>Compare government schemes side-by-side to find what suits you best</p>
+      </div>
+      <button class="btn-primary" (click)="addScheme()">+ Add Scheme</button>
+    </div>
+
+    <div class="compare-table-wrap">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th class="param-col">PARAMETERS</th>
+            <th *ngFor="let s of schemes">
+              <span class="scheme-icon">{{ s.icon }}</span> {{ s.name | uppercase }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="param-label">MINISTRY</td>
+            <td *ngFor="let s of schemes">{{ s.ministry }}</td>
+          </tr>
+          <tr>
+            <td class="param-label">LAUNCH YEAR</td>
+            <td *ngFor="let s of schemes">{{ s.launchYear }}</td>
+          </tr>
+          <tr>
+            <td class="param-label">BENEFIT AMOUNT</td>
+            <td *ngFor="let s of schemes"><strong class="highlight">{{ s.benefit }}</strong></td>
+          </tr>
+          <tr>
+            <td class="param-label">TARGET BENEFICIARY</td>
+            <td *ngFor="let s of schemes">{{ s.target }}</td>
+          </tr>
+          <tr>
+            <td class="param-label">INCOME LIMIT</td>
+            <td *ngFor="let s of schemes">{{ s.incomeLimit }}</td>
+          </tr>
+          <tr>
+            <td class="param-label">APPLICATION MODE</td>
+            <td *ngFor="let s of schemes">{{ s.applicationMode }}</td>
+          </tr>
+          <tr>
+            <td class="param-label">STATUS</td>
+            <td *ngFor="let s of schemes"><span class="status-pill">{{ s.status }}</span></td>
+          </tr>
+          <tr>
+            <td class="param-label">ELIGIBLE FOR YOU</td>
+            <td *ngFor="let s of schemes">
+              <span class="eligibility-icon" [class.eligible]="s.eligible" [class.not-eligible]="!s.eligible">
+                {{ s.eligible ? '✓' : '✕' }}
+              </span>
+            </td>
+          </tr>
+          <tr class="action-row">
+            <td></td>
+            <td *ngFor="let s of schemes">
+              <button class="btn-cell" [class.btn-cell-primary]="s.eligible" [class.btn-cell-outline]="!s.eligible">
+                {{ s.eligible ? 'Apply Now' : 'View Details' }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

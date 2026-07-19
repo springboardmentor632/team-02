@@ -1,0 +1,110 @@
+<div class="dashboard-shell">
+
+  <!-- TOP NAVBAR -->
+  <nav class="top-navbar">
+    <div class="nav-logo">
+      <img src="logo.png" alt="logo" />
+    </div>
+    <div class="nav-links">
+      <a routerLink="/dashboard" class="nav-link active">Dashboard</a>
+      <a routerLink="/policy-search" class="nav-link">Policy Search</a>
+      <a routerLink="/policy-detail" class="nav-link">Policy Detail</a>
+      <a routerLink="/eligibility" class="nav-link">Eligibility Checker</a>
+      <a routerLink="/comparison" class="nav-link">Comparison</a>
+      <a routerLink="/admin-dashboard" class="nav-link">Admin Dashboard</a>
+    </div>
+    <a routerLink="/login" class="nav-logout">⏻ Logout</a>
+  </nav>
+
+  <div class="body-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-user">
+        <div class="avatar">RS</div>
+        <div>
+          <div class="user-name">{{ userName }}</div>
+          <div class="user-sub">{{ userLocation }}</div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <p class="sidebar-heading">MENU</p>
+        <a routerLink="/dashboard" class="sidebar-link active">📊 Dashboard</a>
+        <a routerLink="/policy-search" class="sidebar-link">🔍 Search Policies</a>
+        <a routerLink="/eligibility" class="sidebar-link">✅ Eligibility Checker</a>
+        <a routerLink="/comparison" class="sidebar-link">🔁 Compare Schemes</a>
+        <a routerLink="/notifications" class="sidebar-link">
+          🔔 Notifications <span class="badge">4</span>
+        </a>
+        <a routerLink="/saved-policies" class="sidebar-link">🔖 Saved Policies</a>
+        <a routerLink="/reports" class="sidebar-link">📄 My Reports</a>
+      </div>
+
+      <div class="sidebar-section">
+        <p class="sidebar-heading">ACCOUNT</p>
+        <a routerLink="/profile" class="sidebar-link">👤 Profile</a>
+        <a routerLink="/settings" class="sidebar-link">⚙️ Settings</a>
+        <a routerLink="/login" class="sidebar-link logout">↩️ Logout</a>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <div class="content-header">
+        <div>
+          <h1>Good morning, {{ userName.split(' ')[0] }} 👋</h1>
+          <p>Here's a summary of your policy activity and eligible schemes.</p>
+        </div>
+        <button class="btn-primary">✓ Check Eligibility</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card" *ngFor="let s of stats" [class.stat-highlight]="s.highlight">
+          <div class="stat-top">
+            <span class="stat-value">{{ s.value }}</span>
+            <span class="stat-icon">{{ s.icon }}</span>
+          </div>
+          <p class="stat-label">{{ s.label }}</p>
+          <p class="stat-sub">{{ s.sub }}</p>
+        </div>
+      </div>
+
+      <div class="content-grid">
+        <div class="card">
+          <div class="card-header">
+            <h3>Recommended Schemes</h3>
+            <span class="eligible-count">18 eligible</span>
+          </div>
+          <div class="scheme-row" *ngFor="let s of recommendedSchemes">
+            <span class="scheme-icon">{{ s.icon }}</span>
+            <div class="scheme-info">
+              <h4>{{ s.name }}</h4>
+              <p>{{ s.dept }}</p>
+            </div>
+            <span class="status-badge" [class.status-partial]="s.status === 'Partial'">{{ s.status }}</span>
+            <button class="btn-small">{{ s.status === 'Partial' ? 'View' : 'Apply' }}</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Recent Notifications</h3>
+          <div class="notif-row" *ngFor="let n of notifications">
+            <span class="notif-dot" [class]="'dot-' + n.type"></span>
+            <div>
+              <h4>{{ n.title }}</h4>
+              <p>{{ n.desc }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Recent Searches</h3>
+        <div class="tag-row">
+          <span class="tag" *ngFor="let t of recentSearches">{{ t }}</span>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

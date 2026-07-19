@@ -1,0 +1,47 @@
+const express = require('express');
+const dotenv = require('dotenv');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+
+const connectDB = require('./config/db');
+const authRoutes = require('./routes/auth');
+const policyRoutes = require('./routes/policy');
+const schemeRoutes = require('./routes/scheme');
+const eligibilityRoutes = require('./routes/eligibility');
+const notificationRoutes = require('./routes/notification');
+const feedbackRoutes = require('./routes/feedback');
+const reportRoutes = require('./routes/report');
+const searchRoutes = require('./routes/search');
+const { errorHandler } = require('./middleware/errorHandler');
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 4000;
+
+connectDB();
+
+app.use(helmet());
+app.use(cors());
+app.use(express.json({ limit: '10mb' }));
+app.use(morgan('dev'));
+
+app.get('/', (req, res) => {
+  res.json({ message: 'PolicyGPT backend is running' });
+});
+
+app.use('/api/auth', authRoutes);
+app.use('/api/policies', policyRoutes);
+app.use('/api/schemes', schemeRoutes);
+app.use('/api/eligibility', eligibilityRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/feedback', feedbackRoutes);
+app.use('/api/reports', reportRoutes);
+app.use('/api/search', searchRoutes);
+
+app.use(errorHandler);
+
+app.listen(PORT, () => {
+  console.log(`PolicyGPT backend listening on port ${PORT}`);
+});
