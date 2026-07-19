@@ -1,3 +1,4 @@
+import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
@@ -57,7 +58,10 @@ export class LoginComponent implements OnInit {
   private googleClient: any;
   private googleReady = false;
 
-  constructor(private router: Router) {}
+  constructor(
+  private router: Router,
+  private http: HttpClient
+) {}
 
   ngOnInit(): void {
     this.initGoogleClient();
@@ -146,14 +150,25 @@ export class LoginComponent implements OnInit {
     this.errorMsg = '';
 
     // TODO: replace with real backend call (POST /auth/login)
-    setTimeout(() => {
-      this.loading = false;
-      if (this.loginEmail && this.loginPassword.length >= 4) {
-        this.router.navigate(['/dashboard']);
-      } else {
-        this.errorMsg = 'Invalid email or password';
-      }
-    }, 900);
+   const loginData = {
+  email: this.loginEmail,
+  password: this.loginPassword
+};
+
+this.http.post<any>(
+  'http://localhost:5000/api/auth/login',
+  loginData
+).subscribe({
+  next: (response) => {
+    this.loading = false;
+    console.log(response);
+  },
+
+  error: (error) => {
+    this.loading = false;
+    console.log(error);
+  }
+});
   }
 
   onRegister(form: NgForm): void {
