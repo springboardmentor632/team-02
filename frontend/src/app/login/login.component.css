@@ -24,7 +24,7 @@
   justify-content: center;
   padding: 60px 50px;
   color: #fff;
-  background: linear-gradient(135deg, #2E5430 0%, #4A7A52 60%, #6A9E6A 100%);
+  background: linear-gradient(135deg, #162B18 0%, #1E3820 60%, #2A4C2D 100%);
 }
 
 .hero-circle {
@@ -47,14 +47,14 @@
   background: #fff;
   border-radius: 10px;
   padding: 6px;
-  width: 50px;
-  height: 50px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
 }
-.brand-logo img { width: 100%; height: 100%; object-fit: contain; }
+.brand-logo img { width: 100%; height: 100%; object-fit: contain;  border-radius:8px ;}
 .brand-text {
   font-weight: 700;
   font-size: 15px;
@@ -110,6 +110,30 @@
 .auth-box {
   width: 100%;
   max-width: 420px;
+
+}
+
+
+.auth-box ::ng-deep .mat-mdc-tab-nav-bar- Tink-active-indicator, 
+.auth-box ::ng-deep .mdc-tab-indicator {
+    display: none !important;
+}
+
+
+.auth-box ::ng-deep .mat-mdc-tab.mdc-tab--active {
+    background-color: #608A5A !important; 
+    border-radius: 25px !important;       
+    color: #ffffff !important;            
+    font-weight: 500 !important;
+    padding: 0 25px !important;           
+    height: 40px !important;              
+}
+
+
+.auth-box ::ng-deep .mat-mdc-tab:not(.mdc-tab--active) {
+    background-color: transparent !important; 
+    color: #555555 !important;                
+    font-weight: 400 !important;
 }
 
 .error-banner {
@@ -124,16 +148,31 @@
 
 .tab-form { padding-top: 20px; }
 
-.form-title { font-size: 20px; font-weight: 700; margin: 0 0 6px; color: var(--text-1); }
-.form-sub { font-size: 13px; color: var(--text-2); margin: 0 0 20px; }
+.form-title { font-size: 20px; font-weight: 700; margin: 0 0 6px; color: black }
+.form-sub { font-size: 13px; color:  #2E5430; margin: 0 0 20px; }
+.color{
+  color: #2E5430;
+}
 
-.full-width { width: 100%; }
+.full-width { width: 100%;
+  
+ }
+ #but{
+  background-color: #608A5A;
+ }
+ .white{
+  color: white;
+ }
+ #green{
+  color: #2E5430; 
+ }
 
 .two-col {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
+
 
 .forgot-row {
   display: flex;

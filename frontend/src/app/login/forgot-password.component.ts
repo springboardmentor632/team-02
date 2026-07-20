@@ -24,7 +24,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     <div class="auth-form-side" style="min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--bg);">
       <div class="auth-box">
         <h3 class="form-title">Reset your password</h3>
-        <p class="form-sub">Enter your registered email and we'll send you a reset link</p>
+        <p  class="form-sub color">Enter your registered email and we'll send you a reset link</p>
 
         <div class="error-banner" *ngIf="errorMsg">{{ errorMsg }}</div>
         <div class="error-banner" style="background:#EAF7EC; color:#2E7D32; border-color:#B9E6C0;" *ngIf="successMsg">
@@ -33,18 +33,18 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
         <form #f="ngForm" (ngSubmit)="onSubmit(f)" novalidate *ngIf="!successMsg">
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Email Address</mat-label>
+            <mat-label class="color">Email Address</mat-label>
             <input matInput type="email" name="email" placeholder="you@example.gov.in" [(ngModel)]="email" required email />
           </mat-form-field>
 
-          <button mat-raised-button color="primary" type="submit" class="full-width btn-submit" [disabled]="loading">
-            <span *ngIf="!loading">Send Reset Link</span>
+          <button mat-raised-button color="primary" id="but" type="submit" class="full-width btn-submit" [disabled]="loading">
+            <span *ngIf="!loading"class="white" >Send Reset Link</span>
             <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
           </button>
         </form>
 
         <p class="terms-note" style="margin-top:16px;">
-          <a routerLink="/login">← Back to Login page</a>
+          <a routerLink="/login" class="color">← Back to Login page</a>
         </p>
       </div>
     </div>

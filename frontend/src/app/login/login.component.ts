@@ -34,7 +34,8 @@ type AuthMode = 'login' | 'register';
   styleUrl: './login.component.css'
 })
 export class LoginComponent implements OnInit {
-
+  hidePassword=true;
+  hideRegisterPassword=true;
   authMode: AuthMode = 'login';
 
   loginEmail = '';
