@@ -1,5 +1,12 @@
+const dns = require('node:dns');
+
+// Force Node.js SRV lookups through public DNS
+dns.setServers(['8.8.8.8', '1.1.1.1']);
+
+// Load environment variables before importing local modules
+require('dotenv').config();
+
 const express = require('express');
-const dotenv = require('dotenv');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -15,11 +22,10 @@ const reportRoutes = require('./routes/report');
 const searchRoutes = require('./routes/search');
 const { errorHandler } = require('./middleware/errorHandler');
 
-dotenv.config();
-
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+// Connect to MongoDB
 connectDB();
 
 app.use(helmet());
