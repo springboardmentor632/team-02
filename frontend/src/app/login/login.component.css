@@ -14,6 +14,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   min-height: 100vh;
+
 }
 
 .auth-hero {
@@ -104,14 +105,27 @@
   align-items: center;
   justify-content: center;
   background: var(--bg);
-  padding: 40px;
+  padding: 20px;
+ 
+
+
 }
 
 .auth-box {
   width: 100%;
   max-width: 420px;
+  
 
 }
+::webkit-scrollbar{
+  display: none;
+}
+*{
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+
 
 
 .auth-box ::ng-deep .mat-mdc-tab-nav-bar- Tink-active-indicator, 
