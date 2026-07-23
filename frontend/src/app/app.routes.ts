@@ -22,8 +22,12 @@ export const routes: Routes = [
   { path: '', component: LandingComponent },
   { path: 'login', component: LoginComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
-  { path: 'dashboard', component: CitizenDashboardComponent },
+  { path: 'dashboard', component: CitizenDashboardComponent ,
+
+    
+  },
   { path: 'admin-dashboard', component: AdminDashboardComponent },
+  
   { path: 'government-dashboard', component: GovernmentDashboardComponent },
   { path: 'policy-search', component: PolicySearchComponent },
   { path: 'policy-detail', component: PolicyDetailComponent },
@@ -38,3 +42,6 @@ export const routes: Routes = [
   { path: 'admin/schemes', component: SchemeManagementComponent },
   { path: 'settings', component: SettingsComponent },
 ];
+
+
+
