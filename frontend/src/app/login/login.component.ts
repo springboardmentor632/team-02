@@ -98,9 +98,10 @@ export class LoginComponent implements OnInit {
   }
 
   onTabChange(index: number): void {
-    this.authMode = index === 0 ? 'login' : 'register';
-    this.errorMsg = '';
-  }
+  this.selectedTabIndex = index;
+  this.authMode = index === 0 ? 'login' : 'register';
+  this.errorMsg = '';
+}
 
   continueWithGoogle(): void {
     if (this.GOOGLE_CLIENT_ID.includes('YOUR_GOOGLE_CLIENT_ID')) {
@@ -201,8 +202,10 @@ this.http.post<any>(
 
     alert('Registration successful! Please login.');
 
-    this.selectedTabIndex = 0;
-    this.authMode = 'login';
+form.resetForm();
+this.regRole = 'Citizen';
+
+this.selectedTabIndex = 0;
   },
 
   error: (error) => {
