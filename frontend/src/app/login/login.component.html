@@ -46,8 +46,10 @@
         {{ errorMsg }}
       </div>
 
-      <mat-tab-group (selectedIndexChange)="onTabChange($event)" mat-align-tabs="center">
-
+      <mat-tab-group
+  [selectedIndex]="selectedTabIndex"
+  (selectedIndexChange)="onTabChange($event)"
+  mat-align-tabs="center">
         <!-- LOGIN TAB -->
         <mat-tab label="Login">
           <form #loginForm="ngForm" (ngSubmit)="onLogin(loginForm)" novalidate class="tab-form">

@@ -37,7 +37,7 @@ export class LoginComponent implements OnInit {
   hidePassword=true;
   hideRegisterPassword=true;
   authMode: AuthMode = 'login';
-
+  selectedTabIndex = 0;
   loginEmail = '';
   loginPassword = '';
 
@@ -182,9 +182,33 @@ this.http.post<any>(
     this.errorMsg = '';
 
     // TODO: replace with real backend call (POST /auth/register)
-    setTimeout(() => {
-      this.loading = false;
-      this.router.navigate(['/dashboard']);
-    }, 900);
+    const registerData = {
+  firstName: this.regFirstName,
+  lastName: this.regLastName,
+  email: this.regEmail,
+  role: this.regRole,
+  password: this.regPassword,
+  confirmPassword: this.regPassword
+};
+
+this.http.post<any>(
+  'http://localhost:4000/api/auth/register',
+  registerData
+).subscribe({
+  next: (response) => {
+    this.loading = false;
+    console.log(response);
+
+    alert('Registration successful! Please login.');
+
+    this.selectedTabIndex = 0;
+    this.authMode = 'login';
+  },
+
+  error: (error) => {
+    this.loading = false;
+    this.errorMsg = error.error?.message || 'Registration failed';
+    console.log(error);
   }
-}
+});
+}}
