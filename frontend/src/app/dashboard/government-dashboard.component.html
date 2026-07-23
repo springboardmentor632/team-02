@@ -1,0 +1,128 @@
+<div class="dashboard-shell">
+
+  <nav class="top-navbar">
+    <div class="nav-logo"><img src="logo.png" alt="logo" /></div>
+    <div class="nav-links">
+      <a routerLink="/dashboard" class="nav-link">Dashboard</a>
+      <a routerLink="/policy-search" class="nav-link">Policy Search</a>
+      <a routerLink="/policy-detail" class="nav-link">Policy Detail</a>
+      <a routerLink="/eligibility" class="nav-link">Eligibility Checker</a>
+      <a routerLink="/comparison" class="nav-link">Comparison</a>
+      <a routerLink="/government-dashboard" class="nav-link active">Govt Dashboard</a>
+      
+
+      
+
+    </div>
+    <a routerLink="/login" class="nav-logout">⏻ Logout</a>
+  </nav>
+
+  <div class="body-layout">
+
+    <aside class="sidebar">
+      <div class="sidebar-user">
+        <div class="avatar">PV</div>
+        <div>
+          <div class="user-name">{{ officialName }}</div>
+          <div class="user-sub">{{ department }}</div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <p class="sidebar-heading">OVERVIEW</p>
+        <a routerLink="/government-dashboard" class="sidebar-link active">📊 Dashboard</a>
+        <a routerLink="/admin/policies" class="sidebar-link">📋 Policy Management</a>
+        <a routerLink="/admin/schemes" class="sidebar-link">🎁 Scheme Management</a>
+      </div>
+
+      <div class="sidebar-section">
+        <p class="sidebar-heading">REPORTS</p>
+        <a routerLink="/reports" class="sidebar-link">📈 Department Reports</a>
+        <a routerLink="/notifications" class="sidebar-link">🔔 Notification Stats</a>
+      </div>
+
+      <div class="sidebar-section">
+        <p class="sidebar-heading">ACCOUNT</p>
+        <a routerLink="/profile" class="sidebar-link">👤 Profile</a>
+        <a routerLink="/login" class="sidebar-link logout">↩️ Logout</a>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="content-header">
+        <div>
+          <h1>Government Dashboard</h1>
+          <p>Policy performance and scheme analytics · {{ department }}</p>
+        </div>
+        <button class="btn-primary">+ Publish New Policy</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card" *ngFor="let s of stats">
+          <span class="stat-value">{{ s.value }}</span>
+          <p class="stat-label">{{ s.label }}</p>
+          <p class="stat-sub">{{ s.sub }}</p>
+        </div>
+      </div>
+
+      <div class="content-grid">
+        <!-- Scheme Usage Analytics -->
+        <div class="card">
+          <h3>Scheme Usage Analytics</h3>
+          <div class="role-row" *ngFor="let s of schemeUsage">
+            <div class="role-top">
+              <span>{{ s.name }}</span>
+              <span>{{ s.usage }}%</span>
+            </div>
+            <div class="role-bar-bg">
+              <div class="role-bar-fill" [style.width.%]="s.usage"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Activity -->
+        <div class="card">
+          <h3>User Activity (This Week)</h3>
+          <div class="bar-chart">
+            <div class="bar-col" *ngFor="let d of userActivity">
+              <div class="bar" [style.height.%]="d.value"></div>
+              <span class="bar-label">{{ d.day }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="content-grid">
+        <!-- Department Reports -->
+        <div class="card">
+          <h3>Department Reports</h3>
+          <table class="admin-table">
+            <thead>
+              <tr><th>Department</th><th>Policies</th><th>Applications</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let d of deptReports">
+                <td>{{ d.dept }}</td>
+                <td>{{ d.policies }}</td>
+                <td>{{ d.applications | number }}</td>
+                <td>
+                  <span class="status-pill" [class]="d.status === 'On Track' ? 'pill-approved' : 'pill-pending'">{{ d.status }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Notification Statistics -->
+        <div class="card">
+          <h3>Notification Statistics</h3>
+          <div class="notif-stat-row" *ngFor="let n of notifStats">
+            <span class="notif-channel">{{ n.channel }}</span>
+            <span class="notif-sent">{{ n.sent }} sent</span>
+            <span class="notif-delivered">{{ n.delivered }} delivered</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

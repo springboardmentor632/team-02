@@ -1,0 +1,100 @@
+<div class="dashboard-shell">
+
+  <nav class="top-navbar">
+    <div class="nav-logo"><img src="logo.png" alt="logo" /></div>
+    <div class="nav-links">
+      <a routerLink="/dashboard" class="nav-link">Dashboard</a>
+      <a routerLink="/policy-search" class="nav-link">Policy Search</a>
+      <a routerLink="/policy-detail" class="nav-link">Policy Detail</a>
+      <a routerLink="/eligibility" class="nav-link">Eligibility Checker</a>
+      <a routerLink="/comparison" class="nav-link">Comparison</a>
+      <a routerLink="/admin-dashboard" class="nav-link">Admin Dashboard</a>
+    </div>
+    <a routerLink="/login" class="nav-logout">⏻ Logout</a>
+  </nav>
+
+  <div class="page-body">
+    <div class="page-header">
+      <h1>Settings</h1>
+      <p>Manage your notification preferences and account security</p>
+    </div>
+
+    <div class="settings-grid">
+
+      <!-- NOTIFICATIONS -->
+      <div class="card">
+        <h3>Notification Preferences</h3>
+        <div *ngIf="saved" class="success-banner">Settings saved successfully!</div>
+
+        <div class="toggle-row">
+          <div>
+            <p class="toggle-label">Email Notifications</p>
+            <p class="toggle-sub">Receive policy updates and deadlines via email</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" [(ngModel)]="emailNotifications" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <p class="toggle-label">SMS Notifications</p>
+            <p class="toggle-sub">Get urgent alerts via text message</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" [(ngModel)]="smsNotifications" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <p class="toggle-label">In-App Notifications</p>
+            <p class="toggle-sub">Show notifications inside the dashboard</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" [(ngModel)]="inAppNotifications" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <button class="btn-primary" (click)="saveSettings()" [disabled]="saving">
+          <span *ngIf="!saving">Save Settings</span>
+          <span *ngIf="saving">Saving...</span>
+        </button>
+      </div>
+
+      <!-- SECURITY -->
+      <div class="card">
+        <h3>Change Password</h3>
+        <div *ngIf="passwordError" class="error-banner">{{ passwordError }}</div>
+        <div *ngIf="passwordSuccess" class="success-banner">{{ passwordSuccess }}</div>
+
+        <div class="field-group">
+          <label>Current Password</label>
+          <input type="password" [(ngModel)]="currentPassword" placeholder="Enter current password" />
+        </div>
+        <div class="field-group">
+          <label>New Password</label>
+          <input type="password" [(ngModel)]="newPassword" placeholder="Enter new password" />
+        </div>
+        <div class="field-group">
+          <label>Confirm New Password</label>
+          <input type="password" [(ngModel)]="confirmPassword" placeholder="Re-enter new password" />
+        </div>
+        <button class="btn-outline" (click)="changePassword()" [disabled]="changingPassword">
+          <span *ngIf="!changingPassword">Change Password</span>
+          <span *ngIf="changingPassword">Changing...</span>
+        </button>
+
+        <div class="danger-zone">
+          <h4>Danger Zone</h4>
+          <p>Once you delete your account, there is no going back.</p>
+          <button class="btn-danger">Delete Account</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

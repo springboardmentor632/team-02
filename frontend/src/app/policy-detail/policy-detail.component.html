@@ -1,0 +1,119 @@
+<div class="dashboard-shell">
+
+  <nav class="top-navbar">
+    <div class="nav-logo"><img src="logo.png" alt="logo" /></div>
+    <div class="nav-links">
+      <a routerLink="/dashboard" class="nav-link">Dashboard</a>
+      <a routerLink="/policy-search" class="nav-link">Policy Search</a>
+      <a routerLink="/policy-detail" class="nav-link active">Policy Detail</a>
+      <a routerLink="/eligibility" class="nav-link">Eligibility Checker</a>
+      <a routerLink="/comparison" class="nav-link">Comparison</a>
+      <a routerLink="/admin-dashboard" class="nav-link">Admin Dashboard</a>
+      <a routerLink="/feedback" class="nav-link">feedback</a>
+    </div>
+    <a routerLink="/login" class="nav-logout">⏻ Logout</a>
+  </nav>
+
+  <div class="page-body">
+    <p class="breadcrumb">
+      <a routerLink="/policy-search">Search</a> ›
+      <span>Healthcare</span> ›
+      <span>{{ policy.name }}</span>
+    </p>
+
+    <div class="content-grid">
+      <!-- MAIN COLUMN -->
+      <div class="main-col">
+        <div class="card">
+          <div class="header-row">
+            <div>
+              <h1>{{ policy.name }}</h1>
+              <p class="ministry-line">{{ policy.ministry }}</p>
+            </div>
+            <div class="badges">
+              <span class="badge-status">{{ policy.status }}</span>
+              <span class="badge-scope">{{ policy.scope }}</span>
+            </div>
+          </div>
+
+          <div class="stat-strip">
+            <div class="stat-box" *ngFor="let s of policy.stats">
+              <span class="stat-val">{{ s.value }}</span>
+              <span class="stat-lbl">{{ s.label }}</span>
+            </div>
+          </div>
+
+          <div class="tabs">
+            <button [class.tab-active]="activeTab==='overview'" (click)="setTab('overview')">Overview</button>
+            <button [class.tab-active]="activeTab==='eligibility'" (click)="setTab('eligibility')">Eligibility</button>
+            <button [class.tab-active]="activeTab==='apply'" (click)="setTab('apply')">How to Apply</button>
+            <button [class.tab-active]="activeTab==='documents'" (click)="setTab('documents')">Documents</button>
+            <button [class.tab-active]="activeTab==='faq'" (click)="setTab('faq')">FAQ</button>
+          </div>
+
+          <div class="tab-content" *ngIf="activeTab === 'overview'">
+            <h3>About this Scheme</h3>
+            <p>{{ policy.about }}</p>
+
+            <h3>Key Benefits</h3>
+            <div class="benefits-grid">
+              <div class="benefit-item" *ngFor="let b of policy.benefits">
+                ✓ {{ b }}
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-content" *ngIf="activeTab === 'eligibility'">
+            <h3>Eligibility Criteria</h3>
+            <p>Households identified as deprived and occupational criteria families under SECC 2011 database are automatically eligible. No premium payment required.</p>
+          </div>
+
+          <div class="tab-content" *ngIf="activeTab === 'apply'">
+            <h3>How to Apply</h3>
+            <p>Visit your nearest empanelled hospital or Common Service Centre (CSC) with your Aadhaar and ration card to check eligibility and generate your Ayushman card.</p>
+          </div>
+
+          <div class="tab-content" *ngIf="activeTab === 'documents'">
+            <h3>Required Documents</h3>
+            <p>Aadhaar Card, Ration Card / SECC ID, and any other government-issued identity proof.</p>
+          </div>
+
+          <div class="tab-content" *ngIf="activeTab === 'faq'">
+            <h3>Frequently Asked Questions</h3>
+            <p>Visit the official PM-JAY portal for a full list of frequently asked questions and support.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIDEBAR -->
+      <div class="side-col">
+        <div class="card action-card">
+          <h3>Quick Actions</h3>
+          <button class="btn-action btn-fill">⇗ Apply Online</button>
+          <button class="btn-action btn-outline-light">🔖 Save Policy</button>
+          <button class="btn-action btn-outline-light">⬇ Download PDF</button>
+        </div>
+
+        <div class="card">
+          <h3>Policy Details</h3>
+          <div class="detail-row"><span>Policy ID</span><strong>{{ policy.details.policyId }}</strong></div>
+          <div class="detail-row"><span>Category</span><span class="tag">{{ policy.details.category }}</span></div>
+          <div class="detail-row"><span>Launch Date</span><strong>{{ policy.details.launchDate }}</strong></div>
+          <div class="detail-row"><span>Last Updated</span><strong>{{ policy.details.lastUpdated }}</strong></div>
+          <div class="detail-row"><span>Implementing</span><strong>{{ policy.details.implementing }}</strong></div>
+        </div>
+
+        <div class="card">
+          <h3>Check Eligibility</h3>
+          <p class="side-note">Answer a few questions to see if you qualify for this scheme.</p>
+          <a routerLink="/eligibility" class="btn-action btn-fill">✓ Check Now</a>
+        </div>
+
+        <div class="card">
+          <h3>Compare Scheme</h3>
+          <a routerLink="/comparison" class="btn-action btn-outline-dark">⇄ Add to Compare</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

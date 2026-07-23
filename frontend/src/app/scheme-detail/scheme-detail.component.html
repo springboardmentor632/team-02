@@ -1,0 +1,97 @@
+<div class="dashboard-shell">
+
+  <nav class="top-navbar">
+    <div class="nav-logo"><img src="logo.png" alt="logo" /></div>
+    <div class="nav-links">
+      <a routerLink="/dashboard" class="nav-link">Dashboard</a>
+      <a routerLink="/policy-search" class="nav-link">Policy Search</a>
+      <a routerLink="/policy-detail" class="nav-link">Policy Detail</a>
+      <a routerLink="/eligibility" class="nav-link">Eligibility Checker</a>
+      <a routerLink="/comparison" class="nav-link">Comparison</a>
+      <a routerLink="/admin-dashboard" class="nav-link">Admin Dashboard</a>
+      <a routerLink="/feedback" class="nav-link">feedback</a>
+    </div>
+    <a routerLink="/login" class="nav-logout">⏻ Logout</a>
+  </nav>
+
+  <div class="page-body">
+    <p class="breadcrumb">
+      <a routerLink="/policy-search">Search</a> › <span>Schemes</span> › <span>{{ scheme.name }}</span>
+    </p>
+
+    <div class="content-grid">
+      <div class="main-col">
+        <div class="card">
+          <div class="header-row">
+            <div>
+              <h1>{{ scheme.name }}</h1>
+              <p class="ministry-line">{{ scheme.ministry }}</p>
+            </div>
+            <div class="badges">
+              <span class="badge-status">{{ scheme.status }}</span>
+              <span class="badge-scope">{{ scheme.category }}</span>
+            </div>
+          </div>
+
+          <div class="stat-strip">
+            <div class="stat-box" *ngFor="let s of scheme.stats">
+              <span class="stat-val">{{ s.value }}</span>
+              <span class="stat-lbl">{{ s.label }}</span>
+            </div>
+          </div>
+
+          <div class="tabs">
+            <button [class.tab-active]="activeTab==='overview'" (click)="setTab('overview')">Overview</button>
+            <button [class.tab-active]="activeTab==='eligibility'" (click)="setTab('eligibility')">Eligibility</button>
+            <button [class.tab-active]="activeTab==='benefits'" (click)="setTab('benefits')">Benefits</button>
+            <button [class.tab-active]="activeTab==='documents'" (click)="setTab('documents')">Documents</button>
+          </div>
+
+          <div class="tab-content" *ngIf="activeTab === 'overview'">
+            <h3>About this Scheme</h3>
+            <p>{{ scheme.about }}</p>
+          </div>
+
+          <div class="tab-content" *ngIf="activeTab === 'eligibility'">
+            <h3>Eligibility Criteria</h3>
+            <ul>
+              <li *ngFor="let e of scheme.eligibility">{{ e }}</li>
+            </ul>
+          </div>
+
+          <div class="tab-content" *ngIf="activeTab === 'benefits'">
+            <h3>Benefits</h3>
+            <p>₹6,000 per year, disbursed in three equal installments of ₹2,000 every four months directly into the beneficiary's bank account.</p>
+          </div>
+
+          <div class="tab-content" *ngIf="activeTab === 'documents'">
+            <h3>Required Documents</h3>
+            <ul>
+              <li *ngFor="let d of scheme.documents">{{ d }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-col">
+        <div class="card action-card">
+          <h3>Quick Actions</h3>
+          <button class="btn-action btn-fill">⇗ Apply Online</button>
+          <button class="btn-action btn-outline-light">🔖 Save Scheme</button>
+          <button class="btn-action btn-outline-light">⬇ Download PDF</button>
+        </div>
+
+        <div class="card">
+          <h3>Check Eligibility</h3>
+          <p class="side-note">See if you qualify for this scheme in under 2 minutes.</p>
+          <a routerLink="/eligibility" class="btn-action btn-fill">✓ Check Now</a>
+        </div>
+
+        <div class="card">
+          <h3>Compare Scheme</h3>
+          <a routerLink="/comparison" class="btn-action btn-outline-dark">⇄ Add to Compare</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
