@@ -158,16 +158,25 @@ export class LoginComponent implements OnInit {
 };
 
 this.http.post<any>(
-  'http://localhost:5000/api/auth/login',
+  'http://localhost:4000/api/auth/login',
   loginData
 ).subscribe({
   next: (response) => {
     this.loading = false;
     console.log(response);
+
+    if (response?.token) {
+      localStorage.setItem('authToken', response.token);
+      localStorage.setItem('user', JSON.stringify(response.user));
+      this.router.navigate(['/dashboard']);
+    } else {
+      this.errorMsg = 'Login succeeded but no token was returned';
+    }
   },
 
   error: (error) => {
     this.loading = false;
+    this.errorMsg = error.error?.message || 'Login failed';
     console.log(error);
   }
 });
