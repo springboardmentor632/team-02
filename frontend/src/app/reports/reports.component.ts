@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import {Router, RouterLink } from '@angular/router';
 
 interface ReportRow {
   id: number;
@@ -18,6 +18,7 @@ interface ReportRow {
   styleUrl: './reports.component.css'
 })
 export class ReportsComponent {
+  constructor(private router: Router) {}
   selectedCategory = 'All';
   categories = ['All', 'Policy', 'Scheme', 'User Activity', 'Department'];
   generating = false;
@@ -54,4 +55,10 @@ export class ReportsComponent {
   downloadReport(report: ReportRow): void {
     console.log('Downloading:', report.name);
   }
+  onLogout(): void {
+  const confirmLogout = confirm('Are you sure you want to logout?');
+  if (confirmLogout) {
+    this.router.navigate(['/login']);
+  }
+}
 }

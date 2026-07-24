@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 interface DeptReport { dept: string; policies: number; applications: number; status: 'On Track' | 'Delayed'; }
 
@@ -12,6 +12,8 @@ interface DeptReport { dept: string; policies: number; applications: number; sta
   styleUrl: './government-dashboard.component.css'
 })
 export class GovernmentDashboardComponent {
+  constructor(private router: Router) {}
+
   officialName = 'Priya Verma';
   department = 'Ministry of Rural Development';
 
@@ -53,4 +55,11 @@ export class GovernmentDashboardComponent {
     { channel: 'SMS', sent: '52K', delivered: '91%' },
     { channel: 'In-App', sent: '25K', delivered: '99%' }
   ];
+
+  onLogout(): void {
+    const confirmLogout = confirm('Are you sure you want to logout?');
+    if (confirmLogout) {
+      this.router.navigate(['/login']);
+    }
+  }
 }

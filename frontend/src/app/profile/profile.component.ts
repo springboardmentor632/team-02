@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router,RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-profile',
@@ -11,6 +11,7 @@ import { RouterLink } from '@angular/router';
   styleUrl: './profile.component.css'
 })
 export class ProfileComponent {
+  constructor(private router: Router) {}
   fullName = 'Rahul Sharma';
   email = 'rahul.sharma@gmail.com';
   phone = '+91 98765 43210';
@@ -29,4 +30,10 @@ export class ProfileComponent {
       this.saved = true;
     }, 800);
   }
+  onLogout(): void {
+  const confirmLogout = confirm('Are you sure you want to logout?');
+  if (confirmLogout) {
+    this.router.navigate(['/login']);
+  }
+}
 }

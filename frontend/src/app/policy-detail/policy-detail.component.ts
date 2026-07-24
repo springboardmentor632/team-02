@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import {Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-policy-detail',
@@ -10,6 +10,7 @@ import { RouterLink } from '@angular/router';
   styleUrl: './policy-detail.component.css'
 })
 export class PolicyDetailComponent {
+  constructor(private router: Router) {}
   activeTab: 'overview' | 'eligibility' | 'apply' | 'documents' | 'faq' = 'overview';
 
   policy = {
@@ -42,4 +43,10 @@ export class PolicyDetailComponent {
   setTab(tab: typeof this.activeTab): void {
     this.activeTab = tab;
   }
+  onLogout(): void {
+  const confirmLogout = confirm('Are you sure you want to logout?');
+  if (confirmLogout) {
+    this.router.navigate(['/login']);
+  }
+}
 }

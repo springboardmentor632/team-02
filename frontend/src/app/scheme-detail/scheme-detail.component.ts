@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import {Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-scheme-detail',
@@ -10,6 +10,7 @@ import { RouterLink } from '@angular/router';
   styleUrl: './scheme-detail.component.css'
 })
 export class SchemeDetailComponent {
+   constructor(private router: Router) {}
   activeTab: 'overview' | 'eligibility' | 'benefits' | 'documents' = 'overview';
 
   scheme = {
@@ -34,5 +35,11 @@ export class SchemeDetailComponent {
 
   setTab(tab: typeof this.activeTab): void {
     this.activeTab = tab;
+  }
+  onLogout(): void {
+    const confirmLogout = confirm('Are you sure you want to logout?');
+    if (confirmLogout) {
+      this.router.navigate(['/login']);
+    }
   }
 }

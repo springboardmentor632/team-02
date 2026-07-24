@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 interface RoleStat { role: string; percent: number; count: string; }
 interface PolicySubmission { name: string; ministry: string; status: 'Pending' | 'Approved' | 'Review'; }
@@ -13,6 +13,8 @@ interface PolicySubmission { name: string; ministry: string; status: 'Pending' |
   styleUrl: './admin-dashboard.component.css'
 })
 export class AdminDashboardComponent {
+  constructor(private router: Router) {}
+
   stats = [
     { label: 'Total Users', value: '5.2M', sub: '↑ 12% MoM' },
     { label: 'Active Policies', value: '12,480', sub: '↑ 68 new' },
@@ -35,4 +37,11 @@ export class AdminDashboardComponent {
     { name: 'Skill India 2.0', ministry: 'MSDE', status: 'Pending' },
     { name: 'Jal Jeevan Mission II', ministry: 'Jal Shakti', status: 'Review' }
   ];
+
+  onLogout(): void {
+    const confirmLogout = confirm('Are you sure you want to logout?');
+    if (confirmLogout) {
+      this.router.navigate(['/login']);
+    }
+  }
 }

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router,RouterLink } from '@angular/router';
 
 interface SchemeRow { id: number; name: string; category: string; benefit: string; status: 'Active' | 'Draft' | 'Archived'; }
 
@@ -13,6 +13,7 @@ interface SchemeRow { id: number; name: string; category: string; benefit: strin
   styleUrl: './scheme-management.component.css'
 })
 export class SchemeManagementComponent {
+  constructor(private router: Router) {}
   showForm = false;
   newScheme = { name: '', category: 'Scholarships', benefit: '' };
   categories = ['Scholarships', 'Farmer Welfare', 'Healthcare', 'Housing', 'Business Support', 'Women Empowerment', 'Senior Citizen Welfare', 'Student Schemes', 'Employment Programs', 'Social Security'];
@@ -46,5 +47,11 @@ export class SchemeManagementComponent {
 
   archive(s: SchemeRow): void {
     s.status = 'Archived';
+  }
+  onLogout(): void {
+    const confirmLogout = confirm('Are you sure you want to logout?');
+    if (confirmLogout) {
+      this.router.navigate(['/login']);
+    }
   }
 }

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router,RouterLink } from '@angular/router';
 
 interface FAQ { q: string; a: string; open: boolean; }
 
@@ -13,6 +13,7 @@ interface FAQ { q: string; a: string; open: boolean; }
   styleUrl: './feedback.component.css'
 })
 export class FeedbackComponent {
+  constructor(private router: Router) {}
   subject = '';
   category = 'General Feedback';
   message = '';
@@ -43,4 +44,10 @@ export class FeedbackComponent {
       this.category = 'General Feedback';
     }, 900);
   }
+  onLogout(): void {
+  const confirmLogout = confirm('Are you sure you want to logout?');
+  if (confirmLogout) {
+    this.router.navigate(['/login']);
+  }
+}
 }

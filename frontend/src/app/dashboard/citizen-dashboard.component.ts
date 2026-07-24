@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 interface Scheme {
   name: string;
@@ -23,6 +23,8 @@ interface NotifItem {
   styleUrl: './citizen-dashboard.component.css'
 })
 export class CitizenDashboardComponent {
+  constructor(private router: Router) {}
+
   userName = 'Rahul Sharma';
   userLocation = 'Citizen · Delhi';
 
@@ -48,4 +50,11 @@ export class CitizenDashboardComponent {
   ];
 
   recentSearches = ['PM Kisan', 'Housing scheme Delhi', 'Education scholarship OBC', 'MGNREGA wage 2025', 'Digital India programme', 'Startup India scheme'];
+
+  onLogout(): void {
+    const confirmLogout = confirm('Are you sure you want to logout?');
+    if (confirmLogout) {
+      this.router.navigate(['/login']);
+    }
+  }
 }

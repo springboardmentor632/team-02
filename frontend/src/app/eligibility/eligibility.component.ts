@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router,RouterLink } from '@angular/router';
 
 interface Scheme {
   name: string;
@@ -18,6 +18,7 @@ interface Scheme {
   styleUrl: './eligibility.component.css'
 })
 export class EligibilityComponent {
+  constructor(private router: Router) {}
   currentStep = 1;
   totalSteps = 4;
   steps = ['Personal Info', 'Financial Info', 'Location', 'Results'];
@@ -101,4 +102,10 @@ export class EligibilityComponent {
     this.currentStep = 1;
     this.matchedSchemes = [];
   }
+  onLogout(): void {
+  const confirmLogout = confirm('Are you sure you want to logout?');
+  if (confirmLogout) {
+    this.router.navigate(['/login']);
+  }
+}
 }

@@ -15,7 +15,7 @@
       
       <a routerLink="/feedback" class="nav-link">feedback</a>
     </div>
-    <a routerLink="/login" class="nav-logout">⏻ Logout</a>
+   <a (click)="onLogout()" class="nav-logout" style="cursor: pointer;">⏻ Logout</a>
   </nav>
 
   <div class="body-layout">
@@ -47,7 +47,7 @@
         <p class="sidebar-heading">ACCOUNT</p>
         <a routerLink="/profile" class="sidebar-link">👤 Profile</a>
         <a routerLink="/settings" class="sidebar-link">⚙️ Settings</a>
-        <a routerLink="/login" class="sidebar-link logout">↩️ Logout</a>
+        <a (click)="onLogout()" class="sidebar-link logout" style="cursor: pointer;">↩️ Logout</a>
       </div>
     </aside>
 

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import {Router, RouterLink } from '@angular/router';
 
 interface PolicyRow { id: number; name: string; category: string; ministry: string; status: 'Pending' | 'Approved' | 'Draft'; }
 
@@ -13,6 +13,7 @@ interface PolicyRow { id: number; name: string; category: string; ministry: stri
   styleUrl: './policy-management.component.css'
 })
 export class PolicyManagementComponent {
+  constructor(private router: Router) {}
   showForm = false;
 
   newPolicy = { name: '', category: 'Education', ministry: '', description: '' };
@@ -48,5 +49,11 @@ export class PolicyManagementComponent {
 
   archive(p: PolicyRow): void {
     this.policies = this.policies.filter(x => x.id !== p.id);
+  }
+   onLogout(): void {
+    const confirmLogout = confirm('Are you sure you want to logout?');
+    if (confirmLogout) {
+      this.router.navigate(['/login']);
+    }
   }
 }

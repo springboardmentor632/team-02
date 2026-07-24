@@ -34,8 +34,8 @@ type AuthMode = 'login' | 'register';
   styleUrl: './login.component.css'
 })
 export class LoginComponent implements OnInit {
-  hidePassword=true;
-  hideRegisterPassword=true;
+  hidePassword = true;
+  hideRegisterPassword = true;
   authMode: AuthMode = 'login';
   selectedTabIndex = 0;
   loginEmail = '';
@@ -47,7 +47,7 @@ export class LoginComponent implements OnInit {
   regRole = 'Citizen';
   regPassword = '';
 
-  roles = ['Citizen', 'Government Official', 'Researcher', 'Organisation'];
+  roles = ['Citizen', 'Government Official', 'Researcher', 'Organization'];
 
   errorMsg = '';
   loading = false;
@@ -60,9 +60,9 @@ export class LoginComponent implements OnInit {
   private googleReady = false;
 
   constructor(
-  private router: Router,
-  private http: HttpClient
-) {}
+    private router: Router,
+    private http: HttpClient
+  ) {}
 
   ngOnInit(): void {
     this.initGoogleClient();
@@ -98,10 +98,10 @@ export class LoginComponent implements OnInit {
   }
 
   onTabChange(index: number): void {
-  this.selectedTabIndex = index;
-  this.authMode = index === 0 ? 'login' : 'register';
-  this.errorMsg = '';
-}
+    this.selectedTabIndex = index;
+    this.authMode = index === 0 ? 'login' : 'register';
+    this.errorMsg = '';
+  }
 
   continueWithGoogle(): void {
     if (this.GOOGLE_CLIENT_ID.includes('YOUR_GOOGLE_CLIENT_ID')) {
@@ -133,6 +133,8 @@ export class LoginComponent implements OnInit {
         // TODO: send access_token to backend (FastAPI/Node /auth/google) for verification
         console.log('Google profile:', profile);
         this.googleLoading = false;
+        // Google se abhi role nahi milta, isliye default dashboard pe bhej rahe hain.
+        // Backend se role verify hone ke baad yaha bhi switch-case lagaya ja sakta hai.
         this.router.navigate(['/dashboard']);
       })
       .catch(err => {
@@ -152,34 +154,55 @@ export class LoginComponent implements OnInit {
     this.errorMsg = '';
 
     // TODO: replace with real backend call (POST /auth/login)
-   const loginData = {
-  email: this.loginEmail,
-  password: this.loginPassword
-};
+    const loginData = {
+      email: this.loginEmail,
+      password: this.loginPassword
+    };
 
-this.http.post<any>(
-  'http://localhost:4000/api/auth/login',
-  loginData
-).subscribe({
-  next: (response) => {
-    this.loading = false;
-    console.log(response);
+    this.http.post<any>(
+      'http://localhost:4000/api/auth/login',
+      loginData
+    ).subscribe({
+      next: (response) => {
+        this.loading = false;
+        console.log(response);
 
-    if (response?.token) {
-      localStorage.setItem('authToken', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
-      this.router.navigate(['/dashboard']);
-    } else {
-      this.errorMsg = 'Login succeeded but no token was returned';
-    }
-  },
+        if (response?.token) {
+          localStorage.setItem('authToken', response.token);
+          localStorage.setItem('user', JSON.stringify(response.user));
 
-  error: (error) => {
-    this.loading = false;
-    this.errorMsg = error.error?.message || 'Login failed';
-    console.log(error);
-  }
-});
+          // ---- ROLE-BASED DASHBOARD NAVIGATION (NAYA CODE) ----
+          const role = response.user?.role;
+
+          switch (role) {
+            case 'Citizen':
+              this.router.navigate(['/citizen-dashboard']);
+              break;
+            case 'Government Official':
+              this.router.navigate(['/govt-dashboard']);
+              break;
+            case 'Researcher':
+              this.router.navigate(['/researcher-dashboard']);
+              break;
+            case 'Organization':
+              this.router.navigate(['/organization-dashboard']);
+              break;
+            default:
+              this.router.navigate(['/dashboard']);
+          }
+          // ---- NAYA CODE END ----
+
+        } else {
+          this.errorMsg = 'Login succeeded but no token was returned';
+        }
+      },
+
+      error: (error) => {
+        this.loading = false;
+        this.errorMsg = error.error?.message || 'Login failed';
+        console.log(error);
+      }
+    });
   }
 
   onRegister(form: NgForm): void {
@@ -193,34 +216,35 @@ this.http.post<any>(
 
     // TODO: replace with real backend call (POST /auth/register)
     const registerData = {
-  firstName: this.regFirstName,
-  lastName: this.regLastName,
-  email: this.regEmail,
-  role: this.regRole,
-  password: this.regPassword,
-  confirmPassword: this.regPassword
-};
+      firstName: this.regFirstName,
+      lastName: this.regLastName,
+      email: this.regEmail,
+      role: this.regRole,
+      password: this.regPassword,
+      confirmPassword: this.regPassword
+    };
 
-this.http.post<any>(
-  'http://localhost:4000/api/auth/register',
-  registerData
-).subscribe({
-  next: (response) => {
-    this.loading = false;
-    console.log(response);
+    this.http.post<any>(
+      'http://localhost:4000/api/auth/register',
+      registerData
+    ).subscribe({
+      next: (response) => {
+        this.loading = false;
+        console.log(response);
 
-    alert('Registration successful! Please login.');
+        alert('Registration successful! Please login.');
 
-form.resetForm();
-this.regRole = 'Citizen';
+        form.resetForm();
+        this.regRole = 'Citizen';
 
-this.selectedTabIndex = 0;
-  },
+        this.selectedTabIndex = 0;
+      },
 
-  error: (error) => {
-    this.loading = false;
-    this.errorMsg = error.error?.message || 'Registration failed';
-    console.log(error);
+      error: (error) => {
+        this.loading = false;
+        this.errorMsg = error.error?.message || 'Registration failed';
+        console.log(error);
+      }
+    });
   }
-});
-}}
+}

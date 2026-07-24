@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router,RouterLink } from '@angular/router';
 
 interface PolicyResult {
   id: string;
@@ -23,6 +23,7 @@ interface PolicyResult {
   styleUrl: './policy-search.component.css'
 })
 export class PolicySearchComponent {
+  constructor(private router: Router) {}
   searchQuery = 'healthcare scheme';
   activeCategory = 'All Categories';
   categories = ['All Categories', 'Healthcare', 'Agriculture', 'Education', 'Housing', 'Employment', 'Finance'];
@@ -94,4 +95,10 @@ export class PolicySearchComponent {
     this.statusArchived = false;
     this.statusDraft = true;
   }
+  onLogout(): void {
+  const confirmLogout = confirm('Are you sure you want to logout?');
+  if (confirmLogout) {
+    this.router.navigate(['/login']);
+  }
+}
 }
