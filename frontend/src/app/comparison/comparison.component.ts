@@ -66,4 +66,14 @@ export class ComparisonComponent {
     // TODO: open a modal/search to add another scheme to compare
     console.log('Add scheme clicked');
   }
+
+  onLogout(): void {
+    const confirmLogout = confirm('Are you sure you want to logout?');
+    if (confirmLogout) {
+      window.location.href = '/login'; // यह बिना किसी एरर के सीधा लॉगिन पेज पर भेज देगा
+    }
+  }
+notifications: any[] = [];
+userName = 'Rahul Sharma';
+userLocation = 'Citizen · Delhi';
 }

@@ -19,6 +19,8 @@ interface Scheme {
 })
 export class EligibilityComponent {
   constructor(private router: Router) {}
+  userName = 'Rahul Sharma';
+  userLocation = 'Citizen · Delhi';
   currentStep = 1;
   totalSteps = 4;
   steps = ['Personal Info', 'Financial Info', 'Location', 'Results'];
@@ -103,9 +105,11 @@ export class EligibilityComponent {
     this.matchedSchemes = [];
   }
   onLogout(): void {
-  const confirmLogout = confirm('Are you sure you want to logout?');
-  if (confirmLogout) {
-    this.router.navigate(['/login']);
+    const confirmLogout = confirm('Are you sure you want to logout?');
+    if (confirmLogout) {
+      window.location.href = '/login'; // यह बिना किसी एरर के सीधा लॉगिन पेज पर भेज देगा
+    }
   }
-}
+notifications: any[] = [];
+
 }

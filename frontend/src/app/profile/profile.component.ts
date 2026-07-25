@@ -12,6 +12,8 @@ import { Router,RouterLink } from '@angular/router';
 })
 export class ProfileComponent {
   constructor(private router: Router) {}
+  userName = 'Rahul Sharma';
+  userLocation = 'Citizen · Delhi';
   fullName = 'Rahul Sharma';
   email = 'rahul.sharma@gmail.com';
   phone = '+91 98765 43210';
@@ -31,9 +33,10 @@ export class ProfileComponent {
     }, 800);
   }
   onLogout(): void {
-  const confirmLogout = confirm('Are you sure you want to logout?');
-  if (confirmLogout) {
-    this.router.navigate(['/login']);
+    const confirmLogout = confirm('Are you sure you want to logout?');
+    if (confirmLogout) {
+      window.location.href = '/login'; // यह बिना किसी एरर के सीधा लॉगिन पेज पर भेज देगा
+    }
   }
-}
+notifications: any[] = [];
 }

@@ -19,6 +19,8 @@ interface ReportRow {
 })
 export class ReportsComponent {
   constructor(private router: Router) {}
+  userName = 'Rahul Sharma';
+  userLocation = 'Citizen · Delhi';
   selectedCategory = 'All';
   categories = ['All', 'Policy', 'Scheme', 'User Activity', 'Department'];
   generating = false;
@@ -55,10 +57,11 @@ export class ReportsComponent {
   downloadReport(report: ReportRow): void {
     console.log('Downloading:', report.name);
   }
-  onLogout(): void {
-  const confirmLogout = confirm('Are you sure you want to logout?');
-  if (confirmLogout) {
-    this.router.navigate(['/login']);
+ onLogout(): void {
+    const confirmLogout = confirm('Are you sure you want to logout?');
+    if (confirmLogout) {
+      window.location.href = '/login'; // यह बिना किसी एरर के सीधा लॉगिन पेज पर भेज देगा
+    }
   }
-}
+notifications: any[] = [];
 }

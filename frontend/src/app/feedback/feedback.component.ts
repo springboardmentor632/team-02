@@ -45,9 +45,12 @@ export class FeedbackComponent {
     }, 900);
   }
   onLogout(): void {
-  const confirmLogout = confirm('Are you sure you want to logout?');
-  if (confirmLogout) {
-    this.router.navigate(['/login']);
+    const confirmLogout = confirm('Are you sure you want to logout?');
+    if (confirmLogout) {
+      window.location.href = '/login'; // यह बिना किसी एरर के सीधा लॉगिन पेज पर भेज देगा
+    }
   }
-}
+notifications: any[] = [];
+userName = 'Rahul Sharma';
+userLocation = 'Citizen · Delhi';
 }

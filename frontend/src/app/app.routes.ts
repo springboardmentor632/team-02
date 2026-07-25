@@ -22,10 +22,11 @@ export const routes: Routes = [
   { path: '', component: LandingComponent },
   { path: 'login', component: LoginComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
-  { path: 'dashboard', component: CitizenDashboardComponent ,
+  // { path: 'dashboard', component: CitizenDashboardComponent ,
 
     
-  },
+  // },
+  { path: 'citizen-dashboard', component: CitizenDashboardComponent },
   { path: 'admin-dashboard', component: AdminDashboardComponent },
   
   { path: 'government-dashboard', component: GovernmentDashboardComponent },

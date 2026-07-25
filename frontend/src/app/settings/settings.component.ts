@@ -14,7 +14,9 @@ import {Router, RouterLink } from '@angular/router';
 
 
 export class SettingsComponent {
-   constructor(private router: Router) {}
+  constructor(private router: Router) {}
+  userName = 'Rahul Sharma';
+  userLocation = 'Citizen · Delhi';
   emailNotifications = true;
   smsNotifications = false;
   inAppNotifications = true;
@@ -67,10 +69,12 @@ export class SettingsComponent {
       this.newPassword = '';
       this.confirmPassword = '';
     }, 800);
-  }onLogout(): void {
+  }
+   onLogout(): void {
     const confirmLogout = confirm('Are you sure you want to logout?');
     if (confirmLogout) {
-      this.router.navigate(['/login']);
+      window.location.href = '/login'; // यह बिना किसी एरर के सीधा लॉगिन पेज पर भेज देगा
     }
   }
+notifications: any[] = [];
 }

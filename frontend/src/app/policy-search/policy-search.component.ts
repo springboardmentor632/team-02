@@ -24,6 +24,8 @@ interface PolicyResult {
 })
 export class PolicySearchComponent {
   constructor(private router: Router) {}
+  userName = 'Rahul Sharma';
+  userLocation = 'Citizen · Delhi';
   searchQuery = 'healthcare scheme';
   activeCategory = 'All Categories';
   categories = ['All Categories', 'Healthcare', 'Agriculture', 'Education', 'Housing', 'Employment', 'Finance'];
@@ -36,6 +38,7 @@ export class PolicySearchComponent {
   statusDraft = true;
 
   totalResults = 248;
+  
 
   results: PolicyResult[] = [
     {
@@ -96,9 +99,12 @@ export class PolicySearchComponent {
     this.statusDraft = true;
   }
   onLogout(): void {
-  const confirmLogout = confirm('Are you sure you want to logout?');
-  if (confirmLogout) {
-    this.router.navigate(['/login']);
+    const confirmLogout = confirm('Are you sure you want to logout?');
+    if (confirmLogout) {
+      window.location.href = '/login'; // यह बिना किसी एरर के सीधा लॉगिन पेज पर भेज देगा
+    }
   }
-}
+notifications: any[] = [];
+
+
 }

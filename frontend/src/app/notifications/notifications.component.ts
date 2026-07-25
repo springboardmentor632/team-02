@@ -20,6 +20,8 @@ interface Notification {
 })
 export class NotificationsComponent {
   constructor(private router: Router) {}
+  userName = 'Rahul Sharma';
+  userLocation = 'Citizen · Delhi';
   filter: 'all' | 'unread' = 'all';
 
   notifications: Notification[] = [
@@ -59,9 +61,10 @@ export class NotificationsComponent {
     }
   }
   onLogout(): void {
-  const confirmLogout = confirm('Are you sure you want to logout?');
-  if (confirmLogout) {
-    this.router.navigate(['/login']);
+    const confirmLogout = confirm('Are you sure you want to logout?');
+    if (confirmLogout) {
+      window.location.href = '/login'; // यह बिना किसी एरर के सीधा लॉगिन पेज पर भेज देगा
+    }
   }
-}
+   
 }
