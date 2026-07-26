@@ -26,6 +26,7 @@ interface MatchedScheme {
 export class EligibilityComponent {
   userName = '';
   userLocation = '';
+  userInitials = '';
   currentStep = 1;
   totalSteps = 4;
   steps = ['Personal Info', 'Financial Info', 'Location', 'Results'];
@@ -64,6 +65,7 @@ export class EligibilityComponent {
   ) {
     this.userName = this.auth.getUserDisplayName();
     this.userLocation = this.auth.getUserSubtitle();
+    this.userInitials = this.auth.getUserInitials();
     this.schemeService.getAll({ status: 'Active' }).subscribe({
       next: (res) => {
         this.previewSchemes = res.schemes.map((s) => s.name);

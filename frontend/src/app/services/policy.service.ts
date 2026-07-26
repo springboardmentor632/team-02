@@ -35,4 +35,16 @@ export class PolicyService {
   delete(id: string): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.baseUrl}/${id}`);
   }
+
+  getSavedPolicies(): Observable<{ saved: any[] }> {
+    return this.http.get<{ saved: any[] }>(`${this.baseUrl}/saved`);
+  }
+
+  savePolicy(id: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.baseUrl}/${id}/save`, {});
+  }
+
+  unsavePolicy(id: string): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.baseUrl}/${id}/save`);
+  }
 }

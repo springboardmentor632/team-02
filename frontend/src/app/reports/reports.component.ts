@@ -28,6 +28,7 @@ interface ReportRow {
 export class ReportsComponent implements OnInit {
   userName = '';
   userLocation = '';
+  userInitials = '';
   selectedCategory = 'All';
   categories = ['All', 'Policy', 'Scheme', 'Search Activity'];
   generating = false;
@@ -48,6 +49,7 @@ export class ReportsComponent implements OnInit {
   ngOnInit(): void {
     this.userName = this.auth.getUserDisplayName();
     this.userLocation = this.auth.getUserSubtitle();
+    this.userInitials = this.auth.getUserInitials();
     this.loadReports();
     this.notificationService.getAll().subscribe({
       next: (res) => { this.notifications = res.notifications.filter(n => !n.read); },

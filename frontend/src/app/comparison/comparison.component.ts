@@ -38,6 +38,7 @@ export class ComparisonComponent implements OnInit {
   notifications: { _id: string }[] = [];
   userName = '';
   userLocation = '';
+  userInitials = '';
 
   constructor(
     private auth: AuthService,
@@ -48,6 +49,7 @@ export class ComparisonComponent implements OnInit {
   ngOnInit(): void {
     this.userName = this.auth.getUserDisplayName();
     this.userLocation = this.auth.getUserSubtitle();
+    this.userInitials = this.auth.getUserInitials();
     this.schemeService.getAll({ status: 'Active' }).subscribe({
       next: (res) => {
         this.allSchemes = res.schemes;

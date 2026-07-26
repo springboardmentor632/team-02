@@ -17,8 +17,8 @@ import { FeedbackComponent } from './feedback/feedback.component';
 import { PolicyManagementComponent } from './admin/policy-management.component';
 import { SchemeManagementComponent } from './admin/scheme-management.component';
 import { SettingsComponent } from './settings/settings.component';
+import { SavedPoliciesComponent } from './saved-policy/saved-policies.component';
 import { authGuard, adminGuard } from './guards/auth.guard';
-
 export const routes: Routes = [
   { path: '', component: LandingComponent },
   { path: 'login', component: LoginComponent },
@@ -39,4 +39,5 @@ export const routes: Routes = [
   { path: 'admin/policies', component: PolicyManagementComponent, canActivate: [adminGuard] },
   { path: 'admin/schemes', component: SchemeManagementComponent, canActivate: [adminGuard] },
   { path: 'settings', component: SettingsComponent, canActivate: [authGuard] },
+  { path: 'saved-policies', component: SavedPoliciesComponent, canActivate: [authGuard] },
 ];

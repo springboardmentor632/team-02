@@ -15,6 +15,7 @@ import { NotificationService } from '../services/notification.service';
 export class SettingsComponent implements OnInit {
   userName = '';
   userLocation = '';
+  userInitials = '';
   emailNotifications = true;
   smsNotifications = false;
   inAppNotifications = true;
@@ -41,6 +42,7 @@ export class SettingsComponent implements OnInit {
   ngOnInit(): void {
     this.userName = this.auth.getUserDisplayName();
     this.userLocation = this.auth.getUserSubtitle();
+    this.userInitials = this.auth.getUserInitials();
     this.notificationService.getAll().subscribe({
       next: (res) => { this.notifications = res.notifications.filter(n => !n.read); },
       error: () => { this.notifications = []; }

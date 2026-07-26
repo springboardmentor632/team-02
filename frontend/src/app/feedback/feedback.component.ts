@@ -35,6 +35,7 @@ export class FeedbackComponent implements OnInit {
   notifications: { _id: string }[] = [];
   userName = '';
   userLocation = '';
+  userInitials = '';
 
   constructor(
     private router: Router,
@@ -46,6 +47,7 @@ export class FeedbackComponent implements OnInit {
   ngOnInit(): void {
     this.userName = this.auth.getUserDisplayName();
     this.userLocation = this.auth.getUserSubtitle();
+    this.userInitials = this.auth.getUserInitials();
     this.notificationService.getAll().subscribe({
       next: (res) => { this.notifications = res.notifications.filter(n => !n.read); },
       error: () => { this.notifications = []; }

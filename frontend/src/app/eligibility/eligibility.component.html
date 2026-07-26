@@ -10,7 +10,7 @@
 
     <div style="display: inline-flex; align-items: center; justify-content: flex-end; margin-left: auto; gap: 28px;">
 
-  <!-- 1. फीडबैक बटन -->
+  
   <a routerLink="/feedback" class="nav-logout" style="cursor: pointer; text-decoration: none; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center;">
     <svg xmlns="http://w3.org" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px;">
       <path fill-rule="evenodd" d="M4.848 2.771A49.144 49.144 0 0 1 12 2.25c2.43 0 4.817.178 7.152.52 1.237.181 2.165 1.273 2.165 2.508v11.501c0 1.235-.928 2.327-2.165 2.509A49.313 49.313 0 0 1 12 19.75c-2.43 0-4.817-.178-7.152-.52-.167-.024-.322-.053-.472-.089l-2.275 2.088A.75.75 0 0 1 1 20.685V5.279c0-1.235.928-2.327 2.165-2.509a4.85 4.85 0 0 1 .511-.061ZM12 8.25a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 6a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Z" clip-rule="evenodd" />
@@ -18,7 +18,7 @@
     <span style="font-size: 12px; font-weight: 500;">Feedback</span>
   </a>
 
-  <!-- 2. नोटिफिकेशन घंटी -->
+ 
   <a routerLink="/notifications" style="text-decoration: none; color: inherit; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center; position: relative; cursor: pointer;">
     <span style="font-size: 20px; filter: brightness(0) invert(1); display: block; line-height: 1;">🔔</span>
     <span style="background: #ef4444; color: #ffffff; border-radius: 50%; font-size: 9px; font-weight: 700; position: absolute; top: -5px; right: 12px; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; border: 1.5px solid #2e7d32; box-shadow: 0 0 4px rgba(0,0,0,0.3);">
@@ -27,7 +27,7 @@
     <span class="nav-logout" style="font-size: 12px; font-weight: 500; margin: 0; padding: 0;">Notification</span>
   </a>
 
-  <!-- 3. प्रोफ़ाइल बटन -->
+  
   <a routerLink="/profile" class="nav-logout" style="cursor: pointer; text-decoration: none; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center;">
     <svg xmlns="http://w3.org" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px;">
       <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clip-rule="evenodd" />
@@ -35,7 +35,7 @@
     <span style="font-size: 12px; font-weight: 500;">Profile</span>
   </a>
 
-  <!-- 4. लॉगआउट बटन -->
+  
   <a (click)="onLogout()" class="nav-logout" style="cursor: pointer; text-decoration: none; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center;">
     <svg xmlns="http://w3.org" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px;">
       <path fill-rule="evenodd" d="M16.5 3.75a.75.75 0 0 1 .75.75v6.75H21a.75.75 0 0 1 0 1.5h-3.75v6.75a.75.75 0 0 1-1.5 0v-7.5a.75.75 0 0 1 .75-.75h3V5.25h-3A.75.75 0 0 1 16.5 4.5ZM12 3a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-1.5 0V6.44l-4.72 4.72a.75.75 0 0 1-1.06-1.06l6-6A.75.75 0 0 1 12 3Z" clip-rule="evenodd" />
@@ -50,7 +50,7 @@
 
     <aside class="sidebar">
       <div class="sidebar-user">
-        <div class="avatar">RS</div>
+         <div class="avatar">{{ userInitials }}</div>
         <div>
           <div class="user-name">{{ userName }}</div>
           <div class="user-sub">{{ userLocation }}</div>
