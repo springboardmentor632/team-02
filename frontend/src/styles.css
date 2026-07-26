@@ -1,1 +1,132 @@
-/* You can add global styles to this file, and also import other style files */
+/* Global responsive utilities for PolicyGPT */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+.loading-state, .error-state, .empty-state, .error-msg {
+  padding: 1rem;
+  text-align: center;
+  color: #555;
+}
+
+.error-msg, .error-state { color: #c53030; }
+
+@media (max-width: 900px) {
+  .dashboard-layout,
+  .body-layout {
+    flex-direction: column !important;
+  }
+
+  .sidebar {
+    width: 100% !important;
+    min-width: unset !important;
+    border-right: none !important;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .sidebar-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .sidebar-link {
+    flex: 1 1 auto;
+    min-width: 140px;
+  }
+
+  .main-content {
+    padding: 12px !important;
+  }
+
+  .top-navbar {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 12px !important;
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .content-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .compare-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .compare-table {
+    min-width: 600px;
+  }
+
+  .admin-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .search-bar {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .search-bar input {
+    width: 100%;
+  }
+
+  .category-pills {
+    flex-wrap: wrap;
+  }
+
+  .results-header {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start !important;
+  }
+
+  .result-card {
+    flex-direction: column !important;
+  }
+
+  .result-actions {
+    flex-direction: row !important;
+    width: 100%;
+    margin-top: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .page-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start !important;
+  }
+
+  .step-progress {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .picker-grid {
+    flex-direction: column;
+  }
+}

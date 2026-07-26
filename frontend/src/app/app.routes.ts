@@ -17,32 +17,26 @@ import { FeedbackComponent } from './feedback/feedback.component';
 import { PolicyManagementComponent } from './admin/policy-management.component';
 import { SchemeManagementComponent } from './admin/scheme-management.component';
 import { SettingsComponent } from './settings/settings.component';
+import { authGuard, adminGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
   { path: 'login', component: LoginComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
-  // { path: 'dashboard', component: CitizenDashboardComponent ,
-
-    
-  // },
-  { path: 'citizen-dashboard', component: CitizenDashboardComponent },
-  { path: 'admin-dashboard', component: AdminDashboardComponent },
-  
-  { path: 'government-dashboard', component: GovernmentDashboardComponent },
-  { path: 'policy-search', component: PolicySearchComponent },
-  { path: 'policy-detail', component: PolicyDetailComponent },
-  { path: 'scheme-detail', component: SchemeDetailComponent },
-  { path: 'comparison', component: ComparisonComponent },
-  { path: 'eligibility', component: EligibilityComponent },
-  { path: 'notifications', component: NotificationsComponent },
-  { path: 'reports', component: ReportsComponent },
-  { path: 'profile', component: ProfileComponent },
-  { path: 'feedback', component: FeedbackComponent },
-  { path: 'admin/policies', component: PolicyManagementComponent },
-  { path: 'admin/schemes', component: SchemeManagementComponent },
-  { path: 'settings', component: SettingsComponent },
+  { path: 'dashboard', redirectTo: 'citizen-dashboard', pathMatch: 'full' },
+  { path: 'citizen-dashboard', component: CitizenDashboardComponent, canActivate: [authGuard] },
+  { path: 'admin-dashboard', component: AdminDashboardComponent, canActivate: [authGuard] },
+  { path: 'government-dashboard', component: GovernmentDashboardComponent, canActivate: [authGuard] },
+  { path: 'policy-search', component: PolicySearchComponent, canActivate: [authGuard] },
+  { path: 'policy-detail/:id', component: PolicyDetailComponent, canActivate: [authGuard] },
+  { path: 'scheme-detail/:id', component: SchemeDetailComponent, canActivate: [authGuard] },
+  { path: 'comparison', component: ComparisonComponent, canActivate: [authGuard] },
+  { path: 'eligibility', component: EligibilityComponent, canActivate: [authGuard] },
+  { path: 'notifications', component: NotificationsComponent, canActivate: [authGuard] },
+  { path: 'reports', component: ReportsComponent, canActivate: [authGuard] },
+  { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
+  { path: 'feedback', component: FeedbackComponent, canActivate: [authGuard] },
+  { path: 'admin/policies', component: PolicyManagementComponent, canActivate: [adminGuard] },
+  { path: 'admin/schemes', component: SchemeManagementComponent, canActivate: [adminGuard] },
+  { path: 'settings', component: SettingsComponent, canActivate: [authGuard] },
 ];
-
-
-

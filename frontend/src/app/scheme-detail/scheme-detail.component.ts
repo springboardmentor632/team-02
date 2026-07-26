@@ -1,6 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+import { SchemeService } from '../services/scheme.service';
+import { Scheme } from '../models/policy.model';
+import { formatDate, getLaunchYear } from '../utils/helpers';
 
 @Component({
   selector: 'app-scheme-detail',
@@ -9,37 +13,56 @@ import {Router, RouterLink } from '@angular/router';
   templateUrl: './scheme-detail.component.html',
   styleUrl: './scheme-detail.component.css'
 })
-export class SchemeDetailComponent {
-   constructor(private router: Router) {}
+export class SchemeDetailComponent implements OnInit {
   activeTab: 'overview' | 'eligibility' | 'benefits' | 'documents' = 'overview';
+  loading = true;
+  error = '';
+  scheme: Scheme | null = null;
+  stats: { value: string; label: string }[] = [];
 
-  scheme = {
-    name: 'PM Kisan Samman Nidhi',
-    ministry: 'Ministry of Agriculture & Farmers Welfare',
-    status: 'Active',
-    category: 'Farmer Welfare',
-    stats: [
-      { value: '₹6,000', label: 'Annual Benefit' },
-      { value: '11 Cr+', label: 'Farmers Enrolled' },
-      { value: '3', label: 'Installments/Year' },
-      { value: '2019', label: 'Launch Year' }
-    ],
-    about: `PM-KISAN is a Central Sector Scheme launched to supplement the financial needs of Small and Marginal Farmers (SMFs) in procuring various inputs to ensure proper crop health and appropriate yields. Under the scheme, an income support of ₹6,000 per year is provided in three equal installments.`,
-    eligibility: [
-      'All landholding farmer families',
-      'Cultivable landholding in their name',
-      'Subject to certain exclusion criteria (institutional landholders, income tax payers, etc.)'
-    ],
-    documents: ['Aadhaar Card', 'Land ownership records', 'Bank account details']
-  };
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private auth: AuthService,
+    private schemeService: SchemeService
+  ) {}
+
+  ngOnInit(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) {
+      this.error = 'Scheme not found';
+      this.loading = false;
+      return;
+    }
+    this.schemeService.getById(id).subscribe({
+      next: (res) => {
+        this.scheme = res.scheme;
+        this.stats = [
+          { value: this.scheme.benefits?.[0] || 'See benefits', label: 'Key Benefit' },
+          { value: this.scheme.category, label: 'Category' },
+          { value: getLaunchYear(this.scheme.launchDate), label: 'Launch Year' },
+          { value: this.scheme.status, label: 'Status' },
+        ];
+        this.loading = false;
+      },
+      error: () => {
+        this.error = 'Scheme not found or failed to load.';
+        this.loading = false;
+      }
+    });
+  }
+
+  formatDate(d?: string): string {
+    return formatDate(d);
+  }
 
   setTab(tab: typeof this.activeTab): void {
     this.activeTab = tab;
   }
+
   onLogout(): void {
-    const confirmLogout = confirm('Are you sure you want to logout?');
-    if (confirmLogout) {
-      this.router.navigate(['/login']);
+    if (confirm('Are you sure you want to logout?')) {
+      this.auth.logout();
     }
   }
 }

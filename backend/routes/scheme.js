@@ -11,10 +11,44 @@ router.get('/', authenticate, async (req, res, next) => {
     if (req.query.state) filters.state = req.query.state;
     if (req.query.ministry) filters.ministry = req.query.ministry;
     if (req.query.status) filters.status = req.query.status;
-    if (req.query.q) filters.name = { $regex: req.query.q, $options: 'i' };
+    if (req.query.q) {
+      filters.$or = [
+        { name: { $regex: req.query.q, $options: 'i' } },
+        { summary: { $regex: req.query.q, $options: 'i' } },
+      ];
+    }
 
     const schemes = await Scheme.find(filters).sort({ launchDate: -1 });
     res.json({ schemes });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/compare', authenticate, async (req, res, next) => {
+  try {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: 'Scheme IDs array is required' });
+    }
+    const schemes = await Scheme.find({ _id: { $in: ids } });
+    const EligibilityRule = require('../models/eligibilityRule');
+    const rules = await EligibilityRule.find({ scheme: { $in: ids } });
+    const ruleMap = {};
+    rules.forEach((r) => { ruleMap[r.scheme.toString()] = r; });
+    res.json({ schemes, rules: ruleMap });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/:id', authenticate, async (req, res, next) => {
+  try {
+    const scheme = await Scheme.findById(req.params.id);
+    if (!scheme) {
+      return res.status(404).json({ message: 'Scheme not found' });
+    }
+    res.json({ scheme });
   } catch (err) {
     next(err);
   }

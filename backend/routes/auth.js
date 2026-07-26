@@ -6,6 +6,14 @@ const { authenticate } = require('../middleware/auth');
 
 const router = express.Router();
 
+const signToken = (userId) => {
+  return jwt.sign(
+    { id: userId },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
+  );
+};
+
 router.post('/register', async (req, res, next) => {
   try {
     const { firstName, lastName, email, password, role, organization, phone } = req.body;
@@ -29,9 +37,9 @@ router.post('/register', async (req, res, next) => {
       phone,
     });
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '24h' });
+    const token = signToken(user._id);
 
-    res.status(201).json({
+    return res.status(201).json({
       user: { id: user._id, firstName: user.firstName, lastName: user.lastName, email: user.email, role: user.role },
       token,
     });
@@ -57,9 +65,9 @@ router.post('/login', async (req, res, next) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '24h' });
+    const token = signToken(user._id);
 
-    res.json({
+    return res.json({
       user: { id: user._id, firstName: user.firstName, lastName: user.lastName, email: user.email, role: user.role },
       token,
     });

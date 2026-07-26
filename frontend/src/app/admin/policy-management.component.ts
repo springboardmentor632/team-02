@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {Router, RouterLink } from '@angular/router';
-
-interface PolicyRow { id: number; name: string; category: string; ministry: string; status: 'Pending' | 'Approved' | 'Draft'; }
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+import { PolicyService } from '../services/policy.service';
+import { Policy } from '../models/policy.model';
 
 @Component({
   selector: 'app-policy-management',
@@ -12,48 +13,86 @@ interface PolicyRow { id: number; name: string; category: string; ministry: stri
   templateUrl: './policy-management.component.html',
   styleUrl: './policy-management.component.css'
 })
-export class PolicyManagementComponent {
-  constructor(private router: Router) {}
+export class PolicyManagementComponent implements OnInit {
   showForm = false;
+  loading = true;
+  error = '';
 
-  newPolicy = { name: '', category: 'Education', ministry: '', description: '' };
+  newPolicy = { title: '', category: 'Education', ministry: '', summary: '', content: '' };
   categories = ['Education', 'Healthcare', 'Agriculture', 'Employment', 'Finance', 'Women & Child Welfare', 'Housing', 'Environment', 'Digital Governance', 'Infrastructure'];
 
-  policies: PolicyRow[] = [
-    { id: 1, name: 'Digital India 3.0', category: 'Digital Governance', ministry: 'MeitY', status: 'Pending' },
-    { id: 2, name: 'Solar Rooftop Scheme', category: 'Environment', ministry: 'MNRE', status: 'Approved' },
-    { id: 3, name: 'EV Adoption Policy', category: 'Infrastructure', ministry: 'NITI Aayog', status: 'Approved' },
-    { id: 4, name: 'Skill India 2.0', category: 'Employment', ministry: 'MSDE', status: 'Draft' }
-  ];
+  policies: Policy[] = [];
+
+  constructor(
+    private router: Router,
+    private auth: AuthService,
+    private policyService: PolicyService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadPolicies();
+  }
+
+  loadPolicies(): void {
+    this.loading = true;
+    this.policyService.getAll().subscribe({
+      next: (res) => {
+        this.policies = res.policies;
+        this.loading = false;
+      },
+      error: () => {
+        this.error = 'Failed to load policies.';
+        this.loading = false;
+      }
+    });
+  }
 
   toggleForm(): void {
     this.showForm = !this.showForm;
   }
 
   addPolicy(): void {
-    if (!this.newPolicy.name || !this.newPolicy.ministry) return;
-    this.policies.unshift({
-      id: this.policies.length + 1,
-      name: this.newPolicy.name,
+    if (!this.newPolicy.title || !this.newPolicy.ministry) return;
+    this.policyService.create({
+      title: this.newPolicy.title,
       category: this.newPolicy.category,
       ministry: this.newPolicy.ministry,
-      status: 'Draft'
+      summary: this.newPolicy.summary,
+      content: this.newPolicy.content || this.newPolicy.summary,
+      status: 'Draft',
+    }).subscribe({
+      next: () => {
+        this.newPolicy = { title: '', category: 'Education', ministry: '', summary: '', content: '' };
+        this.showForm = false;
+        this.loadPolicies();
+      },
+      error: () => { this.error = 'Failed to create policy.'; }
     });
-    this.newPolicy = { name: '', category: 'Education', ministry: '', description: '' };
-    this.showForm = false;
   }
 
-  approve(p: PolicyRow): void {
-    p.status = 'Approved';
+  approve(p: Policy): void {
+    this.policyService.update(p._id, { status: 'Active', publishedAt: new Date().toISOString() }).subscribe({
+      next: () => this.loadPolicies(),
+      error: () => { this.error = 'Failed to approve policy.'; }
+    });
   }
 
-  archive(p: PolicyRow): void {
-    this.policies = this.policies.filter(x => x.id !== p.id);
+  submitForApproval(p: Policy): void {
+    this.policyService.update(p._id, { status: 'Pending' }).subscribe({
+      next: () => this.loadPolicies(),
+    });
   }
-   onLogout(): void {
-    const confirmLogout = confirm('Are you sure you want to logout?');
-    if (confirmLogout) {
-      this.router.navigate(['/login']);
+
+  archive(p: Policy): void {
+    this.policyService.update(p._id, { status: 'Archived' }).subscribe({
+      next: () => this.loadPolicies(),
+      error: () => { this.error = 'Failed to archive policy.'; }
+    });
+  }
+
+  onLogout(): void {
+    if (confirm('Are you sure you want to logout?')) {
+      this.auth.logout();
     }
   }
 }

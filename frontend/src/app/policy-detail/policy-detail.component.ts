@@ -1,6 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+import { PolicyService } from '../services/policy.service';
+import { Policy } from '../models/policy.model';
+import { formatDate, getLaunchYear } from '../utils/helpers';
 
 @Component({
   selector: 'app-policy-detail',
@@ -9,44 +13,62 @@ import {Router, RouterLink } from '@angular/router';
   templateUrl: './policy-detail.component.html',
   styleUrl: './policy-detail.component.css'
 })
-export class PolicyDetailComponent {
-  constructor(private router: Router) {}
+export class PolicyDetailComponent implements OnInit {
   activeTab: 'overview' | 'eligibility' | 'apply' | 'documents' | 'faq' = 'overview';
+  loading = true;
+  error = '';
+  policy: Policy | null = null;
 
-  policy = {
-    name: 'Ayushman Bharat PM-JAY',
-    ministry: 'Ministry of Health & Family Welfare · Government of India',
-    status: 'Active',
-    scope: 'Central Scheme',
-    stats: [
-      { value: '₹5L', label: 'Annual Cover' },
-      { value: '10 Cr+', label: 'Families Covered' },
-      { value: '23,000+', label: 'Empanelled Hospitals' },
-      { value: '2018', label: 'Launch Year' }
-    ],
-    about: `Ayushman Bharat Pradhan Mantri Jan Arogya Yojana (PM-JAY) is the world's largest health insurance scheme, fully financed by the government, aimed at reducing catastrophic expenditure on medical treatment. The scheme provides a cover of up to ₹5 lakh per family per year for secondary and tertiary care hospitalisation at empanelled hospitals.`,
-    benefits: [
-      'Cashless & paperless hospitalisation',
-      'Pre- and post-hospitalisation expenses covered',
-      '1,929 treatment packages',
-      'Available across all states & UTs'
-    ],
-    details: {
-      policyId: 'MoH/2018/PMJAY',
-      category: 'Healthcare',
-      launchDate: '23 Sep 2018',
-      lastUpdated: 'Jan 2026',
-      implementing: 'NHA'
+  stats: { value: string; label: string }[] = [];
+
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private auth: AuthService,
+    private policyService: PolicyService
+  ) {}
+
+  ngOnInit(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) {
+      this.error = 'Policy not found';
+      this.loading = false;
+      return;
     }
-  };
+    this.policyService.getById(id).subscribe({
+      next: (res) => {
+        this.policy = res.policy;
+        this.stats = [
+          { value: this.policy.category, label: 'Category' },
+          { value: this.policy.state || 'All India', label: 'Scope' },
+          { value: getLaunchYear(this.policy.publishedAt), label: 'Launch Year' },
+          { value: this.policy.status, label: 'Status' },
+        ];
+        this.loading = false;
+      },
+      error: () => {
+        this.error = 'Policy not found or failed to load.';
+        this.loading = false;
+      }
+    });
+  }
+
+  get benefits(): string[] {
+    if (!this.policy?.tags?.length) return ['See policy overview for details'];
+    return this.policy.tags;
+  }
+
+  formatDate(d?: string): string {
+    return formatDate(d);
+  }
 
   setTab(tab: typeof this.activeTab): void {
     this.activeTab = tab;
   }
+
   onLogout(): void {
-  const confirmLogout = confirm('Are you sure you want to logout?');
-  if (confirmLogout) {
-    this.router.navigate(['/login']);
+    if (confirm('Are you sure you want to logout?')) {
+      this.auth.logout();
+    }
   }
-}
 }

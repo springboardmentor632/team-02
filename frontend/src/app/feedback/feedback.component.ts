@@ -1,7 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
-import { Router,RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+import { FeedbackService } from '../services/feedback.service';
+import { NotificationService } from '../services/notification.service';
 
 interface FAQ { q: string; a: string; open: boolean; }
 
@@ -12,13 +15,13 @@ interface FAQ { q: string; a: string; open: boolean; }
   templateUrl: './feedback.component.html',
   styleUrl: './feedback.component.css'
 })
-export class FeedbackComponent {
-  constructor(private router: Router) {}
+export class FeedbackComponent implements OnInit {
   subject = '';
   category = 'General Feedback';
   message = '';
   submitting = false;
   submitted = false;
+  error = '';
 
   categories = ['General Feedback', 'Report an Issue', 'Scheme Query', 'Technical Support', 'Other'];
 
@@ -29,6 +32,26 @@ export class FeedbackComponent {
     { q: 'Is my data secure on this platform?', a: 'Yes, all data is protected using JWT authentication and role-based access control.', open: false }
   ];
 
+  notifications: { _id: string }[] = [];
+  userName = '';
+  userLocation = '';
+
+  constructor(
+    private router: Router,
+    private auth: AuthService,
+    private feedbackService: FeedbackService,
+    private notificationService: NotificationService
+  ) {}
+
+  ngOnInit(): void {
+    this.userName = this.auth.getUserDisplayName();
+    this.userLocation = this.auth.getUserSubtitle();
+    this.notificationService.getAll().subscribe({
+      next: (res) => { this.notifications = res.notifications.filter(n => !n.read); },
+      error: () => { this.notifications = []; }
+    });
+  }
+
   toggleFaq(faq: FAQ): void {
     faq.open = !faq.open;
   }
@@ -36,21 +59,30 @@ export class FeedbackComponent {
   onSubmit(form: NgForm): void {
     if (form.invalid) return;
     this.submitting = true;
-    // TODO: real backend call — POST /feedback
-    setTimeout(() => {
-      this.submitting = false;
-      this.submitted = true;
-      form.resetForm();
-      this.category = 'General Feedback';
-    }, 900);
+    this.error = '';
+    const user = this.auth.getCurrentUser();
+    this.feedbackService.submit({
+      name: user ? `${user.firstName} ${user.lastName}` : 'Anonymous',
+      email: user?.email || '',
+      subject: `[${this.category}] ${this.subject}`,
+      message: this.message,
+    }).subscribe({
+      next: () => {
+        this.submitting = false;
+        this.submitted = true;
+        form.resetForm();
+        this.category = 'General Feedback';
+      },
+      error: () => {
+        this.submitting = false;
+        this.error = 'Failed to submit feedback. Please try again.';
+      }
+    });
   }
+
   onLogout(): void {
-    const confirmLogout = confirm('Are you sure you want to logout?');
-    if (confirmLogout) {
-      window.location.href = '/login'; // यह बिना किसी एरर के सीधा लॉगिन पेज पर भेज देगा
+    if (confirm('Are you sure you want to logout?')) {
+      this.auth.logout();
     }
   }
-notifications: any[] = [];
-userName = 'Rahul Sharma';
-userLocation = 'Citizen · Delhi';
 }

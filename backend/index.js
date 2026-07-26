@@ -20,6 +20,7 @@ const notificationRoutes = require('./routes/notification');
 const feedbackRoutes = require('./routes/feedback');
 const reportRoutes = require('./routes/report');
 const searchRoutes = require('./routes/search');
+const statsRoutes = require('./routes/stats');
 const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -42,11 +43,16 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/search', searchRoutes);
+app.use('/api/stats', statsRoutes);
 
 app.use(errorHandler);
 
 const startServer = async () => {
   try {
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET is missing from .env — auth routes will fail');
+    }
+
     await connectDB();
     app.listen(PORT, () => {
       console.log(`PolicyGPT backend listening on port ${PORT}`);

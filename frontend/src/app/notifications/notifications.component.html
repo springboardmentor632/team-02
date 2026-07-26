@@ -83,7 +83,7 @@
 </a>
 
 <a routerLink="/notifications" class="sidebar-link" routerLinkActive="active">
-  <span class="material-icons">notifications</span> Notifications <span class="badge">4</span>
+  <span class="material-icons">notifications</span> Notifications <span class="badge" *ngIf="unreadCount">{{ unreadCount }}</span>
 </a>
 
 <a routerLink="/saved-policies" class="sidebar-link" routerLinkActive="active">
@@ -128,7 +128,7 @@
         <div class="notif-body">
           <div class="notif-top">
             <h4>{{ n.title }}</h4>
-            <span class="notif-time">{{ n.time }}</span>
+            <span class="notif-time">{{ formatTime(n.sentAt) }}</span>
           </div>
           <p>{{ n.message }}</p>
         </div>

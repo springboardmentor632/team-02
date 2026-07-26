@@ -75,7 +75,7 @@
         </a>
 
         <a routerLink="/notifications" class="sidebar-link" routerLinkActive="active">
-          <span class="material-icons">notifications</span> Notifications <span class="badge">4</span>
+          <span class="material-icons">notifications</span> Notifications <span class="badge" *ngIf="notifications.length">{{ notifications.length }}</span>
         </a>
 
         <a routerLink="/saved-policies" class="sidebar-link" routerLinkActive="active">

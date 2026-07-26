@@ -1,11 +1,18 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+import { SchemeService } from '../services/scheme.service';
+import { PolicyService } from '../services/policy.service';
+import { NotificationService } from '../services/notification.service';
+import { SearchService } from '../services/search.service';
+import { getCategoryIcon } from '../utils/helpers';
 
-interface Scheme {
+interface SchemeItem {
+  id: string;
   name: string;
   dept: string;
-  status: 'Eligible' | 'Partial';
+  status: string;
   icon: string;
 }
 
@@ -22,39 +29,80 @@ interface NotifItem {
   templateUrl: './citizen-dashboard.component.html',
   styleUrl: './citizen-dashboard.component.css'
 })
-export class CitizenDashboardComponent {
-  constructor(private router: Router) {}
-
-  userName = 'Rahul Sharma';
-  userLocation = 'Citizen · Delhi';
+export class CitizenDashboardComponent implements OnInit {
+  userName = '';
+  userLocation = '';
+  userInitials = '';
 
   stats = [
-    { label: 'Eligible Schemes', value: '18', sub: '↑ 3 new this month', icon: '🎖️' },
-    { label: 'Saved Policies', value: '7', sub: 'Last saved 2 days ago', icon: '🔖' },
-    { label: 'Notifications', value: '4', sub: '2 urgent deadlines', icon: '🔔', highlight: true },
-    { label: 'Searches Made', value: '24', sub: 'This month', icon: '🔍' }
+    { label: 'Eligible Schemes', value: '—', sub: 'Active schemes available', icon: '🎖️' },
+    { label: 'Active Policies', value: '—', sub: 'Published policies', icon: '🔖' },
+    { label: 'Notifications', value: '—', sub: 'Unread alerts', icon: '🔔', highlight: false },
+    { label: 'Searches Made', value: '—', sub: 'Your recent activity', icon: '🔍' }
   ];
 
-  recommendedSchemes: Scheme[] = [
-    { name: 'PM Kisan Samman Nidhi', dept: 'Agriculture · Ministry of Agriculture', status: 'Eligible', icon: '🌾' },
-    { name: 'Ayushman Bharat PM-JAY', dept: 'Healthcare · Ministry of Health', status: 'Eligible', icon: '❤️' },
-    { name: 'PM Awas Yojana — Urban', dept: 'Housing · Ministry of Housing', status: 'Partial', icon: '🏠' },
-    { name: 'National Scholarship Portal', dept: 'Education · Ministry of Education', status: 'Eligible', icon: '🎓' }
-  ];
+  recommendedSchemes: SchemeItem[] = [];
+  notifications: NotifItem[] = [];
+  recentSearches: string[] = [];
 
-  notifications: NotifItem[] = [
-    { title: 'PM Kisan Deadline', desc: 'Application closes in 5 days', type: 'warning' },
-    { title: 'New Healthcare Scheme', desc: '3 new health policies added', type: 'success' },
-    { title: 'Policy Update', desc: 'MGNREGA wage revised upward', type: 'info' },
-    { title: 'Scholarship Deadline', desc: 'NSP closing tonight 11:59 PM', type: 'danger' }
-  ];
+  constructor(
+    private router: Router,
+    private auth: AuthService,
+    private schemeService: SchemeService,
+    private policyService: PolicyService,
+    private notificationService: NotificationService,
+    private searchService: SearchService
+  ) {}
 
-  recentSearches = ['PM Kisan', 'Housing scheme Delhi', 'Education scholarship OBC', 'MGNREGA wage 2025', 'Digital India programme', 'Startup India scheme'];
+  ngOnInit(): void {
+    this.userName = this.auth.getUserDisplayName();
+    this.userLocation = this.auth.getUserSubtitle();
+    this.userInitials = this.auth.getUserInitials();
+
+    this.schemeService.getAll({ status: 'Active' }).subscribe({
+      next: (res) => {
+        this.recommendedSchemes = res.schemes.slice(0, 4).map((s) => ({
+          id: s._id,
+          name: s.name,
+          dept: `${s.category} · ${s.ministry || 'Government of India'}`,
+          status: 'Eligible',
+          icon: getCategoryIcon(s.category),
+        }));
+        this.stats[0].value = res.schemes.length.toString();
+      }
+    });
+
+    this.policyService.getAll({ status: 'Active' }).subscribe({
+      next: (res) => {
+        this.stats[1].value = res.policies.length.toString();
+      }
+    });
+
+    this.notificationService.getAll().subscribe({
+      next: (res) => {
+        const unread = res.notifications.filter((n) => !n.read);
+        this.notifications = res.notifications.slice(0, 4).map((n) => ({
+          title: n.title,
+          desc: n.message,
+          type: n.type,
+        }));
+        this.stats[2].value = unread.length.toString();
+        this.stats[2].highlight = unread.length > 0;
+      }
+    });
+
+    this.searchService.getHistory().subscribe({
+      next: (res) => {
+        this.recentSearches = res.history.map((h) => h.query).filter(Boolean) as string[];
+        this.stats[3].value = res.history.length.toString();
+      },
+      error: () => { this.recentSearches = []; }
+    });
+  }
 
   onLogout(): void {
-    const confirmLogout = confirm('Are you sure you want to logout?');
-    if (confirmLogout) {
-      this.router.navigate(['/login']);
+    if (confirm('Are you sure you want to logout?')) {
+      this.auth.logout();
     }
   }
 }

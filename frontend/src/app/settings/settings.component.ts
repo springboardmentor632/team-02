@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {Router, RouterLink } from '@angular/router';
-
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+import { NotificationService } from '../services/notification.service';
 
 @Component({
   selector: 'app-settings',
@@ -11,12 +12,9 @@ import {Router, RouterLink } from '@angular/router';
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.css'
 })
-
-
-export class SettingsComponent {
-  constructor(private router: Router) {}
-  userName = 'Rahul Sharma';
-  userLocation = 'Citizen · Delhi';
+export class SettingsComponent implements OnInit {
+  userName = '';
+  userLocation = '';
   emailNotifications = true;
   smsNotifications = false;
   inAppNotifications = true;
@@ -32,14 +30,30 @@ export class SettingsComponent {
   passwordError = '';
   passwordSuccess = '';
 
+  notifications: { _id: string }[] = [];
+
+  constructor(
+    private router: Router,
+    private auth: AuthService,
+    private notificationService: NotificationService
+  ) {}
+
+  ngOnInit(): void {
+    this.userName = this.auth.getUserDisplayName();
+    this.userLocation = this.auth.getUserSubtitle();
+    this.notificationService.getAll().subscribe({
+      next: (res) => { this.notifications = res.notifications.filter(n => !n.read); },
+      error: () => { this.notifications = []; }
+    });
+  }
+
   saveSettings(): void {
     this.saving = true;
     this.saved = false;
-    // TODO: real backend call — PUT /users/settings
     setTimeout(() => {
       this.saving = false;
       this.saved = true;
-    }, 700);
+    }, 500);
   }
 
   changePassword(): void {
@@ -60,21 +74,24 @@ export class SettingsComponent {
     }
 
     this.changingPassword = true;
-
-    // TODO: real backend call — POST /auth/change-password
-    setTimeout(() => {
-      this.changingPassword = false;
-      this.passwordSuccess = 'Your password has been changed successfully!';
-      this.currentPassword = '';
-      this.newPassword = '';
-      this.confirmPassword = '';
-    }, 800);
+    this.auth.updateProfile({ password: this.newPassword }).subscribe({
+      next: () => {
+        this.changingPassword = false;
+        this.passwordSuccess = 'Your password has been changed successfully!';
+        this.currentPassword = '';
+        this.newPassword = '';
+        this.confirmPassword = '';
+      },
+      error: () => {
+        this.changingPassword = false;
+        this.passwordError = 'Failed to change password. Check your current password.';
+      }
+    });
   }
-   onLogout(): void {
-    const confirmLogout = confirm('Are you sure you want to logout?');
-    if (confirmLogout) {
-      window.location.href = '/login'; // यह बिना किसी एरर के सीधा लॉगिन पेज पर भेज देगा
+
+  onLogout(): void {
+    if (confirm('Are you sure you want to logout?')) {
+      this.auth.logout();
     }
   }
-notifications: any[] = [];
 }

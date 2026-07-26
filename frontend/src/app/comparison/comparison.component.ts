@@ -1,8 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+import { SchemeService } from '../services/scheme.service';
+import { NotificationService } from '../services/notification.service';
+import { Scheme, EligibilityRule } from '../models/policy.model';
+import { getCategoryIcon, getLaunchYear } from '../utils/helpers';
 
 interface SchemeCol {
+  id: string;
   name: string;
   icon: string;
   ministry: string;
@@ -18,62 +25,96 @@ interface SchemeCol {
 @Component({
   selector: 'app-comparison',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './comparison.component.html',
   styleUrl: './comparison.component.css'
 })
-export class ComparisonComponent {
-  schemes: SchemeCol[] = [
-    {
-      name: 'Ayushman Bharat',
-      icon: '❤️',
-      ministry: 'Ministry of Health',
-      launchYear: '2018',
-      benefit: '₹5 Lakh / year',
-      target: 'BPL Families',
-      incomeLimit: 'SECC Data Based',
-      applicationMode: 'Online / Hospital',
-      status: 'Active',
-      eligible: true
-    },
-    {
-      name: 'PM Kisan',
-      icon: '🌾',
-      ministry: 'Ministry of Agriculture',
-      launchYear: '2019',
-      benefit: '₹6,000 / year',
-      target: 'Small Farmers',
-      incomeLimit: 'All Farmers',
-      applicationMode: 'Online / PM Kisan Portal',
-      status: 'Active',
-      eligible: true
-    },
-    {
-      name: 'PM Awas Yojana',
-      icon: '🏠',
-      ministry: 'Ministry of Housing',
-      launchYear: '2015',
-      benefit: '₹2.67 Lakh subsidy',
-      target: 'Urban Poor / EWS',
-      incomeLimit: 'Below ₹3L / Year',
-      applicationMode: 'Online / CSC',
-      status: 'Active',
-      eligible: false
+export class ComparisonComponent implements OnInit {
+  schemes: SchemeCol[] = [];
+  allSchemes: Scheme[] = [];
+  selectedIds: string[] = [];
+  showPicker = false;
+  loading = true;
+  notifications: { _id: string }[] = [];
+  userName = '';
+  userLocation = '';
+
+  constructor(
+    private auth: AuthService,
+    private schemeService: SchemeService,
+    private notificationService: NotificationService
+  ) {}
+
+  ngOnInit(): void {
+    this.userName = this.auth.getUserDisplayName();
+    this.userLocation = this.auth.getUserSubtitle();
+    this.schemeService.getAll({ status: 'Active' }).subscribe({
+      next: (res) => {
+        this.allSchemes = res.schemes;
+        const defaultIds = res.schemes.slice(0, 3).map((s) => s._id);
+        this.loadComparison(defaultIds);
+      },
+      error: () => { this.loading = false; }
+    });
+    this.notificationService.getAll().subscribe({
+      next: (res) => { this.notifications = res.notifications.filter(n => !n.read); },
+      error: () => { this.notifications = []; }
+    });
+  }
+
+  loadComparison(ids: string[]): void {
+    if (ids.length === 0) {
+      this.schemes = [];
+      this.loading = false;
+      return;
     }
-  ];
+    this.loading = true;
+    this.schemeService.compare(ids).subscribe({
+      next: (res) => {
+        this.schemes = res.schemes.map((s) => {
+          const rule: EligibilityRule | undefined = res.rules[s._id];
+          return {
+            id: s._id,
+            name: s.name,
+            icon: getCategoryIcon(s.category),
+            ministry: s.ministry || 'Government of India',
+            launchYear: getLaunchYear(s.launchDate),
+            benefit: s.benefits?.[0] || s.summary || 'N/A',
+            target: s.eligibilityCriteria?.[0] || 'See eligibility',
+            incomeLimit: rule?.incomeLimit || 'Any',
+            applicationMode: s.applicationMode || 'Online',
+            status: s.status,
+            eligible: true,
+          };
+        });
+        this.selectedIds = ids;
+        this.loading = false;
+      },
+      error: () => { this.loading = false; }
+    });
+  }
 
   addScheme(): void {
-    // TODO: open a modal/search to add another scheme to compare
-    console.log('Add scheme clicked');
+    this.showPicker = !this.showPicker;
+  }
+
+  toggleScheme(id: string): void {
+    const idx = this.selectedIds.indexOf(id);
+    if (idx >= 0) {
+      this.selectedIds.splice(idx, 1);
+    } else if (this.selectedIds.length < 4) {
+      this.selectedIds.push(id);
+    }
+    this.loadComparison([...this.selectedIds]);
+  }
+
+  isSelected(id: string): boolean {
+    return this.selectedIds.includes(id);
   }
 
   onLogout(): void {
-    const confirmLogout = confirm('Are you sure you want to logout?');
-    if (confirmLogout) {
-      window.location.href = '/login'; // यह बिना किसी एरर के सीधा लॉगिन पेज पर भेज देगा
+    if (confirm('Are you sure you want to logout?')) {
+      this.auth.logout();
     }
   }
-notifications: any[] = [];
-userName = 'Rahul Sharma';
-userLocation = 'Citizen · Delhi';
 }

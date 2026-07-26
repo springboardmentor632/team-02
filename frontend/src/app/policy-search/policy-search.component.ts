@@ -1,19 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router,RouterLink } from '@angular/router';
-
-interface PolicyResult {
-  id: string;
-  icon: string;
-  name: string;
-  ministry: string;
-  launchYear: string;
-  desc: string;
-  tags: string[];
-  scope: 'Central' | 'State';
-  status: 'Active' | 'Archived' | 'Draft';
-}
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+import { SearchService } from '../services/search.service';
+import { NotificationService } from '../services/notification.service';
+import { SearchResult } from '../models/policy.model';
+import { getCategoryIcon, getLaunchYear } from '../utils/helpers';
 
 @Component({
   selector: 'app-policy-search',
@@ -22,89 +15,134 @@ interface PolicyResult {
   templateUrl: './policy-search.component.html',
   styleUrl: './policy-search.component.css'
 })
-export class PolicySearchComponent {
-  constructor(private router: Router) {}
-  userName = 'Rahul Sharma';
-  userLocation = 'Citizen · Delhi';
-  searchQuery = 'healthcare scheme';
+export class PolicySearchComponent implements OnInit {
+  userName = '';
+  userLocation = '';
+  userInitials = 'GU';
+  searchQuery = '';
   activeCategory = 'All Categories';
-  categories = ['All Categories', 'Healthcare', 'Agriculture', 'Education', 'Housing', 'Employment', 'Finance'];
+  categories = ['All Categories', 'Healthcare', 'Agriculture', 'Education', 'Housing', 'Employment', 'Finance', 'Digital Governance', 'Environment'];
 
-  ministryFilter = 'All Ministries';
-  stateFilter = 'All States';
-  typeFilter = 'All Types';
+  ministryFilter = '';
+  stateFilter = '';
   statusActive = true;
   statusArchived = false;
-  statusDraft = true;
+  statusDraft = false;
 
-  totalResults = 248;
-  
+  totalResults = 0;
+  results: SearchResult[] = [];
+  loading = false;
+  error = '';
+  notifications: { _id: string }[] = [];
 
-  results: PolicyResult[] = [
-    {
-      id: 'ayushman-bharat',
-      icon: '❤️',
-      name: 'Ayushman Bharat PM-JAY',
-      ministry: 'Ministry of Health & Family Welfare · Launched 2018',
-      desc: 'Provides health cover of ₹5 lakh per family per year for secondary and tertiary hospitalisation to over 10 crore poor and vulnerable families.',
-      tags: ['Healthcare', 'Insurance', 'BPL Families', 'RSBY Cover'],
-      scope: 'Central',
-      status: 'Active',
-      launchYear: '2018'
-    },
-    {
-      id: 'pmsma',
-      icon: '🤱',
-      name: 'Pradhan Mantri Surakshit Matritva Abhiyan',
-      ministry: 'Ministry of Health & Family Welfare · Launched 2016',
-      desc: 'Provides assured, comprehensive and quality antenatal care to pregnant women on the 9th of every month at government health facilities.',
-      tags: ['Maternal Health', 'Pregnant Women', 'Free Checkup'],
-      scope: 'State',
-      status: 'Active',
-      launchYear: '2016'
-    },
-    {
-      id: 'jan-aushadhi',
-      icon: '💊',
-      name: 'Jan Aushadhi Pariyojana',
-      ministry: 'Pharma & Medical Devices Bureau · Launched 2008',
-      desc: 'Aims to make quality medicines available at affordable prices, especially for poor patients through Pradhan Mantri Bhartiya Janaushadhi Kendras.',
-      tags: ['Generic Medicines', 'Affordable', 'All Citizens'],
-      scope: 'Central',
-      status: 'Active',
-      launchYear: '2008'
-    }
-  ];
+  ministries = ['Ministry of Health & Family Welfare', 'Ministry of Agriculture & Farmers Welfare', 'Ministry of Education', 'Ministry of Housing & Urban Affairs', 'Ministry of Electronics & IT'];
+  states = ['All India', 'Delhi', 'Rajasthan', 'Maharashtra', 'Uttar Pradesh'];
+
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private auth: AuthService,
+    private searchService: SearchService,
+    private notificationService: NotificationService
+  ) {}
+
+  ngOnInit(): void {
+    this.userName = this.auth.getUserDisplayName();
+    this.userLocation = this.auth.getUserSubtitle();
+    this.userInitials = this.auth.getUserInitials();
+    this.route.queryParams.subscribe((params) => {
+      if (params['q']) {
+        this.searchQuery = params['q'];
+      }
+      if (params['category']) {
+        this.activeCategory = params['category'];
+      }
+      this.onSearch();
+    });
+    this.notificationService.getAll().subscribe({
+      next: (res) => { this.notifications = res.notifications.filter(n => !n.read); },
+      error: () => { this.notifications = []; }
+    });
+  }
 
   onSearch(): void {
-    // TODO: real backend call — GET /policies/search?q=...
-    console.log('Searching for:', this.searchQuery);
+    this.loading = true;
+    this.error = '';
+    const statusList: string[] = [];
+    if (this.statusActive) statusList.push('Active');
+    if (this.statusArchived) statusList.push('Archived');
+    if (this.statusDraft) statusList.push('Draft');
+
+    this.searchService.search({
+      query: this.searchQuery || undefined,
+      category: this.activeCategory !== 'All Categories' ? this.activeCategory : undefined,
+      ministry: this.ministryFilter || undefined,
+      state: this.stateFilter && this.stateFilter !== 'All States' ? this.stateFilter : undefined,
+      status: statusList.length === 1 ? statusList[0] : undefined,
+    }).subscribe({
+      next: (res) => {
+        const policyResults: SearchResult[] = res.policies.map((p) => ({
+          id: p._id,
+          type: 'policy' as const,
+          name: p.title,
+          icon: getCategoryIcon(p.category),
+          ministry: `${p.ministry || 'Government of India'} · Launched ${getLaunchYear(p.publishedAt)}`,
+          launchYear: getLaunchYear(p.publishedAt),
+          desc: p.summary || p.content?.substring(0, 200) || '',
+          tags: p.tags || [p.category],
+          scope: p.state === 'All India' ? 'Central' : (p.state || 'Central'),
+          status: p.status,
+          category: p.category,
+        }));
+        const schemeResults: SearchResult[] = res.schemes.map((s) => ({
+          id: s._id,
+          type: 'scheme' as const,
+          name: s.name,
+          icon: getCategoryIcon(s.category),
+          ministry: `${s.ministry || 'Government of India'} · Launched ${getLaunchYear(s.launchDate)}`,
+          launchYear: getLaunchYear(s.launchDate),
+          desc: s.summary || s.details?.substring(0, 200) || '',
+          tags: s.tags || [s.category],
+          scope: s.state === 'All India' ? 'Central' : (s.state || 'Central'),
+          status: s.status,
+          category: s.category,
+        }));
+        this.results = [...policyResults, ...schemeResults];
+        this.totalResults = this.results.length;
+        this.loading = false;
+      },
+      error: () => {
+        this.error = 'Failed to load search results. Please try again.';
+        this.loading = false;
+      }
+    });
   }
 
   setCategory(cat: string): void {
     this.activeCategory = cat;
+    this.onSearch();
   }
 
   applyFilters(): void {
-    // TODO: real backend call with filters
-    console.log('Applying filters');
+    this.onSearch();
   }
 
   clearAll(): void {
-    this.ministryFilter = 'All Ministries';
-    this.stateFilter = 'All States';
-    this.typeFilter = 'All Types';
+    this.ministryFilter = '';
+    this.stateFilter = '';
     this.statusActive = true;
     this.statusArchived = false;
-    this.statusDraft = true;
+    this.statusDraft = false;
+    this.onSearch();
   }
+
+  getDetailLink(r: SearchResult): string[] {
+    return r.type === 'policy' ? ['/policy-detail', r.id] : ['/scheme-detail', r.id];
+  }
+
   onLogout(): void {
-    const confirmLogout = confirm('Are you sure you want to logout?');
-    if (confirmLogout) {
-      window.location.href = '/login'; // यह बिना किसी एरर के सीधा लॉगिन पेज पर भेज देगा
+    if (confirm('Are you sure you want to logout?')) {
+      this.auth.logout();
     }
   }
-notifications: any[] = [];
-
-
 }

@@ -3,29 +3,28 @@
   <nav class="top-navbar">
     <div class="nav-logo"><img src="logo.png" alt="logo" /></div>
     <div class="nav-links">
-      <a routerLink="/dashboard" class="nav-link">Dashboard</a>
       <a routerLink="/policy-search" class="nav-link">Policy Search</a>
-      <a routerLink="/policy-detail" class="nav-link">Policy Detail</a>
-      <a routerLink="/eligibility" class="nav-link">Eligibility Checker</a>
+      <a routerLink="/eligibility" class="nav-link">Eligibility</a>
       <a routerLink="/comparison" class="nav-link">Comparison</a>
-      <a routerLink="/admin-dashboard" class="nav-link">Admin Dashboard</a>
-      <a routerLink="/feedback" class="nav-link">feedback</a>
     </div>
-   <a (click)="onLogout()" class="nav-logout" style="cursor: pointer;">⏻ Logout</a>
+    <a (click)="onLogout()" class="nav-logout" style="cursor: pointer;">⏻ Logout</a>
   </nav>
 
   <div class="page-body">
-    <p class="breadcrumb">
+    <p class="breadcrumb" *ngIf="scheme">
       <a routerLink="/policy-search">Search</a> › <span>Schemes</span> › <span>{{ scheme.name }}</span>
     </p>
 
-    <div class="content-grid">
+    <div *ngIf="loading" class="loading-state"><p>Loading scheme...</p></div>
+    <div *ngIf="error" class="error-state"><p>{{ error }}</p></div>
+
+    <div class="content-grid" *ngIf="scheme && !loading">
       <div class="main-col">
         <div class="card">
           <div class="header-row">
             <div>
               <h1>{{ scheme.name }}</h1>
-              <p class="ministry-line">{{ scheme.ministry }}</p>
+              <p class="ministry-line">{{ scheme.ministry }} · {{ scheme.department }}</p>
             </div>
             <div class="badges">
               <span class="badge-status">{{ scheme.status }}</span>
@@ -34,7 +33,7 @@
           </div>
 
           <div class="stat-strip">
-            <div class="stat-box" *ngFor="let s of scheme.stats">
+            <div class="stat-box" *ngFor="let s of stats">
               <span class="stat-val">{{ s.value }}</span>
               <span class="stat-lbl">{{ s.label }}</span>
             </div>
@@ -44,31 +43,36 @@
             <button [class.tab-active]="activeTab==='overview'" (click)="setTab('overview')">Overview</button>
             <button [class.tab-active]="activeTab==='eligibility'" (click)="setTab('eligibility')">Eligibility</button>
             <button [class.tab-active]="activeTab==='benefits'" (click)="setTab('benefits')">Benefits</button>
-            <button [class.tab-active]="activeTab==='documents'" (click)="setTab('documents')">Documents</button>
+            <button [class.tab-active]="activeTab==='documents'" (click)="setTab('documents')">Application</button>
           </div>
 
           <div class="tab-content" *ngIf="activeTab === 'overview'">
             <h3>About this Scheme</h3>
-            <p>{{ scheme.about }}</p>
+            <p>{{ scheme.summary || scheme.details }}</p>
+            <p *ngIf="scheme.details && scheme.summary">{{ scheme.details }}</p>
           </div>
 
           <div class="tab-content" *ngIf="activeTab === 'eligibility'">
             <h3>Eligibility Criteria</h3>
             <ul>
-              <li *ngFor="let e of scheme.eligibility">{{ e }}</li>
+              <li *ngFor="let e of scheme.eligibilityCriteria">{{ e }}</li>
+              <li *ngIf="!scheme.eligibilityCriteria?.length">See scheme overview for eligibility details.</li>
             </ul>
           </div>
 
           <div class="tab-content" *ngIf="activeTab === 'benefits'">
             <h3>Benefits</h3>
-            <p>₹6,000 per year, disbursed in three equal installments of ₹2,000 every four months directly into the beneficiary's bank account.</p>
+            <ul>
+              <li *ngFor="let b of scheme.benefits">{{ b }}</li>
+              <li *ngIf="!scheme.benefits?.length">Benefits information not available.</li>
+            </ul>
           </div>
 
           <div class="tab-content" *ngIf="activeTab === 'documents'">
-            <h3>Required Documents</h3>
-            <ul>
-              <li *ngFor="let d of scheme.documents">{{ d }}</li>
-            </ul>
+            <h3>How to Apply</h3>
+            <p>Application Mode: {{ scheme.applicationMode || 'Online' }}</p>
+            <p>State: {{ scheme.state || 'All India' }}</p>
+            <p>Launch Date: {{ formatDate(scheme.launchDate) }}</p>
           </div>
         </div>
       </div>
@@ -76,20 +80,16 @@
       <div class="side-col">
         <div class="card action-card">
           <h3>Quick Actions</h3>
-          <button class="btn-action btn-fill">⇗ Apply Online</button>
-          <button class="btn-action btn-outline-light">🔖 Save Scheme</button>
-          <button class="btn-action btn-outline-light">⬇ Download PDF</button>
-        </div>
-
-        <div class="card">
-          <h3>Check Eligibility</h3>
-          <p class="side-note">See if you qualify for this scheme in under 2 minutes.</p>
-          <a routerLink="/eligibility" class="btn-action btn-fill">✓ Check Now</a>
-        </div>
-
-        <div class="card">
-          <h3>Compare Scheme</h3>
+          <a routerLink="/eligibility" class="btn-action btn-fill">✓ Check Eligibility</a>
           <a routerLink="/comparison" class="btn-action btn-outline-dark">⇄ Add to Compare</a>
+        </div>
+
+        <div class="card">
+          <h3>Scheme Details</h3>
+          <div class="detail-row"><span>Category</span><span class="tag">{{ scheme.category }}</span></div>
+          <div class="detail-row"><span>Launch Date</span><strong>{{ formatDate(scheme.launchDate) }}</strong></div>
+          <div class="detail-row"><span>Status</span><strong>{{ scheme.status }}</strong></div>
+          <div class="detail-row"><span>Application</span><strong>{{ scheme.applicationMode || 'Online' }}</strong></div>
         </div>
       </div>
     </div>

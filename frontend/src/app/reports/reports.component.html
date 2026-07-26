@@ -77,7 +77,7 @@
 </a>
 
 <a routerLink="/notifications" class="sidebar-link" routerLinkActive="active">
-  <span class="material-icons">notifications</span> Notifications <span class="badge">4</span>
+  <span class="material-icons">notifications</span> Notifications <span class="badge" *ngIf="notifications.length">{{ notifications.length }}</span>
 </a>
 
 <a routerLink="/saved-policies" class="sidebar-link" routerLinkActive="active">
@@ -117,14 +117,16 @@
     </div>
 
     <div class="card">
-      <table class="report-table" *ngIf="filteredReports.length > 0">
+      <p *ngIf="loading">Loading reports...</p>
+      <table class="report-table" *ngIf="!loading && filteredReports.length > 0">
         <thead>
-          <tr><th>Report Name</th><th>Category</th><th>Generated On</th><th>Format</th><th></th></tr>
+          <tr><th>Report Name</th><th>Category</th><th>Summary</th><th>Generated On</th><th>Format</th><th></th></tr>
         </thead>
         <tbody>
           <tr *ngFor="let r of filteredReports">
             <td>{{ r.name }}</td>
             <td><span class="scheme-badge">{{ r.category }}</span></td>
+            <td>{{ r.value }}</td>
             <td>{{ r.generatedOn }}</td>
             <td>{{ r.format }}</td>
             <td><button class="btn-outline btn-sm" (click)="downloadReport(r)">Download</button></td>
@@ -132,7 +134,7 @@
         </tbody>
       </table>
 
-      <div class="empty-state" *ngIf="filteredReports.length === 0">
+      <div class="empty-state" *ngIf="!loading && filteredReports.length === 0">
         <p>No reports found for this category.</p>
       </div>
     </div>

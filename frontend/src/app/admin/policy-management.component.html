@@ -4,11 +4,8 @@
     <div class="nav-logo"><img src="logo.png" alt="logo" /></div>
     <div class="nav-links">
       <a routerLink="/admin-dashboard" class="nav-link">Dashboard</a>
-      <a routerLink="/policy-search" class="nav-link">Policy Search</a>
-      <a routerLink="/policy-detail" class="nav-link">Policy Detail</a>
-      <a routerLink="/eligibility" class="nav-link">Eligibility Checker</a>
-      <a routerLink="/comparison" class="nav-link">Comparison</a>
-      <a routerLink="/admin-dashboard" class="nav-link active">Admin Dashboard</a>
+      <a routerLink="/admin/policies" class="nav-link active">Policies</a>
+      <a routerLink="/admin/schemes" class="nav-link">Schemes</a>
     </div>
     <a (click)="onLogout()" class="nav-logout" style="cursor: pointer;">⏻ Logout</a>
   </nav>
@@ -22,12 +19,14 @@
       <button class="btn-primary" (click)="toggleForm()">{{ showForm ? '✕ Close' : '+ Upload Policy' }}</button>
     </div>
 
+    <p *ngIf="error" class="error-msg">{{ error }}</p>
+
     <div class="card form-card" *ngIf="showForm">
       <h3>New Policy</h3>
       <div class="form-grid">
         <div class="field-group">
-          <label>Policy Name</label>
-          <input type="text" [(ngModel)]="newPolicy.name" placeholder="e.g. Digital India 4.0" />
+          <label>Policy Title</label>
+          <input type="text" [(ngModel)]="newPolicy.title" placeholder="e.g. Digital India 4.0" />
         </div>
         <div class="field-group">
           <label>Category</label>
@@ -41,27 +40,32 @@
         </div>
       </div>
       <div class="field-group">
-        <label>Description</label>
-        <textarea rows="3" [(ngModel)]="newPolicy.description" placeholder="Brief description of the policy..."></textarea>
+        <label>Summary</label>
+        <textarea rows="3" [(ngModel)]="newPolicy.summary" placeholder="Brief description of the policy..."></textarea>
       </div>
       <button class="btn-primary" (click)="addPolicy()">Save Policy</button>
     </div>
 
     <div class="card">
-      <table class="admin-table">
+      <p *ngIf="loading">Loading policies...</p>
+      <table class="admin-table" *ngIf="!loading">
         <thead>
           <tr><th>Policy Name</th><th>Category</th><th>Ministry</th><th>Status</th><th>Actions</th></tr>
         </thead>
         <tbody>
           <tr *ngFor="let p of policies">
-            <td>{{ p.name }}</td>
+            <td>{{ p.title }}</td>
             <td><span class="tag">{{ p.category }}</span></td>
             <td>{{ p.ministry }}</td>
             <td><span class="status-pill" [class]="'pill-' + p.status.toLowerCase()">{{ p.status }}</span></td>
             <td class="action-cell">
-              <button class="btn-small" *ngIf="p.status !== 'Approved'" (click)="approve(p)">Approve</button>
-              <button class="btn-small btn-danger" (click)="archive(p)">Archive</button>
+              <button class="btn-small" *ngIf="p.status === 'Draft'" (click)="submitForApproval(p)">Submit</button>
+              <button class="btn-small" *ngIf="p.status === 'Pending'" (click)="approve(p)">Approve</button>
+              <button class="btn-small btn-danger" *ngIf="p.status !== 'Archived'" (click)="archive(p)">Archive</button>
             </td>
+          </tr>
+          <tr *ngIf="policies.length === 0">
+            <td colspan="5">No policies found. Create one using the Upload button.</td>
           </tr>
         </tbody>
       </table>

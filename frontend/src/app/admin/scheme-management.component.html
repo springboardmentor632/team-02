@@ -4,11 +4,8 @@
     <div class="nav-logo"><img src="logo.png" alt="logo" /></div>
     <div class="nav-links">
       <a routerLink="/admin-dashboard" class="nav-link">Dashboard</a>
-      <a routerLink="/policy-search" class="nav-link">Policy Search</a>
-      <a routerLink="/policy-detail" class="nav-link">Policy Detail</a>
-      <a routerLink="/eligibility" class="nav-link">Eligibility Checker</a>
-      <a routerLink="/comparison" class="nav-link">Comparison</a>
-      <a routerLink="/admin-dashboard" class="nav-link active">Admin Dashboard</a>
+      <a routerLink="/admin/policies" class="nav-link">Policies</a>
+      <a routerLink="/admin/schemes" class="nav-link active">Schemes</a>
     </div>
     <a (click)="onLogout()" class="nav-logout" style="cursor: pointer;">⏻ Logout</a>
   </nav>
@@ -17,17 +14,19 @@
     <div class="page-header">
       <div>
         <h1>Scheme Management</h1>
-        <p>Register, update, and manage public welfare schemes</p>
+        <p>Register, manage, and activate public welfare schemes</p>
       </div>
-      <button class="btn-primary" (click)="toggleForm()">{{ showForm ? '✕ Close' : '+ Register Scheme' }}</button>
+      <button class="btn-primary" (click)="toggleForm()">{{ showForm ? '✕ Close' : '+ Add Scheme' }}</button>
     </div>
+
+    <p *ngIf="error" class="error-msg">{{ error }}</p>
 
     <div class="card form-card" *ngIf="showForm">
       <h3>New Scheme</h3>
       <div class="form-grid">
         <div class="field-group">
           <label>Scheme Name</label>
-          <input type="text" [(ngModel)]="newScheme.name" placeholder="e.g. Startup India Seed Fund" />
+          <input type="text" [(ngModel)]="newScheme.name" placeholder="e.g. PM Kisan" />
         </div>
         <div class="field-group">
           <label>Category</label>
@@ -36,15 +35,24 @@
           </select>
         </div>
         <div class="field-group">
-          <label>Benefit</label>
-          <input type="text" [(ngModel)]="newScheme.benefit" placeholder="e.g. Up to ₹20 lakh" />
+          <label>Ministry</label>
+          <input type="text" [(ngModel)]="newScheme.ministry" placeholder="e.g. Ministry of Agriculture" />
         </div>
+        <div class="field-group">
+          <label>Key Benefit</label>
+          <input type="text" [(ngModel)]="newScheme.benefit" placeholder="e.g. ₹6,000/year" />
+        </div>
+      </div>
+      <div class="field-group">
+        <label>Summary</label>
+        <textarea rows="2" [(ngModel)]="newScheme.summary" placeholder="Brief description..."></textarea>
       </div>
       <button class="btn-primary" (click)="addScheme()">Save Scheme</button>
     </div>
 
     <div class="card">
-      <table class="admin-table">
+      <p *ngIf="loading">Loading schemes...</p>
+      <table class="admin-table" *ngIf="!loading">
         <thead>
           <tr><th>Scheme Name</th><th>Category</th><th>Benefit</th><th>Status</th><th>Actions</th></tr>
         </thead>
@@ -52,12 +60,15 @@
           <tr *ngFor="let s of schemes">
             <td>{{ s.name }}</td>
             <td><span class="tag">{{ s.category }}</span></td>
-            <td>{{ s.benefit }}</td>
+            <td>{{ s.benefits?.[0] || s.summary }}</td>
             <td><span class="status-pill" [class]="'pill-' + s.status.toLowerCase()">{{ s.status }}</span></td>
             <td class="action-cell">
               <button class="btn-small" *ngIf="s.status !== 'Active'" (click)="activate(s)">Activate</button>
-              <button class="btn-small btn-danger" (click)="archive(s)">Archive</button>
+              <button class="btn-small btn-danger" *ngIf="s.status !== 'Archived'" (click)="archive(s)">Archive</button>
             </td>
+          </tr>
+          <tr *ngIf="schemes.length === 0">
+            <td colspan="5">No schemes found. Create one using the Add button.</td>
           </tr>
         </tbody>
       </table>

@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router,RouterLink } from '@angular/router';
-
-interface SchemeRow { id: number; name: string; category: string; benefit: string; status: 'Active' | 'Draft' | 'Archived'; }
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+import { SchemeService } from '../services/scheme.service';
+import { Scheme } from '../models/policy.model';
 
 @Component({
   selector: 'app-scheme-management',
@@ -12,17 +13,39 @@ interface SchemeRow { id: number; name: string; category: string; benefit: strin
   templateUrl: './scheme-management.component.html',
   styleUrl: './scheme-management.component.css'
 })
-export class SchemeManagementComponent {
-  constructor(private router: Router) {}
+export class SchemeManagementComponent implements OnInit {
   showForm = false;
-  newScheme = { name: '', category: 'Scholarships', benefit: '' };
+  loading = true;
+  error = '';
+
+  newScheme = { name: '', category: 'Scholarships', summary: '', benefit: '', ministry: '', applicationMode: 'Online' };
   categories = ['Scholarships', 'Farmer Welfare', 'Healthcare', 'Housing', 'Business Support', 'Women Empowerment', 'Senior Citizen Welfare', 'Student Schemes', 'Employment Programs', 'Social Security'];
 
-  schemes: SchemeRow[] = [
-    { id: 1, name: 'PM Kisan Samman Nidhi', category: 'Farmer Welfare', benefit: '₹6,000/year', status: 'Active' },
-    { id: 2, name: 'National Scholarship Portal', category: 'Scholarships', benefit: 'Up to ₹12,000/year', status: 'Active' },
-    { id: 3, name: 'Stand Up India', category: 'Business Support', benefit: '₹10L - ₹1Cr loan', status: 'Draft' }
-  ];
+  schemes: Scheme[] = [];
+
+  constructor(
+    private router: Router,
+    private auth: AuthService,
+    private schemeService: SchemeService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadSchemes();
+  }
+
+  loadSchemes(): void {
+    this.loading = true;
+    this.schemeService.getAll().subscribe({
+      next: (res) => {
+        this.schemes = res.schemes;
+        this.loading = false;
+      },
+      error: () => {
+        this.error = 'Failed to load schemes.';
+        this.loading = false;
+      }
+    });
+  }
 
   toggleForm(): void {
     this.showForm = !this.showForm;
@@ -30,28 +53,39 @@ export class SchemeManagementComponent {
 
   addScheme(): void {
     if (!this.newScheme.name || !this.newScheme.benefit) return;
-    this.schemes.unshift({
-      id: this.schemes.length + 1,
+    this.schemeService.create({
       name: this.newScheme.name,
       category: this.newScheme.category,
-      benefit: this.newScheme.benefit,
-      status: 'Draft'
+      summary: this.newScheme.summary,
+      benefits: [this.newScheme.benefit],
+      ministry: this.newScheme.ministry,
+      applicationMode: this.newScheme.applicationMode,
+      status: 'Draft',
+    }).subscribe({
+      next: () => {
+        this.newScheme = { name: '', category: 'Scholarships', summary: '', benefit: '', ministry: '', applicationMode: 'Online' };
+        this.showForm = false;
+        this.loadSchemes();
+      },
+      error: () => { this.error = 'Failed to create scheme.'; }
     });
-    this.newScheme = { name: '', category: 'Scholarships', benefit: '' };
-    this.showForm = false;
   }
 
-  activate(s: SchemeRow): void {
-    s.status = 'Active';
+  activate(s: Scheme): void {
+    this.schemeService.update(s._id, { status: 'Active', launchDate: new Date().toISOString() }).subscribe({
+      next: () => this.loadSchemes(),
+    });
   }
 
-  archive(s: SchemeRow): void {
-    s.status = 'Archived';
+  archive(s: Scheme): void {
+    this.schemeService.update(s._id, { status: 'Archived' }).subscribe({
+      next: () => this.loadSchemes(),
+    });
   }
+
   onLogout(): void {
-    const confirmLogout = confirm('Are you sure you want to logout?');
-    if (confirmLogout) {
-      this.router.navigate(['/login']);
+    if (confirm('Are you sure you want to logout?')) {
+      this.auth.logout();
     }
   }
 }

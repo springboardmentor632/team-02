@@ -48,7 +48,7 @@
   <div class="dashboard-layout" style="display: flex; min-height: calc(100vh - 60px);">
     <aside class="sidebar">
       <div class="sidebar-user">
-        <div class="avatar">RS</div>
+        <div class="avatar">{{ userInitials }}</div>
         <div>
           <div class="user-name">{{userName}} </div>
           <div class="user-sub">{{userLocation }}</div>
@@ -77,7 +77,7 @@
 </a>
 
 <a routerLink="/notifications" class="sidebar-link" routerLinkActive="active">
-  <span class="material-icons">notifications</span> Notifications <span class="badge">4</span>
+  <span class="material-icons">notifications</span> Notifications <span class="badge" *ngIf="notifications.length">{{ notifications.length }}</span>
 </a>
 
 <a routerLink="/saved-policies" class="sidebar-link" routerLinkActive="active">
@@ -126,30 +126,16 @@
       <div class="filter-group">
         <label>Ministry / Department</label>
         <select [(ngModel)]="ministryFilter">
-          <option>All Ministries</option>
-          <option>Ministry of Health & Family Welfare</option>
-          <option>Ministry of Agriculture</option>
-          <option>Ministry of Education</option>
+          <option value="">All Ministries</option>
+          <option *ngFor="let m of ministries" [value]="m">{{ m }}</option>
         </select>
       </div>
 
       <div class="filter-group">
         <label>State</label>
         <select [(ngModel)]="stateFilter">
-          <option>All States</option>
-          <option>Delhi</option>
-          <option>Rajasthan</option>
-          <option>Maharashtra</option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label>Policy Type</label>
-        <select [(ngModel)]="typeFilter">
-          <option>All Types</option>
-          <option>Scheme</option>
-          <option>Regulation</option>
-          <option>Circular</option>
+          <option value="">All States</option>
+          <option *ngFor="let s of states" [value]="s">{{ s }}</option>
         </select>
       </div>
 
@@ -179,7 +165,9 @@
     <!-- RESULTS -->
     <main class="results-panel">
       <div class="results-header">
-        <p>Showing <strong>{{ totalResults }}</strong> results for "{{ searchQuery }}"</p>
+        <p *ngIf="!loading">Showing <strong>{{ totalResults }}</strong> results<span *ngIf="searchQuery"> for "{{ searchQuery }}"</span></p>
+        <p *ngIf="loading">Searching...</p>
+        <p *ngIf="error" class="error-msg">{{ error }}</p>
         <select class="sort-select">
           <option>Sort: Most Relevant</option>
           <option>Sort: Newest First</option>
@@ -195,6 +183,7 @@
             <div class="result-badges">
               <span class="badge-status">{{ r.status }}</span>
               <span class="badge-scope">{{ r.scope }}</span>
+              <span class="badge-scope">{{ r.type }}</span>
             </div>
           </div>
           <p class="result-ministry">{{ r.ministry }}</p>
@@ -204,9 +193,12 @@
           </div>
         </div>
         <div class="result-actions">
-          <a [routerLink]="['/policy-detail']" class="btn-view">View Details</a>
-          <button class="btn-save">🔖 Save</button>
+          <a [routerLink]="getDetailLink(r)" class="btn-view">View Details</a>
         </div>
+      </div>
+
+      <div class="empty-state" *ngIf="!loading && results.length === 0">
+        <p>No policies or schemes found. Try adjusting your search or filters.</p>
       </div>
     </main>
   </div>

@@ -45,4 +45,15 @@ router.post('/', authenticate, async (req, res, next) => {
   }
 });
 
+router.get('/history', authenticate, async (req, res, next) => {
+  try {
+    const history = await SearchHistory.find({ user: req.user._id })
+      .sort({ searchedAt: -1 })
+      .limit(10);
+    res.json({ history });
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;

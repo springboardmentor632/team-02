@@ -75,7 +75,7 @@
         </a>
 
         <a routerLink="/notifications" class="sidebar-link" routerLinkActive="active">
-          <span class="material-icons">notifications</span> Notifications <span class="badge">4</span>
+          <span class="material-icons">notifications</span> Notifications <span class="badge" *ngIf="notifications.length">{{ notifications.length }}</span>
         </a>
 
         <a routerLink="/saved-policies" class="sidebar-link" routerLinkActive="active">
@@ -101,10 +101,25 @@
         <h1>Scheme Comparison</h1>
         <p>Compare government schemes side-by-side to find what suits you best</p>
       </div>
-      <button class="btn-primary" (click)="addScheme()">+ Add Scheme</button>
+      <button class="btn-primary" (click)="addScheme()">{{ showPicker ? 'Done Selecting' : '+ Add Scheme' }}</button>
     </div>
 
-    <div class="compare-table-wrap">
+    <div class="scheme-picker card" *ngIf="showPicker">
+      <h3>Select schemes to compare (max 4)</h3>
+      <div class="picker-grid">
+        <button
+          *ngFor="let s of allSchemes"
+          class="picker-chip"
+          [class.selected]="isSelected(s._id)"
+          (click)="toggleScheme(s._id)">
+          {{ s.name }}
+        </button>
+      </div>
+    </div>
+
+    <p *ngIf="loading">Loading comparison...</p>
+
+    <div class="compare-table-wrap" *ngIf="!loading && schemes.length > 0">
       <table class="compare-table">
         <thead>
           <tr>
@@ -154,13 +169,15 @@
           <tr class="action-row">
             <td></td>
             <td *ngFor="let s of schemes">
-              <button class="btn-cell" [class.btn-cell-primary]="s.eligible" [class.btn-cell-outline]="!s.eligible">
-                {{ s.eligible ? 'Apply Now' : 'View Details' }}
-              </button>
+              <a [routerLink]="['/scheme-detail', s.id]" class="btn-cell btn-cell-primary">View Details</a>
             </td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="empty-state" *ngIf="!loading && schemes.length === 0">
+      <p>No schemes selected for comparison. Click "+ Add Scheme" to choose schemes.</p>
     </div>
   </div>
 </div>
