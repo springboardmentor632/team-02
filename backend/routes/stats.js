@@ -33,6 +33,9 @@ router.get('/', async (req, res, next) => {
       ...trendingSchemes.map((s) => s.name),
     ].slice(0, 6);
 
+    // Disable caching so Angular always gets fresh counts (prevents 304 empty body issues)
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.set('Pragma', 'no-cache');
     res.json({
       stats: {
         policies: policyCount,        // active policies

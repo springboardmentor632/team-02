@@ -112,6 +112,19 @@ export class AuthService {
     return `${user.role}${user.organization ? ' · ' + user.organization : ''}`;
   }
 
+  getUserRole(): string {
+    const user = this.getCurrentUser();
+    if (!user) return 'citizen';
+    switch (user.role) {
+      case 'Administrator': return 'admin';
+      case 'Government Official': return 'government';
+      case 'Citizen': return 'citizen';
+      case 'Researcher': return 'citizen';
+      case 'Organization': return 'citizen';
+      default: return 'citizen';
+    }
+  }
+
   navigateByRole(role: string | undefined): void {
     switch (role) {
       case 'Citizen':

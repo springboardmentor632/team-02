@@ -1,9 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { SchemeService } from '../services/scheme.service';
-import { PolicyService } from '../services/policy.service';
 import { NotificationService } from '../services/notification.service';
 import { SearchService } from '../services/search.service';
 import { StatsService } from '../services/stats.service';
@@ -23,6 +22,14 @@ interface NotifItem {
   type: 'warning' | 'success' | 'info' | 'danger';
 }
 
+interface StatCard {
+  label: string;
+  value: string;
+  sub: string;
+  icon: string;
+  highlight?: boolean;
+}
+
 @Component({
   selector: 'app-citizen-dashboard',
   standalone: true,
@@ -35,7 +42,13 @@ export class CitizenDashboardComponent implements OnInit {
   userLocation = '';
   userInitials = '';
 
-  stats = [
+  eligibleSchemes = '—';
+  activePolicies = '—';
+  notificationCount = '—';
+  searchCount = '—';
+  notificationHighlight = false;
+
+  stats: StatCard[] = [
     { label: 'Eligible Schemes', value: '—', sub: 'Active schemes available', icon: '🎖️' },
     { label: 'Active Policies', value: '—', sub: 'Published policies', icon: '🔖' },
     { label: 'Notifications', value: '—', sub: 'Unread alerts', icon: '🔔', highlight: false },
@@ -50,10 +63,10 @@ export class CitizenDashboardComponent implements OnInit {
     private router: Router,
     private auth: AuthService,
     private schemeService: SchemeService,
-    private policyService: PolicyService,
     private notificationService: NotificationService,
     private searchService: SearchService,
-    private statsService: StatsService
+    private statsService: StatsService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -61,16 +74,22 @@ export class CitizenDashboardComponent implements OnInit {
     this.userLocation = this.auth.getUserSubtitle();
     this.userInitials = this.auth.getUserInitials();
 
-    // Use public stats endpoint for policy & scheme counts
+    // ---- STATS: uses public endpoint, no auth needed ----
     this.statsService.getPlatformStats().subscribe({
       next: (res) => {
-        this.stats[0].value = res.stats.schemes.toString();
-        this.stats[1].value = res.stats.policies.toString();
+        // Replace the entire array to guarantee change detection fires
+        this.stats = [
+          { label: 'Eligible Schemes', value: String(res.stats.schemes), sub: 'Active schemes available', icon: '🎖️' },
+          { label: 'Active Policies', value: String(res.stats.policies), sub: 'Published policies', icon: '🔖' },
+          { label: 'Notifications', value: '—', sub: 'Unread alerts', icon: '🔔', highlight: false },
+          { label: 'Searches Made', value: '—', sub: 'Your recent activity', icon: '🔍' }
+        ];
+        this.cdr.markForCheck();
       },
-      error: (err) => console.error('Stats load error:', err)
+      error: (err) => console.error('[CitizenDashboard] Stats error:', err)
     });
 
-    // Load recommended schemes (display purposes)
+    // ---- SCHEMES: load recommended schemes list ----
     this.schemeService.getAll({ status: 'Active' }).subscribe({
       next: (res) => {
         this.recommendedSchemes = res.schemes.slice(0, 4).map((s) => ({
@@ -80,11 +99,12 @@ export class CitizenDashboardComponent implements OnInit {
           status: 'Eligible',
           icon: getCategoryIcon(s.category),
         }));
+        this.cdr.markForCheck();
       },
-      error: (err) => console.error('Schemes load error:', err)
+      error: (err) => console.error('[CitizenDashboard] Schemes error:', err)
     });
 
-    // Load notifications
+    // ---- NOTIFICATIONS ----
     this.notificationService.getAll().subscribe({
       next: (res) => {
         const unread = res.notifications.filter((n) => !n.read);
@@ -93,24 +113,34 @@ export class CitizenDashboardComponent implements OnInit {
           desc: n.message,
           type: n.type,
         }));
-        this.stats[2].value = unread.length.toString();
-        this.stats[2].highlight = unread.length > 0;
+        // Update notification count in stats array
+        this.stats = this.stats.map((s, i) =>
+          i === 2
+            ? { ...s, value: String(unread.length), highlight: unread.length > 0 }
+            : s
+        );
+        this.cdr.markForCheck();
       },
       error: (err) => {
-        console.error('Notifications load error:', err);
-        this.stats[2].value = '0';
+        console.error('[CitizenDashboard] Notifications error:', err);
+        this.stats = this.stats.map((s, i) => i === 2 ? { ...s, value: '0' } : s);
+        this.cdr.markForCheck();
       }
     });
 
-    // Load search history
+    // ---- SEARCH HISTORY ----
     this.searchService.getHistory().subscribe({
       next: (res) => {
-        this.recentSearches = res.history.map((h) => h.query).filter(Boolean) as string[];
-        this.stats[3].value = res.history.length.toString();
+        this.recentSearches = (res.history || []).map((h) => h.query).filter(Boolean) as string[];
+        this.stats = this.stats.map((s, i) =>
+          i === 3 ? { ...s, value: String(res.history.length) } : s
+        );
+        this.cdr.markForCheck();
       },
       error: () => {
         this.recentSearches = [];
-        this.stats[3].value = '0';
+        this.stats = this.stats.map((s, i) => i === 3 ? { ...s, value: '0' } : s);
+        this.cdr.markForCheck();
       }
     });
   }
