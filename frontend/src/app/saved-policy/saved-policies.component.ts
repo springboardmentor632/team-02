@@ -55,7 +55,6 @@ export class SavedPoliciesComponent implements OnInit {
   loadSavedPolicies(): void {
     this.loading = true;
     this.error = '';
-    // NOTE: yeh method name apne PolicyService ke actual method se match karo
     this.policyService.getSavedPolicies().subscribe({
       next: (res: { saved: any[]; }) => {
         this.savedItems = res.saved.map((item: any) => ({
@@ -78,13 +77,14 @@ export class SavedPoliciesComponent implements OnInit {
   }
 
   removeSaved(item: SavedItem): void {
-    // unsavePolicy does not return an Observable; call it and update UI optimistically
-    try {
-      this.policyService.unsavePolicy(item.id);
-    } catch (e) {
-      // ignore errors from void-returning implementation
-    }
-    this.savedItems = this.savedItems.filter(s => s.id !== item.id);
+    this.policyService.unsavePolicy(item.id).subscribe({
+      next: () => {
+        this.savedItems = this.savedItems.filter(s => s.id !== item.id);
+      },
+      error: () => {
+        this.error = 'Failed to remove saved policy. Please try again.';
+      }
+    });
   }
 
   getDetailLink(item: SavedItem): string[] {
