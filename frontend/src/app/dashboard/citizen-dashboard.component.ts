@@ -6,6 +6,7 @@ import { SchemeService } from '../services/scheme.service';
 import { PolicyService } from '../services/policy.service';
 import { NotificationService } from '../services/notification.service';
 import { SearchService } from '../services/search.service';
+import { StatsService } from '../services/stats.service';
 import { getCategoryIcon } from '../utils/helpers';
 
 interface SchemeItem {
@@ -51,7 +52,8 @@ export class CitizenDashboardComponent implements OnInit {
     private schemeService: SchemeService,
     private policyService: PolicyService,
     private notificationService: NotificationService,
-    private searchService: SearchService
+    private searchService: SearchService,
+    private statsService: StatsService
   ) {}
 
   ngOnInit(): void {
@@ -59,6 +61,16 @@ export class CitizenDashboardComponent implements OnInit {
     this.userLocation = this.auth.getUserSubtitle();
     this.userInitials = this.auth.getUserInitials();
 
+    // Use public stats endpoint for policy & scheme counts
+    this.statsService.getPlatformStats().subscribe({
+      next: (res) => {
+        this.stats[0].value = res.stats.schemes.toString();
+        this.stats[1].value = res.stats.policies.toString();
+      },
+      error: (err) => console.error('Stats load error:', err)
+    });
+
+    // Load recommended schemes (display purposes)
     this.schemeService.getAll({ status: 'Active' }).subscribe({
       next: (res) => {
         this.recommendedSchemes = res.schemes.slice(0, 4).map((s) => ({
@@ -68,16 +80,11 @@ export class CitizenDashboardComponent implements OnInit {
           status: 'Eligible',
           icon: getCategoryIcon(s.category),
         }));
-        this.stats[0].value = res.schemes.length.toString();
-      }
+      },
+      error: (err) => console.error('Schemes load error:', err)
     });
 
-    this.policyService.getAll({ status: 'Active' }).subscribe({
-      next: (res) => {
-        this.stats[1].value = res.policies.length.toString();
-      }
-    });
-
+    // Load notifications
     this.notificationService.getAll().subscribe({
       next: (res) => {
         const unread = res.notifications.filter((n) => !n.read);
@@ -88,15 +95,23 @@ export class CitizenDashboardComponent implements OnInit {
         }));
         this.stats[2].value = unread.length.toString();
         this.stats[2].highlight = unread.length > 0;
+      },
+      error: (err) => {
+        console.error('Notifications load error:', err);
+        this.stats[2].value = '0';
       }
     });
 
+    // Load search history
     this.searchService.getHistory().subscribe({
       next: (res) => {
         this.recentSearches = res.history.map((h) => h.query).filter(Boolean) as string[];
         this.stats[3].value = res.history.length.toString();
       },
-      error: () => { this.recentSearches = []; }
+      error: () => {
+        this.recentSearches = [];
+        this.stats[3].value = '0';
+      }
     });
   }
 

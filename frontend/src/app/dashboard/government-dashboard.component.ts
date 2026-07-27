@@ -5,6 +5,7 @@ import { AuthService } from '../services/auth.service';
 import { PolicyService } from '../services/policy.service';
 import { SchemeService } from '../services/scheme.service';
 import { NotificationService } from '../services/notification.service';
+import { StatsService } from '../services/stats.service';
 
 @Component({
   selector: 'app-government-dashboard',
@@ -37,7 +38,8 @@ export class GovernmentDashboardComponent implements OnInit {
     private auth: AuthService,
     private policyService: PolicyService,
     private schemeService: SchemeService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private statsService: StatsService
   ) {}
 
   ngOnInit(): void {
@@ -45,9 +47,19 @@ export class GovernmentDashboardComponent implements OnInit {
     this.officialName = this.auth.getUserDisplayName();
     this.department = user?.organization || 'Government of India';
 
+    // Use the public stats endpoint for counts (no auth needed)
+    this.statsService.getPlatformStats().subscribe({
+      next: (res) => {
+        this.stats[0].value = res.stats.policies.toString();
+        this.stats[1].value = res.stats.schemes.toString();
+        this.stats[2].value = (res.stats.pendingPolicies ?? 0).toString();
+      },
+      error: (err) => console.error('Stats load error:', err)
+    });
+
+    // Load active policies for dept breakdown table
     this.policyService.getAll({ status: 'Active' }).subscribe({
       next: (res) => {
-        this.stats[0].value = res.policies.length.toString();
         const deptMap: Record<string, number> = {};
         res.policies.forEach((p) => {
           const dept = p.department || p.ministry || 'Other';
@@ -59,26 +71,23 @@ export class GovernmentDashboardComponent implements OnInit {
           applications: 0,
           status: 'On Track',
         }));
-      }
+      },
+      error: (err) => console.error('Policies load error:', err)
     });
 
+    // Load active schemes for usage analytics
     this.schemeService.getAll({ status: 'Active' }).subscribe({
       next: (res) => {
-        this.stats[1].value = res.schemes.length.toString();
         const max = res.schemes.length || 1;
         this.schemeUsage = res.schemes.slice(0, 4).map((s, i) => ({
           name: s.name,
           usage: Math.round(((max - i) / max) * 100),
         }));
-      }
+      },
+      error: (err) => console.error('Schemes load error:', err)
     });
 
-    this.policyService.getAll({ status: 'Pending' }).subscribe({
-      next: (res) => {
-        this.stats[2].value = res.policies.length.toString();
-      }
-    });
-
+    // Load notifications
     this.notificationService.getAll().subscribe({
       next: (res) => {
         this.stats[3].value = res.notifications.length.toString();
@@ -87,6 +96,10 @@ export class GovernmentDashboardComponent implements OnInit {
           { channel: 'In-App', sent: total.toString(), delivered: '100%' },
           { channel: 'Platform Alerts', sent: total.toString(), delivered: `${res.notifications.filter(n => !n.read).length} unread` },
         ];
+      },
+      error: (err) => {
+        console.error('Notifications load error:', err);
+        this.stats[3].value = '0';
       }
     });
   }

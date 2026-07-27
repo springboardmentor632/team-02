@@ -7,10 +7,12 @@ const router = express.Router();
 
 router.get('/', async (req, res, next) => {
   try {
-    const [policyCount, schemeCount, userCount] = await Promise.all([
+    const [policyCount, schemeCount, userCount, pendingCount, totalPolicyCount] = await Promise.all([
       Policy.countDocuments({ status: 'Active' }),
       Scheme.countDocuments({ status: 'Active' }),
       User.countDocuments(),
+      Policy.countDocuments({ status: { $in: ['Pending', 'Draft'] } }),
+      Policy.countDocuments(),
     ]);
 
     const states = await Policy.distinct('state');
@@ -33,10 +35,12 @@ router.get('/', async (req, res, next) => {
 
     res.json({
       stats: {
-        policies: policyCount,
-        schemes: schemeCount,
+        policies: policyCount,        // active policies
+        schemes: schemeCount,          // active schemes
         states: allStates.length || 36,
         users: userCount,
+        pendingPolicies: pendingCount, // pending + draft
+        totalPolicies: totalPolicyCount,
       },
       trending,
     });

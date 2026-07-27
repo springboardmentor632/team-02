@@ -35,36 +35,37 @@ export class AdminDashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Use the public stats endpoint as single source of truth for all counts
     this.statsService.getPlatformStats().subscribe({
       next: (res) => {
         this.stats[0].value = res.stats.users.toString();
         this.stats[1].value = res.stats.policies.toString();
         this.stats[2].value = res.stats.schemes.toString();
+        this.stats[3].value = (res.stats.totalPolicies ?? res.stats.policies).toString();
+        this.stats[4].value = (res.stats.pendingPolicies ?? 0).toString();
         this.roleStats = [
           { role: 'Citizens', percent: 85, count: `${res.stats.users} users` },
           { role: 'Policies', percent: Math.min(res.stats.policies * 10, 100), count: `${res.stats.policies} active` },
           { role: 'Schemes', percent: Math.min(res.stats.schemes * 10, 100), count: `${res.stats.schemes} active` },
         ];
+      },
+      error: (err) => {
+        console.error('Stats load error:', err);
       }
     });
 
+    // Load recent policy submissions for the table
     this.policyService.getAll().subscribe({
       next: (res) => {
         const policies = res.policies;
-        // Update total policies count
-        this.stats[3].value = policies.length.toString();
-        // Compute active policies count and update the corresponding stat
-        const activeCount = policies.filter((p) => p.status === 'Active').length;
-        this.stats[1].value = activeCount.toString();
-        // Pending approvals (including Draft)
-        const pending = policies.filter((p) => p.status === 'Pending' || p.status === 'Draft');
-        this.stats[4].value = pending.length.toString();
-        // Recent submissions for display
         this.submissions = policies.slice(0, 5).map((p: Policy) => ({
           name: p.title,
           ministry: p.ministry || 'N/A',
           status: p.status === 'Active' ? 'Approved' : p.status,
         }));
+      },
+      error: (err) => {
+        console.error('Policies load error:', err);
       }
     });
   }

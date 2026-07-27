@@ -96,4 +96,6 @@ export interface PlatformStats {
   schemes: number;
   states: number;
   users: number;
+  pendingPolicies: number;
+  totalPolicies: number;
 }
