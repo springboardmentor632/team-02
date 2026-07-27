@@ -1,11 +1,11 @@
-<div class="policy-mgmt-page-container" style="padding: 20px; background-color: #f8f9fa;">
+<div class="policy-mgmt-page-container" style="padding: 20px;">
   <div class="page-body">
     <div class="page-header">
       <div>
         <h1>Policy Management</h1>
         <p>Upload, edit, approve, and archive government policies</p>
       </div>
-      <button class="btn-primary" (click)="toggleForm()">{{ showForm ? '✕ Close' : '+ Upload Policy' }}</button>
+      <button class="btn-primary btn-upload" (click)="toggleForm()">{{ showForm ? '✕ Close' : '+ Upload Policy' }}</button>
     </div>
 
     <p *ngIf="error" class="error-msg">{{ error }}</p>
@@ -32,7 +32,7 @@
         <label>Summary</label>
         <textarea rows="3" [(ngModel)]="newPolicy.summary" placeholder="Brief description of the policy..."></textarea>
       </div>
-      <button class="btn-primary" (click)="addPolicy()">Save Policy</button>
+      <button class="btn-primary btn-upload" (click)="addPolicy()">Save Policy</button>
     </div>
 
     <div class="card">

@@ -1,11 +1,11 @@
-<div class="scheme-mgmt-page-container" style="padding: 20px; background-color: #f8f9fa;">
+<div class="scheme-mgmt-page-container" style="padding: 20px;">
   <div class="page-body">
     <div class="page-header">
       <div>
         <h1>Scheme Management</h1>
         <p>Register, manage, and activate public welfare schemes</p>
       </div>
-      <button class="btn-primary" (click)="toggleForm()">{{ showForm ? '✕ Close' : '+ Add Scheme' }}</button>
+      <button class="btn-primary btn-upload" (click)="toggleForm()">{{ showForm ? '✕ Close' : '+ Add Scheme' }}</button>
     </div>
 
     <p *ngIf="error" class="error-msg">{{ error }}</p>
@@ -36,7 +36,7 @@
         <label>Summary</label>
         <textarea rows="2" [(ngModel)]="newScheme.summary" placeholder="Brief description..."></textarea>
       </div>
-      <button class="btn-primary" (click)="addScheme()">Save Scheme</button>
+     <button class="btn-primary btn-upload" (click)="addScheme()">Save Scheme</button>
     </div>
 
     <div class="card">

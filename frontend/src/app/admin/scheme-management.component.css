@@ -2,7 +2,7 @@
   --navy: #84adea;
   --navy-lt: #a2c4f5;
   --border: #c6d9f5;
-  --bg: #f4f8fe;
+  --bg: #f8f9fa;
   --text-1: #1a2b4a;
   --text-2: #4a6288;
   --text-3: #7e96b8;
@@ -57,3 +57,7 @@ input, select { width: 100%; border: 1.5px solid var(--border); border-radius: 8
   .form-grid { grid-template-columns: 1fr; }
   .page-header { flex-direction: column; gap: 12px; align-items: flex-start; }
 }
+.btn-upload { background: #2E7D4F; }
+.btn-upload:hover { background: #24623E; }
+.btn-upload { background: #2E7D4F; }
+.btn-upload:hover { background: #24623E; }

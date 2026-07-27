@@ -2,7 +2,7 @@
   --navy: #84adea;
   --navy-lt: #a2c4f5;
   --border: #c6d9f5;
-  --bg: #f4f8fe;
+  --bg: #f8f9fa;
   --text-1: #1a2b4a;
   --text-2: #4a6288;
   --text-3: #7e96b8;
@@ -31,6 +31,9 @@
 .btn-primary { background: #84adea; color: #fff; border: none; border-radius: 8px; padding: 10px 18px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
 .btn-primary:hover { background: #3b6eb8; }
 
+.btn-upload { background: #2E7D4F; }
+.btn-upload:hover { background: #24623E; }
+
 .card { background: #fff; border: 1.5px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
 .form-card h3 { font-size: 14.5px; color: var(--text-1); margin: 0 0 14px; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
@@ -57,3 +60,5 @@ input, select, textarea { width: 100%; border: 1.5px solid var(--border); border
   .form-grid { grid-template-columns: 1fr; }
   .page-header { flex-direction: column; gap: 12px; align-items: flex-start; }
 }
+.btn-upload { background: #2E7D4F; }
+.btn-upload:hover { background: #24623E; }
