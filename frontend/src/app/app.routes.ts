@@ -2,9 +2,13 @@ import { Routes } from '@angular/router';
 import { LandingComponent } from './landing/landing.component';
 import { LoginComponent } from './login/login.component';
 import { ForgotPasswordComponent } from './login/forgot-password.component';
+import { UnauthorizedComponent } from './unauthorized/unauthorized.component';
+import { CitizenLayoutComponent } from './layouts/citizen-layout/citizen-layout.component';
+import { GovernmentLayoutComponent } from './layouts/government-layout/government-layout.component';
+import { AdminLayoutComponent } from './layouts/admin-layout/admin-layout.component';
 import { CitizenDashboardComponent } from './dashboard/citizen-dashboard.component';
-import { AdminDashboardComponent } from './dashboard/admin-dashboard.component';
 import { GovernmentDashboardComponent } from './dashboard/government-dashboard.component';
+import { AdminDashboardComponent } from './dashboard/admin-dashboard.component';
 import { PolicySearchComponent } from './policy-search/policy-search.component';
 import { PolicyDetailComponent } from './policy-detail/policy-detail.component';
 import { SchemeDetailComponent } from './scheme-detail/scheme-detail.component';
@@ -18,26 +22,85 @@ import { PolicyManagementComponent } from './admin/policy-management.component';
 import { SchemeManagementComponent } from './admin/scheme-management.component';
 import { SettingsComponent } from './settings/settings.component';
 import { SavedPoliciesComponent } from './saved-policy/saved-policies.component';
-import { authGuard, adminGuard } from './guards/auth.guard';
+import { UserManagementComponent } from './admin/user-management/user-management.component';
+import {
+  citizenGuard,
+  governmentGuard,
+  adminGuard,
+  dashboardRedirectGuard
+} from './guards/auth.guard';
+
 export const routes: Routes = [
+  // ── Public routes ─────────────────────────────────────────────────────────
   { path: '', component: LandingComponent },
   { path: 'login', component: LoginComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
-  { path: 'dashboard', redirectTo: 'citizen-dashboard', pathMatch: 'full' },
-  { path: 'citizen-dashboard', component: CitizenDashboardComponent, canActivate: [authGuard] },
-  { path: 'admin-dashboard', component: AdminDashboardComponent, canActivate: [authGuard] },
-  { path: 'government-dashboard', component: GovernmentDashboardComponent, canActivate: [authGuard] },
-  { path: 'policy-search', component: PolicySearchComponent, canActivate: [authGuard] },
-  { path: 'policy-detail/:id', component: PolicyDetailComponent, canActivate: [authGuard] },
-  { path: 'scheme-detail/:id', component: SchemeDetailComponent, canActivate: [authGuard] },
-  { path: 'comparison', component: ComparisonComponent, canActivate: [authGuard] },
-  { path: 'eligibility', component: EligibilityComponent, canActivate: [authGuard] },
-  { path: 'notifications', component: NotificationsComponent, canActivate: [authGuard] },
-  { path: 'reports', component: ReportsComponent, canActivate: [authGuard] },
-  { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
-  { path: 'feedback', component: FeedbackComponent, canActivate: [authGuard] },
-  { path: 'admin/policies', component: PolicyManagementComponent, canActivate: [adminGuard] },
-  { path: 'admin/schemes', component: SchemeManagementComponent, canActivate: [adminGuard] },
-  { path: 'settings', component: SettingsComponent, canActivate: [authGuard] },
-  { path: 'saved-policies', component: SavedPoliciesComponent, canActivate: [authGuard] },
+  { path: 'unauthorized', component: UnauthorizedComponent },
+
+  // ── Smart dashboard redirect (reads role, sends to correct dashboard) ──────
+  { path: 'dashboard', canActivate: [dashboardRedirectGuard], component: LandingComponent },
+
+  // ── CITIZEN workspace (/citizen/*) ────────────────────────────────────────
+  {
+    path: 'citizen',
+    component: CitizenLayoutComponent,
+    canActivate: [citizenGuard],
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard',     component: CitizenDashboardComponent },
+      { path: 'search',        component: PolicySearchComponent },
+      { path: 'eligibility',   component: EligibilityComponent },
+      { path: 'compare',       component: ComparisonComponent },
+      { path: 'saved',         component: SavedPoliciesComponent },
+      { path: 'reports',       component: ReportsComponent },
+      { path: 'notifications', component: NotificationsComponent },
+      { path: 'profile',       component: ProfileComponent },
+      { path: 'feedback',      component: FeedbackComponent },
+      { path: 'settings',      component: SettingsComponent },
+      { path: 'policy/:id',    component: PolicyDetailComponent },
+      { path: 'scheme/:id',    component: SchemeDetailComponent },
+    ]
+  },
+
+  // ── GOVERNMENT OFFICIAL workspace (/government/*) ─────────────────────────
+  {
+    path: 'government',
+    component: GovernmentLayoutComponent,
+    canActivate: [governmentGuard],
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard',     component: GovernmentDashboardComponent },
+      { path: 'policies',      component: PolicyManagementComponent },
+      { path: 'schemes',       component: SchemeManagementComponent },
+      { path: 'reports',       component: ReportsComponent },
+      { path: 'notifications', component: NotificationsComponent },
+      { path: 'profile',       component: ProfileComponent },
+      { path: 'feedback',      component: FeedbackComponent },
+    ]
+  },
+
+  // ── ADMINISTRATOR workspace (/admin/*) ────────────────────────────────────
+  {
+    path: 'admin',
+    component: AdminLayoutComponent,
+    canActivate: [adminGuard],
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard',  component: AdminDashboardComponent },
+      { path: 'users',      component: UserManagementComponent },
+      { path: 'policies',   component: PolicyManagementComponent },
+      { path: 'schemes',    component: SchemeManagementComponent },
+      { path: 'reports',    component: ReportsComponent },
+      { path: 'settings',   component: SettingsComponent },
+      { path: 'profile',    component: ProfileComponent },
+    ]
+  },
+
+  // ── Legacy redirects for backwards compatibility ───────────────────────────
+  { path: 'citizen-dashboard',    redirectTo: '/citizen/dashboard',    pathMatch: 'full' },
+  { path: 'government-dashboard', redirectTo: '/government/dashboard', pathMatch: 'full' },
+  { path: 'admin-dashboard',      redirectTo: '/admin/dashboard',      pathMatch: 'full' },
+
+  // ── 404 fallback ──────────────────────────────────────────────────────────
+  { path: '**', redirectTo: '' }
 ];

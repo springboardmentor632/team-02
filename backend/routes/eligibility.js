@@ -1,7 +1,7 @@
 const express = require('express');
 const EligibilityRule = require('../models/eligibilityRule');
 const Scheme = require('../models/scheme');
-const { authenticate } = require('../middleware/auth');
+const { authenticate, authorize } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -40,7 +40,7 @@ router.post('/check', authenticate, async (req, res, next) => {
   }
 });
 
-router.post('/', authenticate, async (req, res, next) => {
+router.post('/', authenticate, authorize('Administrator', 'Government Official'), async (req, res, next) => {
   try {
     const rule = await EligibilityRule.create(req.body);
     res.status(201).json({ rule });

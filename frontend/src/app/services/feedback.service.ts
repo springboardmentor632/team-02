@@ -21,4 +21,12 @@ export class FeedbackService {
   submit(data: FeedbackEntry): Observable<{ feedback: FeedbackEntry }> {
     return this.http.post<{ feedback: FeedbackEntry }>(this.baseUrl, data);
   }
+
+  getAll(): Observable<{ feedback: FeedbackEntry[] }> {
+    return this.http.get<{ feedback: FeedbackEntry[] }>(this.baseUrl);
+  }
+
+  update(id: string, updateData: { status?: string; response?: string }): Observable<{ feedback: FeedbackEntry }> {
+    return this.http.put<{ feedback: FeedbackEntry }>(`${this.baseUrl}/${id}`, updateData);
+  }
 }

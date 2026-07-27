@@ -1,0 +1,65 @@
+<div class="page-wrapper">
+  <div class="page-header">
+    <div>
+      <h1>User Management</h1>
+      <p>Manage registered citizens, government officials, and administrators.</p>
+    </div>
+    <div class="header-stats">
+      <div class="stat-pill">
+        <span class="stat-pill-label">Total Users</span>
+        <span class="stat-pill-value">{{ loading ? '…' : totalUsers }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3>All Registered Users</h3>
+      <span class="count-badge">{{ users.length }} shown</span>
+    </div>
+    <div class="table-wrapper">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users">
+            <td>
+              <div class="user-cell">
+                <div class="user-avatar">{{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}</div>
+                <span>{{ user.firstName }} {{ user.lastName }}</span>
+              </div>
+            </td>
+            <td class="email-cell">{{ user.email }}</td>
+            <td>
+              <select [ngModel]="user.role" (ngModelChange)="onRoleChange(user, $event)" class="role-select">
+                <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+              </select>
+            </td>
+            <td>
+              <span class="status-dot" [class.active]="user.status === 'Active'">
+                {{ user.status }}
+              </span>
+            </td>
+            <td>
+              <div class="action-btns">
+                <button (click)="toggleStatus(user)"
+                        [class.btn-deactivate]="user.status === 'Active'"
+                        [class.btn-activate]="user.status !== 'Active'"
+                        class="btn-sm">
+                  {{ user.status === 'Active' ? 'Deactivate' : 'Activate' }}
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

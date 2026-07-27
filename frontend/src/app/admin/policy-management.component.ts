@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { PolicyService } from '../services/policy.service';
 import { Policy } from '../models/policy.model';
@@ -9,7 +9,7 @@ import { Policy } from '../models/policy.model';
 @Component({
   selector: 'app-policy-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './policy-management.component.html',
   styleUrl: './policy-management.component.css'
 })
@@ -59,7 +59,8 @@ export class PolicyManagementComponent implements OnInit {
       ministry: this.newPolicy.ministry,
       summary: this.newPolicy.summary,
       content: this.newPolicy.content || this.newPolicy.summary,
-      status: 'Draft',
+      status: 'Active',
+      publishedAt: new Date().toISOString(),
     }).subscribe({
       next: () => {
         this.newPolicy = { title: '', category: 'Education', ministry: '', summary: '', content: '' };

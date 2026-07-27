@@ -59,6 +59,18 @@ export class AuthService {
     return this.http.put<{ user: AuthUser }>(`${this.authUrl}/profile`, data);
   }
 
+  getAllUsers(): Observable<{ users: any[] }> {
+    return this.http.get<{ users: any[] }>(`${this.authUrl}/users`);
+  }
+
+  updateUserRole(userId: string, role: string): Observable<{ user: any }> {
+    return this.http.put<{ user: any }>(`${this.authUrl}/users/${userId}/role`, { role });
+  }
+
+  updateUserStatus(userId: string, status: string): Observable<{ user: any }> {
+    return this.http.put<{ user: any }>(`${this.authUrl}/users/${userId}/status`, { status });
+  }
+
   saveSession(response: AuthResponse): void {
     localStorage.setItem('authToken', response.token);
     localStorage.setItem('user', JSON.stringify(response.user));
@@ -103,18 +115,18 @@ export class AuthService {
   navigateByRole(role: string | undefined): void {
     switch (role) {
       case 'Citizen':
-        this.router.navigate(['/citizen-dashboard']);
+        this.router.navigate(['/citizen/dashboard']);
         break;
       case 'Government Official':
-        this.router.navigate(['/government-dashboard']);
+        this.router.navigate(['/government/dashboard']);
         break;
       case 'Administrator':
-        this.router.navigate(['/admin-dashboard']);
+        this.router.navigate(['/admin/dashboard']);
         break;
       case 'Researcher':
       case 'Organization':
       default:
-        this.router.navigate(['/citizen-dashboard']);
+        this.router.navigate(['/citizen/dashboard']);
         break;
     }
   }

@@ -88,7 +88,7 @@ export class SavedPoliciesComponent implements OnInit {
   }
 
   getDetailLink(item: SavedItem): string[] {
-    return item.type === 'policy' ? ['/policy-detail', item.id] : ['/scheme-detail', item.id];
+    return item.type === 'policy' ? ['/citizen/policy', item.id] : ['/citizen/scheme', item.id];
   }
 
   onLogout(): void {

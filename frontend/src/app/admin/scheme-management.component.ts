@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { SchemeService } from '../services/scheme.service';
 import { Scheme } from '../models/policy.model';
@@ -9,7 +9,7 @@ import { Scheme } from '../models/policy.model';
 @Component({
   selector: 'app-scheme-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './scheme-management.component.html',
   styleUrl: './scheme-management.component.css'
 })
@@ -60,7 +60,8 @@ export class SchemeManagementComponent implements OnInit {
       benefits: [this.newScheme.benefit],
       ministry: this.newScheme.ministry,
       applicationMode: this.newScheme.applicationMode,
-      status: 'Draft',
+      status: 'Active',
+      launchDate: new Date().toISOString(),
     }).subscribe({
       next: () => {
         this.newScheme = { name: '', category: 'Scholarships', summary: '', benefit: '', ministry: '', applicationMode: 'Online' };

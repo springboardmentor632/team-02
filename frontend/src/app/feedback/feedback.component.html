@@ -1,150 +1,121 @@
-<div class="dashboard-shell">
-
-  <nav class="top-navbar">
-    <div class="nav-logo"><img src="logo.png" alt="logo" /></div>
-    <div class="nav-links">
-      <a routerLink="/dashboard" class="nav-link">Dashboard</a>
-      
-    </div>
-   <div style="display: inline-flex; align-items: center; justify-content: flex-end; margin-left: auto; gap: 28px;">
-
-  <!-- 1. फीडबैक बटन -->
-  <a routerLink="/feedback" class="nav-logout" style="cursor: pointer; text-decoration: none; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center;">
-    <svg xmlns="http://w3.org" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px;">
-      <path fill-rule="evenodd" d="M4.848 2.771A49.144 49.144 0 0 1 12 2.25c2.43 0 4.817.178 7.152.52 1.237.181 2.165 1.273 2.165 2.508v11.501c0 1.235-.928 2.327-2.165 2.509A49.313 49.313 0 0 1 12 19.75c-2.43 0-4.817-.178-7.152-.52-.167-.024-.322-.053-.472-.089l-2.275 2.088A.75.75 0 0 1 1 20.685V5.279c0-1.235.928-2.327 2.165-2.509a4.85 4.85 0 0 1 .511-.061ZM12 8.25a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 6a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Z" clip-rule="evenodd" />
-    </svg>
-    <span style="font-size: 12px; font-weight: 500;">Feedback</span>
-  </a>
-
-  <!-- 2. नोटिफिकेशन घंटी -->
-  <a routerLink="/notifications" style="text-decoration: none; color: inherit; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center; position: relative; cursor: pointer;">
-    <span style="font-size: 20px; filter: brightness(0) invert(1); display: block; line-height: 1;">🔔</span>
-    <span style="background: #ef4444; color: #ffffff; border-radius: 50%; font-size: 9px; font-weight: 700; position: absolute; top: -5px; right: 12px; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; border: 1.5px solid #2e7d32; box-shadow: 0 0 4px rgba(0,0,0,0.3);">
-      {{ notifications.length }}
-    </span>
-    <span class="nav-logout" style="font-size: 12px; font-weight: 500; margin: 0; padding: 0;">Notification</span>
-  </a>
-
-  <!-- 3. प्रोफ़ाइल बटन -->
-  <a routerLink="/profile" class="nav-logout" style="cursor: pointer; text-decoration: none; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center;">
-    <svg xmlns="http://w3.org" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px;">
-      <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clip-rule="evenodd" />
-    </svg>
-    <span style="font-size: 12px; font-weight: 500;">Profile</span>
-  </a>
-
-  <!-- 4. लॉगआउट बटन -->
-  <a (click)="onLogout()" class="nav-logout" style="cursor: pointer; text-decoration: none; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center;">
-    <svg xmlns="http://w3.org" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px;">
-      <path fill-rule="evenodd" d="M16.5 3.75a.75.75 0 0 1 .75.75v6.75H21a.75.75 0 0 1 0 1.5h-3.75v6.75a.75.75 0 0 1-1.5 0v-7.5a.75.75 0 0 1 .75-.75h3V5.25h-3A.75.75 0 0 1 16.5 4.5ZM12 3a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-1.5 0V6.44l-4.72 4.72a.75.75 0 0 1-1.06-1.06l6-6A.75.75 0 0 1 12 3Z" clip-rule="evenodd" />
-    </svg>
-    <span style="font-size: 12px; font-weight: 500;">Logout</span>
-  </a>
-
-</div>
-  </nav>
-
-  <div class="dashboard-layout" style="display: flex; min-height: calc(100vh - 60px);">
-
-     <aside class="sidebar">
-      <div class="sidebar-user">
-        <div class="avatar">{{ userInitials }}</div>
-        <div>
-          <div class="user-name">{{ userName }}</div>
-          <div class="user-sub">{{ userLocation }}</div>
-        </div>
-      </div>
-
-      <div class="sidebar-section">
-        <p class="sidebar-heading">MENU</p>
-
-        <a routerLink="/citizen-dashboard" class="sidebar-link" routerLinkActive="active">
-          <span class="material-icons">dashboard</span> Dashboard
-        </a>
-
-        <a routerLink="/policy-search" class="sidebar-link" routerLinkActive="active">
-          <span class="material-icons">search</span> Search Policies
-        </a>
-
-        <a routerLink="/eligibility" class="sidebar-link" routerLinkActive="active">
-          <span class="material-icons">fact_check</span> Eligibility Checker
-        </a>
-
-        <a routerLink="/comparison" class="sidebar-link" routerLinkActive="active">
-          <span class="material-icons">compare</span> Compare Schemes
-        </a>
-
-        <a routerLink="/notifications" class="sidebar-link" routerLinkActive="active">
-          <span class="material-icons">notifications</span> Notifications <span class="badge" *ngIf="notifications.length">{{ notifications.length }}</span>
-        </a>
-
-        <a routerLink="/saved-policies" class="sidebar-link" routerLinkActive="active">
-          <span class="material-icons">bookmark</span> Saved Policies
-        </a>
-
-        <a routerLink="/reports" class="sidebar-link" routerLinkActive="active">
-          <span class="material-icons">description</span> My Reports
-        </a>
-      </div>
-
-      <div class="sidebar-section">
-        <p class="sidebar-heading">ACCOUNT</p>
-        <a routerLink="/profile" class="sidebar-link">👤 Profile</a>
-        <a routerLink="/settings" class="sidebar-link">⚙️ Settings</a>
-        <a (click)="onLogout()" class="sidebar-link logout" style="cursor: pointer;">↩️ Logout</a>
-      </div>
-    </aside>
-    <div class="main-content" style="flex: 1; padding: 20px; background-color: #f8f9fa; overflow-y: auto; box-sizing: border-box;">
-      <div class="page-body">
+<div class="feedback-page-container" style="padding: 20px; background-color: #f8f9fa;">
+  <div class="page-body">
     <div class="page-header">
-      <h1>Feedback & Support</h1>
-      <p>Report issues, ask questions, or share feedback with our team</p>
+      <h1>Feedback & Support Portal</h1>
+      <p *ngIf="userRole === 'Citizen' || userRole === 'Researcher' || userRole === 'Organization'">
+        Report issues, ask questions, or share feedback with our team.
+      </p>
+      <p *ngIf="userRole === 'Government Official' || userRole === 'Administrator'">
+        Review and respond to feedback submissions from citizens and organizations.
+      </p>
     </div>
 
-    <div class="content-grid">
+    <!-- CITIZEN/RESEARCHER/ORGANIZATION VIEW -->
+    <div class="content-grid" *ngIf="userRole === 'Citizen' || userRole === 'Researcher' || userRole === 'Organization'">
       <div class="card">
         <h3>Contact Support</h3>
-        <div *ngIf="submitted" class="success-banner">Thank you! Your message has been submitted.</div>
+        <div *ngIf="submitted" class="success-banner" style="padding: 12px; background-color: #d1e7dd; color: #0f5132; border-radius: 6px; margin-bottom: 15px;">
+          Thank you! Your message has been submitted.
+        </div>
 
         <form #fbForm="ngForm" (ngSubmit)="onSubmit(fbForm)" novalidate *ngIf="!submitted">
-          <div class="field-group">
-            <label>Category</label>
-            <select name="category" [(ngModel)]="category">
+          <div class="field-group" style="margin-bottom: 12px;">
+            <label style="display: block; margin-bottom: 4px; font-weight: 500;">Category</label>
+            <select name="category" [(ngModel)]="category" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ced4da;">
               <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
             </select>
           </div>
-          <div class="field-group">
-            <label>Subject</label>
-            <input type="text" name="subject" [(ngModel)]="subject" placeholder="Brief summary of your query" required />
+          <div class="field-group" style="margin-bottom: 12px;">
+            <label style="display: block; margin-bottom: 4px; font-weight: 500;">Subject</label>
+            <input type="text" name="subject" [(ngModel)]="subject" placeholder="Brief summary of your query" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ced4da;" required />
           </div>
-          <div class="field-group">
-            <label>Message</label>
-            <textarea name="message" [(ngModel)]="message" rows="5" placeholder="Describe your issue or feedback in detail..." required></textarea>
+          <div class="field-group" style="margin-bottom: 12px;">
+            <label style="display: block; margin-bottom: 4px; font-weight: 500;">Message</label>
+            <textarea name="message" [(ngModel)]="message" rows="4" placeholder="Describe your issue or feedback in detail..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ced4da;" required></textarea>
           </div>
-          <button type="submit" class="btn-primary" [disabled]="submitting">
+          <button type="submit" class="btn-primary" [disabled]="submitting" style="padding: 8px 16px; background-color: #84adea; border: none; color: white; border-radius: 6px; cursor: pointer; font-weight: 600;">
             <span *ngIf="!submitting">Submit</span>
             <span *ngIf="submitting">Submitting...</span>
           </button>
         </form>
 
-        <button class="btn-outline" *ngIf="submitted" (click)="submitted = false">Submit Another</button>
+        <button class="btn-outline" *ngIf="submitted" (click)="submitted = false" style="margin-top: 10px; padding: 6px 12px; background: none; border: 1px solid #ced4da; border-radius: 6px; cursor: pointer;">Submit Another</button>
       </div>
 
       <div class="card">
-        <h3>Frequently Asked Questions</h3>
-        <div class="faq-item" *ngFor="let f of faqs" (click)="toggleFaq(f)">
-          <div class="faq-q">
-            <span>{{ f.q }}</span>
-            <span class="faq-toggle">{{ f.open ? '−' : '+' }}</span>
-          </div>
-          <p class="faq-a" *ngIf="f.open">{{ f.a }}</p>
+        <h3>My Submissions</h3>
+        <div *ngIf="feedbacks.length === 0" style="color: #6c757d; font-size: 0.9rem;">
+          You haven't submitted any feedback yet.
         </div>
+        <div *ngFor="let fb of feedbacks" style="border: 1px solid #e9ecef; border-radius: 8px; padding: 12px; margin-bottom: 12px; background-color: #fff;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-weight: 600; font-size: 0.95rem;">{{ fb.subject }}</span>
+            <span [style.background-color]="fb.status === 'Resolved' ? '#d1e7dd' : fb.status === 'In Progress' ? '#fff3cd' : '#e2e3e5'"
+                  [style.color]="fb.status === 'Resolved' ? '#0f5132' : fb.status === 'In Progress' ? '#664d03' : '#383d41'"
+                  style="font-size: 0.75rem; padding: 3px 8px; border-radius: 12px; font-weight: 600;">
+              {{ fb.status || 'New' }}
+            </span>
+          </div>
+          <p style="font-size: 0.85rem; color: #495057; margin-bottom: 8px;">{{ fb.message }}</p>
+          <div *ngIf="fb.response" style="background-color: #f1f3f5; border-left: 3px solid #84adea; padding: 8px 12px; border-radius: 0 6px 6px 0; font-size: 0.85rem; margin-top: 6px;">
+            <strong style="display: block; margin-bottom: 2px; color: #343a40;">Official Response:</strong>
+            {{ fb.response }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GOVERNMENT OFFICIAL / ADMIN VIEW -->
+    <div class="content-grid" *ngIf="userRole === 'Government Official' || userRole === 'Administrator'">
+      <div class="card" style="flex: 2;">
+        <h3>Feedback Inquiries</h3>
+        <div *ngIf="feedbacks.length === 0" style="color: #6c757d; font-size: 0.9rem;">
+          No feedback tickets found in system.
+        </div>
+        <div *ngFor="let fb of feedbacks" style="border: 1px solid #e9ecef; border-radius: 8px; padding: 14px; margin-bottom: 12px; background-color: #fff; cursor: pointer;"
+             [style.border-color]="activeFeedbackId === fb._id ? '#84adea' : '#e9ecef'"
+             (click)="selectFeedback(fb)">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <strong style="font-size: 1rem; color: #212529;">{{ fb.subject }}</strong>
+            <span [style.background-color]="fb.status === 'Resolved' ? '#d1e7dd' : fb.status === 'In Progress' ? '#fff3cd' : '#e2e3e5'"
+                  [style.color]="fb.status === 'Resolved' ? '#0f5132' : fb.status === 'In Progress' ? '#664d03' : '#383d41'"
+                  style="font-size: 0.75rem; padding: 3px 8px; border-radius: 12px; font-weight: 600;">
+              {{ fb.status || 'New' }}
+            </span>
+          </div>
+          <div style="font-size: 0.78rem; color: #6c757d; margin-bottom: 8px;">
+            Submitted by: <strong>{{ fb.name || 'Anonymous' }}</strong> ({{ fb.email }})
+          </div>
+          <p style="font-size: 0.88rem; color: #495057; margin-bottom: 8px;">{{ fb.message }}</p>
+          <div *ngIf="fb.response" style="background-color: #f8f9fa; border-left: 3px solid #ced4da; padding: 6px 10px; font-size: 0.82rem;">
+            <strong>Response Preview:</strong> {{ fb.response }}
+          </div>
+        </div>
+      </div>
+
+      <div class="card" *ngIf="activeFeedbackId" style="flex: 1;">
+        <h3>Respond to Inquiry</h3>
+        <form (ngSubmit)="submitReply()">
+          <div class="field-group" style="margin-bottom: 12px;">
+            <label style="display: block; margin-bottom: 4px; font-weight: 500;">Status</label>
+            <select name="replyStatus" [(ngModel)]="replyStatus" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ced4da;">
+              <option *ngFor="let st of statuses" [value]="st">{{ st }}</option>
+            </select>
+          </div>
+          <div class="field-group" style="margin-bottom: 12px;">
+            <label style="display: block; margin-bottom: 4px; font-weight: 500;">Response Text</label>
+            <textarea name="replyText" [(ngModel)]="replyText" rows="6" placeholder="Enter formal government response..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ced4da;" required></textarea>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button type="submit" class="btn-primary" style="flex: 1; padding: 8px 16px; background-color: #84adea; border: none; color: white; border-radius: 6px; cursor: pointer; font-weight: 600;">
+              Save Response
+            </button>
+            <button type="button" class="btn-outline" (click)="activeFeedbackId = null" style="padding: 6px 12px; background: none; border: 1px solid #ced4da; border-radius: 6px; cursor: pointer;">
+              Cancel
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 </div>
-
-      </div>
-  </div>
-
-  

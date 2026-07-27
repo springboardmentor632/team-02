@@ -1,18 +1,7 @@
-<div class="dashboard-shell">
-
-  <nav class="top-navbar">
-    <div class="nav-logo"><img src="logo.png" alt="logo" /></div>
-    <div class="nav-links">
-      <a routerLink="/policy-search" class="nav-link">Policy Search</a>
-      <a routerLink="/eligibility" class="nav-link">Eligibility</a>
-      <a routerLink="/comparison" class="nav-link">Comparison</a>
-    </div>
-    <a (click)="onLogout()" class="nav-logout" style="cursor: pointer;">⏻ Logout</a>
-  </nav>
-
+<div class="policy-detail-page-container" style="padding: 20px; background-color: #f8f9fa;">
   <div class="page-body">
     <p class="breadcrumb" *ngIf="policy">
-      <a routerLink="/policy-search">Search</a> ›
+      <a routerLink="/citizen/search">Search</a> ›
       <span>{{ policy.category }}</span> ›
       <span>{{ policy.title }}</span>
     </p>
@@ -89,12 +78,12 @@
         <div class="card">
           <h3>Check Eligibility</h3>
           <p class="side-note">Answer a few questions to see if you qualify for related schemes.</p>
-          <a routerLink="/eligibility" class="btn-action btn-fill">✓ Check Now</a>
+          <a routerLink="/citizen/eligibility" class="btn-action btn-fill">✓ Check Now</a>
         </div>
 
         <div class="card">
           <h3>Compare Schemes</h3>
-          <a routerLink="/comparison" class="btn-action btn-outline-dark">⇄ Compare Schemes</a>
+          <a routerLink="/citizen/compare" class="btn-action btn-outline-dark">⇄ Compare Schemes</a>
         </div>
       </div>
     </div>

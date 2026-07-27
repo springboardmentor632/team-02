@@ -10,6 +10,18 @@
   --badge-bg: #E6EFE2;
 }
 
+:host-context(app-admin-layout) {
+  --navy: #84adea;
+  --navy-lt: #a2c4f5;
+  --navy-dk: #3b6eb8;
+  --border: #c6d9f5;
+  --bg: #f4f8fe;
+  --text-1: #1a2b4a;
+  --text-2: #4a6288;
+  --text-3: #7e96b8;
+  --badge-bg: #e2edfd;
+}
+
 * { box-sizing: border-box; }
 
 .dashboard-shell { min-height: 100vh; background: var(--bg); }

@@ -1,18 +1,7 @@
-<div class="dashboard-shell">
-
-  <nav class="top-navbar">
-    <div class="nav-logo"><img src="logo.png" alt="logo" /></div>
-    <div class="nav-links">
-      <a routerLink="/policy-search" class="nav-link">Policy Search</a>
-      <a routerLink="/eligibility" class="nav-link">Eligibility</a>
-      <a routerLink="/comparison" class="nav-link">Comparison</a>
-    </div>
-    <a (click)="onLogout()" class="nav-logout" style="cursor: pointer;">⏻ Logout</a>
-  </nav>
-
+<div class="scheme-detail-page-container" style="padding: 20px; background-color: #f8f9fa;">
   <div class="page-body">
     <p class="breadcrumb" *ngIf="scheme">
-      <a routerLink="/policy-search">Search</a> › <span>Schemes</span> › <span>{{ scheme.name }}</span>
+      <a routerLink="/citizen/search">Search</a> › <span>Schemes</span> › <span>{{ scheme.name }}</span>
     </p>
 
     <div *ngIf="loading" class="loading-state"><p>Loading scheme...</p></div>
@@ -80,8 +69,8 @@
       <div class="side-col">
         <div class="card action-card">
           <h3>Quick Actions</h3>
-          <a routerLink="/eligibility" class="btn-action btn-fill">✓ Check Eligibility</a>
-          <a routerLink="/comparison" class="btn-action btn-outline-dark">⇄ Add to Compare</a>
+          <a routerLink="/citizen/eligibility" class="btn-action btn-fill">✓ Check Eligibility</a>
+          <a routerLink="/citizen/compare" class="btn-action btn-outline-dark">⇄ Add to Compare</a>
         </div>
 
         <div class="card">

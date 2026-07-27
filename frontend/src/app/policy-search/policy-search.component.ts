@@ -137,7 +137,7 @@ export class PolicySearchComponent implements OnInit {
   }
 
   getDetailLink(r: SearchResult): string[] {
-    return r.type === 'policy' ? ['/policy-detail', r.id] : ['/scheme-detail', r.id];
+    return r.type === 'policy' ? ['/citizen/policy', r.id] : ['/citizen/scheme', r.id];
   }
 
   onLogout(): void {

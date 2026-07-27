@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { FeedbackService } from '../services/feedback.service';
 import { NotificationService } from '../services/notification.service';
@@ -11,7 +11,7 @@ interface FAQ { q: string; a: string; open: boolean; }
 @Component({
   selector: 'app-feedback',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './feedback.component.html',
   styleUrl: './feedback.component.css'
 })
@@ -36,6 +36,13 @@ export class FeedbackComponent implements OnInit {
   userName = '';
   userLocation = '';
   userInitials = '';
+  userRole = '';
+
+  feedbacks: any[] = [];
+  activeFeedbackId: string | null = null;
+  replyText = '';
+  replyStatus = 'New';
+  statuses = ['New', 'In Progress', 'Resolved'];
 
   constructor(
     private router: Router,
@@ -45,12 +52,24 @@ export class FeedbackComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    const user = this.auth.getCurrentUser();
     this.userName = this.auth.getUserDisplayName();
     this.userLocation = this.auth.getUserSubtitle();
     this.userInitials = this.auth.getUserInitials();
+    this.userRole = user?.role || 'Citizen';
+
+    this.loadFeedbacks();
+
     this.notificationService.getAll().subscribe({
       next: (res) => { this.notifications = res.notifications.filter(n => !n.read); },
       error: () => { this.notifications = []; }
+    });
+  }
+
+  loadFeedbacks(): void {
+    this.feedbackService.getAll().subscribe({
+      next: (res) => { this.feedbacks = res.feedback; },
+      error: () => { this.feedbacks = []; }
     });
   }
 
@@ -74,10 +93,35 @@ export class FeedbackComponent implements OnInit {
         this.submitted = true;
         form.resetForm();
         this.category = 'General Feedback';
+        this.loadFeedbacks();
       },
       error: () => {
         this.submitting = false;
         this.error = 'Failed to submit feedback. Please try again.';
+      }
+    });
+  }
+
+  selectFeedback(fb: any): void {
+    this.activeFeedbackId = fb._id;
+    this.replyText = fb.response || '';
+    this.replyStatus = fb.status || 'New';
+  }
+
+  submitReply(): void {
+    if (!this.activeFeedbackId) return;
+    this.feedbackService.update(this.activeFeedbackId, {
+      status: this.replyStatus,
+      response: this.replyText
+    }).subscribe({
+      next: () => {
+        alert('Feedback updated successfully!');
+        this.activeFeedbackId = null;
+        this.replyText = '';
+        this.loadFeedbacks();
+      },
+      error: () => {
+        alert('Failed to update feedback.');
       }
     });
   }

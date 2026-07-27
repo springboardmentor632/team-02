@@ -51,9 +51,15 @@ export class AdminDashboardComponent implements OnInit {
     this.policyService.getAll().subscribe({
       next: (res) => {
         const policies = res.policies;
+        // Update total policies count
         this.stats[3].value = policies.length.toString();
+        // Compute active policies count and update the corresponding stat
+        const activeCount = policies.filter((p) => p.status === 'Active').length;
+        this.stats[1].value = activeCount.toString();
+        // Pending approvals (including Draft)
         const pending = policies.filter((p) => p.status === 'Pending' || p.status === 'Draft');
         this.stats[4].value = pending.length.toString();
+        // Recent submissions for display
         this.submissions = policies.slice(0, 5).map((p: Policy) => ({
           name: p.title,
           ministry: p.ministry || 'N/A',

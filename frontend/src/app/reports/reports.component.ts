@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { PolicyService } from '../services/policy.service';
@@ -21,7 +21,7 @@ interface ReportRow {
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './reports.component.html',
   styleUrl: './reports.component.css'
 })

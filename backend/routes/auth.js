@@ -2,7 +2,8 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const { authenticate } = require('../middleware/auth');
+const { authenticate, authorize } = require('../middleware/auth');
+const { logAction } = require('../middleware/auditLogger');
 
 const router = express.Router();
 
@@ -60,6 +61,10 @@ router.post('/login', async (req, res, next) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
+    if (user.status === 'Inactive') {
+      return res.status(403).json({ message: 'Your account has been deactivated. Please contact support.' });
+    }
+
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
       return res.status(401).json({ message: 'Invalid credentials' });
@@ -92,6 +97,43 @@ router.put('/profile', authenticate, async (req, res, next) => {
     }
     const updatedUser = await User.findByIdAndUpdate(req.user._id, updates, { new: true }).select('-password');
     res.json({ user: updatedUser });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── ADMIN USER MANAGEMENT ENDPOINTS ──────────────────────────────────────────
+router.get('/users', authenticate, authorize('Administrator'), async (req, res, next) => {
+  try {
+    const users = await User.find().select('-password').sort({ createdAt: -1 });
+    res.json({ users });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.put('/users/:id/role', authenticate, authorize('Administrator'), async (req, res, next) => {
+  try {
+    const { role } = req.body;
+    if (!role) return res.status(400).json({ message: 'Role is required' });
+    const user = await User.findByIdAndUpdate(req.params.id, { role }, { new: true }).select('-password');
+    if (user) {
+      await logAction(req.user._id, 'CHANGE_ROLE', 'User', user._id, `Changed role of user ${user.email} to ${role}`, req.ip);
+    }
+    res.json({ user });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.put('/users/:id/status', authenticate, authorize('Administrator'), async (req, res, next) => {
+  try {
+    const { status } = req.body;
+    const user = await User.findByIdAndUpdate(req.params.id, { status }, { new: true }).select('-password');
+    if (user) {
+      await logAction(req.user._id, 'CHANGE_STATUS', 'User', user._id, `Changed status of user ${user.email} to ${status}`, req.ip);
+    }
+    res.json({ user });
   } catch (err) {
     next(err);
   }

@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema({
   },
   organization: { type: String, trim: true },
   phone: { type: String, trim: true },
+  status: { type: String, enum: ['Active', 'Inactive'], default: 'Active' },
   profilePicture: { type: String },
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Date },

@@ -21,6 +21,7 @@ const feedbackRoutes = require('./routes/feedback');
 const reportRoutes = require('./routes/report');
 const searchRoutes = require('./routes/search');
 const statsRoutes = require('./routes/stats');
+const auditLogRoutes = require('./routes/auditLog');
 const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -44,6 +45,7 @@ app.use('/api/feedback', feedbackRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/audit-logs', auditLogRoutes);
 
 app.use(errorHandler);
 

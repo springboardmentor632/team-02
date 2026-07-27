@@ -1,6 +1,7 @@
 const express = require('express');
 const Scheme = require('../models/scheme');
 const { authenticate, authorize } = require('../middleware/auth');
+const { logAction } = require('../middleware/auditLogger');
 
 const router = express.Router();
 
@@ -61,6 +62,7 @@ router.post('/', authenticate, authorize('Administrator', 'Government Official')
       author: req.user._id,
       status: req.body.status || 'Draft',
     });
+    await logAction(req.user._id, 'CREATE_SCHEME', 'Scheme', scheme._id, `Created scheme: "${scheme.name}"`, req.ip);
     res.status(201).json({ scheme });
   } catch (err) {
     next(err);
@@ -70,6 +72,9 @@ router.post('/', authenticate, authorize('Administrator', 'Government Official')
 router.put('/:id', authenticate, authorize('Administrator', 'Government Official'), async (req, res, next) => {
   try {
     const scheme = await Scheme.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (scheme) {
+      await logAction(req.user._id, 'UPDATE_SCHEME', 'Scheme', scheme._id, `Updated scheme: "${scheme.name}"`, req.ip);
+    }
     res.json({ scheme });
   } catch (err) {
     next(err);
@@ -79,6 +84,7 @@ router.put('/:id', authenticate, authorize('Administrator', 'Government Official
 router.delete('/:id', authenticate, authorize('Administrator', 'Government Official'), async (req, res, next) => {
   try {
     await Scheme.findByIdAndDelete(req.params.id);
+    await logAction(req.user._id, 'DELETE_SCHEME', 'Scheme', req.params.id, `Deleted scheme ID ${req.params.id}`, req.ip);
     res.json({ message: 'Scheme deleted' });
   } catch (err) {
     next(err);
