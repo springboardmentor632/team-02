@@ -144,3 +144,8 @@ input:focus, select:focus { border-color: var(--navy-lt); }
   padding: 1px 6px; 
   border-radius: 10px; 
 }
+.eligibility-page-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}

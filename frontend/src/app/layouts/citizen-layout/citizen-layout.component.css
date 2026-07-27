@@ -1,4 +1,8 @@
 /* ===== CITIZEN THEME ===== */
+html, body {
+  height: 100%;
+  margin: 0;
+}
 :host {
   display: block;
   height: 100%;
@@ -22,7 +26,8 @@
   font-family: 'Inter', sans-serif;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   background: var(--bg);
 }
 
@@ -167,7 +172,7 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  min-height: calc(100vh - 56px);
+  height: 100%;
   padding: 20px 14px;
 }
 
@@ -232,8 +237,8 @@
   font-weight: 600;
 }
 
-.sidebar-logout { color: var(--danger); }
-.sidebar-logout:hover { background: #fef2f2; color: #b91c1c; }
+.sidebar-logout { color: var(--text-2); }
+.sidebar-logout:hover { background: var(--badge-bg); color: var(--text-1); }
 
 .link-icon { font-size: 1rem; width: 20px; text-align: center; }
 
@@ -251,9 +256,9 @@
 .main-content {
   flex: 1;
   overflow-y: auto;
-  min-height: calc(100vh - 56px);
+  overflow-x: hidden;
+  height: 100%;
 }
-
 /* ===== MOBILE OVERLAY ===== */
 .sidebar-overlay {
   display: none;

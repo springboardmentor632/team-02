@@ -92,3 +92,7 @@ input, select { width: 100%; border: 1.5px solid var(--border); border-radius: 8
   padding: 1px 6px; 
   border-radius: 10px; 
 }
+.comparison-page-container {
+  min-height: 100%;
+  background: var(--bg);
+}

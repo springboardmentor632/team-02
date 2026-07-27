@@ -73,10 +73,14 @@ input, select, textarea { width: 100%; border: 1.5px solid var(--border); border
 /* .badge { margin-left: auto; background: var(--danger); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; } */
 .badge { 
   margin-left: auto; 
-  background: #d32f2f !important; /* सीधा लाल रंग का कोड */
+  background: #d32f2f !important; 
   color: #ffffff !important; 
   font-size: 10px; 
   font-weight: 700; 
   padding: 1px 6px; 
   border-radius: 10px; 
+}
+.comparison-page-container {
+  min-height: 100%;
+  background: var(--bg);
 }

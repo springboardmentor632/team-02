@@ -38,6 +38,7 @@ interface StatCard {
   styleUrl: './citizen-dashboard.component.css'
 })
 export class CitizenDashboardComponent implements OnInit {
+  greeting = '';
   userName = '';
   userLocation = '';
   userInitials = '';
@@ -70,6 +71,7 @@ export class CitizenDashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.greeting = this.getGreeting();
     this.userName = this.auth.getUserDisplayName();
     this.userLocation = this.auth.getUserSubtitle();
     this.userInitials = this.auth.getUserInitials();
@@ -149,5 +151,12 @@ export class CitizenDashboardComponent implements OnInit {
     if (confirm('Are you sure you want to logout?')) {
       this.auth.logout();
     }
+  }
+    private getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+
   }
 }

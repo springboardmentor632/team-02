@@ -1,7 +1,7 @@
-<div class="dashboard-page">
+<div class="main-content">
   <div class="content-header">
     <div>
-      <h1>Good morning, {{ userName.split(' ')[0] }} 👋</h1>
+      <h1>{{ greeting }}, {{ userName.split(' ')[0] }} 👋</h1>
       <p>Here's a summary of your policy activity and eligible schemes.</p>
     </div>
     <button class="btn-primary" routerLink="/citizen/eligibility">✓ Check Eligibility</button>
@@ -45,6 +45,7 @@
           <p>{{ n.desc }}</p>
         </div>
       </div>
+      <p *ngIf="notifications.length === 0">No notifications yet.</p>
     </div>
   </div>
 
