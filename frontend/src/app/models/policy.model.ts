@@ -99,3 +99,40 @@ export interface PlatformStats {
   pendingPolicies: number;
   totalPolicies: number;
 }
+
+export interface EligibilityProfile {
+  age: number;
+  gender: string;
+  income: number;
+  occupation: string;
+  education: string;
+  location: string;
+  socialCategory: string;
+  disabilityStatus: string;
+  state?: string;
+  district?: string;
+  areaType?: string;
+}
+
+export interface ApplicationFormData {
+  address: string;
+  aadhaarNumber: string;
+  bankAccount: string;
+  additionalNotes: string;
+  documentsAcknowledged: boolean;
+}
+
+export interface SchemeApplication {
+  _id: string;
+  user: string;
+  scheme: Scheme | string;
+  status: 'Submitted' | 'Under Review' | 'Approved' | 'Rejected';
+  applicantName: string;
+  applicantEmail: string;
+  applicantPhone?: string;
+  eligibilitySnapshot: EligibilityProfile;
+  formData: ApplicationFormData;
+  govNotes?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}

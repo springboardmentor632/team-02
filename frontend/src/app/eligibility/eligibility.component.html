@@ -194,6 +194,7 @@
             <p>{{ s.benefit }}</p>
           </div>
           <a [routerLink]="['/citizen/scheme', s.id]" class="btn-small">View</a>
+          <button type="button" class="btn-apply" (click)="applyForScheme(s.id)">Apply</button>
         </div>
         <p *ngIf="matchedSchemes.length === 0">No matching schemes found for your profile. Try adjusting your details.</p>
       </div>

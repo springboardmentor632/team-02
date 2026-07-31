@@ -1,0 +1,44 @@
+<div class="applications-page-container">
+  <div class="page-body">
+    <div class="page-header">
+      <h1>My Applications</h1>
+      <p>Track the status of your scheme applications</p>
+    </div>
+
+    <div class="header-actions">
+      <a routerLink="/citizen/eligibility" class="btn-primary">✓ Check Eligibility</a>
+      <a routerLink="/citizen/search" class="btn-outline">Browse Schemes</a>
+    </div>
+
+    <div *ngIf="loading" class="loading-state"><p>Loading applications...</p></div>
+    <div *ngIf="error" class="error-banner">{{ error }}</div>
+
+    <div class="empty-state" *ngIf="!loading && !error && applications.length === 0">
+      <span class="empty-icon">📋</span>
+      <h3>No applications yet</h3>
+      <p>Check your eligibility and apply for schemes that match your profile.</p>
+      <a routerLink="/citizen/eligibility" class="btn-primary">Start Eligibility Check</a>
+    </div>
+
+    <div class="applications-list" *ngIf="!loading && applications.length > 0">
+      <div class="app-card" *ngFor="let app of applications">
+        <div class="app-header">
+          <div>
+            <h3>{{ schemeName(app) }}</h3>
+            <span class="cat-tag">{{ schemeCategory(app) }}</span>
+          </div>
+          <span class="status-badge" [ngClass]="statusClass(app.status)">{{ app.status }}</span>
+        </div>
+        <div class="app-meta">
+          <span>Applied: {{ formatDate(app.createdAt) }}</span>
+          <span *ngIf="app.applicantPhone">Phone: {{ app.applicantPhone }}</span>
+        </div>
+        <p class="app-address" *ngIf="app.formData?.address">{{ app.formData.address }}</p>
+        <p class="gov-notes" *ngIf="app.govNotes"><strong>Official note:</strong> {{ app.govNotes }}</p>
+        <div class="app-actions">
+          <a [routerLink]="['/citizen/scheme', schemeId(app)]" class="btn-small">View Scheme</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

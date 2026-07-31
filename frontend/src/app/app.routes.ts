@@ -14,6 +14,8 @@ import { PolicyDetailComponent } from './policy-detail/policy-detail.component';
 import { SchemeDetailComponent } from './scheme-detail/scheme-detail.component';
 import { ComparisonComponent } from './comparison/comparison.component';
 import { EligibilityComponent } from './eligibility/eligibility.component';
+import { SchemeApplyComponent } from './scheme-apply/scheme-apply.component';
+import { MyApplicationsComponent } from './my-applications/my-applications.component';
 import { NotificationsComponent } from './notifications/notifications.component';
 import { ReportsComponent } from './reports/reports.component';
 import { ProfileComponent } from './profile/profile.component';
@@ -50,6 +52,7 @@ export const routes: Routes = [
       { path: 'dashboard',     component: CitizenDashboardComponent },
       { path: 'search',        component: PolicySearchComponent },
       { path: 'eligibility',   component: EligibilityComponent },
+      { path: 'applications',  component: MyApplicationsComponent },
       { path: 'compare',       component: ComparisonComponent },
       { path: 'saved',         component: SavedPoliciesComponent },
       { path: 'reports',       component: ReportsComponent },
@@ -59,6 +62,7 @@ export const routes: Routes = [
       { path: 'settings',      component: SettingsComponent },
       { path: 'policy/:id',    component: PolicyDetailComponent },
       { path: 'scheme/:id',    component: SchemeDetailComponent },
+      { path: 'scheme/:id/apply', component: SchemeApplyComponent },
     ]
   },
 

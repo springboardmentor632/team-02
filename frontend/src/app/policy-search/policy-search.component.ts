@@ -1,11 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { SearchService } from '../services/search.service';
-import { PolicyService } from '../services/policy.service';
-import { SchemeService } from '../services/scheme.service';
 import { NotificationService } from '../services/notification.service';
 import { SearchResult } from '../models/policy.model';
 import { getCategoryIcon, getLaunchYear } from '../utils/helpers';
@@ -40,6 +38,9 @@ export class PolicySearchComponent implements OnInit {
   error = '';
   notifications: { _id: string }[] = [];
 
+  /** Ignores stale HTTP responses when a newer search was triggered. */
+  private searchRequestId = 0;
+
   ministries = [
     'Ministry of Health & Family Welfare',
     'Ministry of Agriculture & Farmers Welfare',
@@ -62,9 +63,8 @@ export class PolicySearchComponent implements OnInit {
     private route: ActivatedRoute,
     private auth: AuthService,
     private searchService: SearchService,
-    private policyService: PolicyService,
-    private schemeService: SchemeService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -72,15 +72,12 @@ export class PolicySearchComponent implements OnInit {
     this.userLocation = this.auth.getUserSubtitle();
     this.userInitials = this.auth.getUserInitials();
 
-    this.route.queryParams.subscribe((params) => {
-      if (params['q']) {
-        this.searchQuery = params['q'];
-      }
-      if (params['category']) {
-        this.activeCategory = params['category'];
-      }
-      this.onSearch();
-    });
+    const q = this.route.snapshot.queryParamMap.get('q');
+    const category = this.route.snapshot.queryParamMap.get('category');
+    if (q) this.searchQuery = q;
+    if (category) this.activeCategory = category;
+
+    this.onSearch();
 
     this.notificationService.getAll().subscribe({
       next: (res) => { this.notifications = res.notifications.filter(n => !(n as any).read); },
@@ -89,6 +86,7 @@ export class PolicySearchComponent implements OnInit {
   }
 
   onSearch(): void {
+    const requestId = ++this.searchRequestId;
     this.loading = true;
     this.error = '';
 
@@ -96,17 +94,20 @@ export class PolicySearchComponent implements OnInit {
     if (this.statusActive) statuses.push('Active');
     if (this.statusArchived) statuses.push('Archived');
     if (this.statusDraft) statuses.push('Draft');
-    // Default to Active if none selected
     if (statuses.length === 0) statuses.push('Active');
 
+    const trimmedQuery = this.searchQuery.trim();
+
     this.searchService.search({
-      query: this.searchQuery || undefined,
+      query: trimmedQuery || undefined,
       category: this.activeCategory !== 'All Categories' ? this.activeCategory : undefined,
       ministry: this.ministryFilter || undefined,
       state: this.stateFilter && this.stateFilter !== 'All States' ? this.stateFilter : undefined,
       statuses,
-    } as any).subscribe({
+    }).subscribe({
       next: (res) => {
+        if (requestId !== this.searchRequestId) return;
+
         const policyResults: SearchResult[] = res.policies.map((p) => ({
           id: p._id,
           type: 'policy' as const,
@@ -134,26 +135,36 @@ export class PolicySearchComponent implements OnInit {
           category: s.category,
         }));
 
-        let combined = [...policyResults, ...schemeResults];
-
-        // Apply sort
-        if (this.sortBy === 'Newest First') {
-          combined.sort((a, b) => (b.launchYear || '').localeCompare(a.launchYear || ''));
-        } else if (this.sortBy === 'Oldest First') {
-          combined.sort((a, b) => (a.launchYear || '').localeCompare(b.launchYear || ''));
-        } else if (this.sortBy === 'Alphabetical') {
-          combined.sort((a, b) => a.name.localeCompare(b.name));
-        }
-
-        this.results = combined;
-        this.totalResults = combined.length;
+        this.results = this.sortResults([...policyResults, ...schemeResults]);
+        this.totalResults = this.results.length;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: () => {
+        if (requestId !== this.searchRequestId) return;
         this.error = 'Failed to load results. Please try again.';
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
+  }
+
+  applySort(): void {
+    this.results = this.sortResults([...this.results]);
+    this.cdr.detectChanges();
+  }
+
+  private sortResults(items: SearchResult[]): SearchResult[] {
+    if (this.sortBy === 'Newest First') {
+      return items.sort((a, b) => (b.launchYear || '').localeCompare(a.launchYear || ''));
+    }
+    if (this.sortBy === 'Oldest First') {
+      return items.sort((a, b) => (a.launchYear || '').localeCompare(b.launchYear || ''));
+    }
+    if (this.sortBy === 'Alphabetical') {
+      return items.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return items;
   }
 
   setCategory(cat: string): void {

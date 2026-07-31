@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -42,20 +42,27 @@ export class LandingComponent implements OnInit {
     { label: 'NGOs', desc: 'Support welfare outreach', icon: 'favorite', iconColor: '#E53E3E' },
   ];
 
-  constructor(private statsService: StatsService) {}
+  constructor(
+    private statsService: StatsService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.statsService.getPlatformStats().subscribe({
       next: (res) => {
+        if (!res?.stats) return;
+        const s = res.stats;
         this.stats = [
-          { value: formatStatNumber(res.stats.policies), label: 'Active Policies' },
-          { value: formatStatNumber(res.stats.schemes), label: 'Welfare Schemes' },
-          { value: `${res.stats.states}`, label: 'States & UTs' },
-          { value: formatStatNumber(res.stats.users), label: 'Registered Users' },
+          { value: formatStatNumber(s.policies), label: 'Active Policies' },
+          { value: formatStatNumber(s.schemes), label: 'Welfare Schemes' },
+          { value: `${s.states}`, label: 'States & UTs' },
+          { value: formatStatNumber(s.users), label: 'Registered Users' },
         ];
-        this.trending = res.trending;
+        this.trending = res.trending ?? [];
+        this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err) => {
+        console.error('Failed to load platform stats:', err);
         this.trending = ['PM Kisan', 'Ayushman Bharat', 'Digital India'];
       }
     });

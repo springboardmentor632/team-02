@@ -22,13 +22,17 @@ const reportRoutes = require('./routes/report');
 const searchRoutes = require('./routes/search');
 const statsRoutes = require('./routes/stats');
 const auditLogRoutes = require('./routes/auditLog');
+const applicationRoutes = require('./routes/application');
 const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.use(helmet());
-app.use(cors());
+// API responses are dynamic; ETag 304s return empty bodies that break Angular HttpClient
+app.set('etag', false);
+
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(morgan('dev'));
 
@@ -45,6 +49,7 @@ app.use('/api/feedback', feedbackRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/applications', applicationRoutes);
 app.use('/api/audit-logs', auditLogRoutes);
 
 app.use(errorHandler);

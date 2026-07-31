@@ -11,6 +11,7 @@ export interface SearchPayload {
   state?: string;
   department?: string;
   status?: string;
+  statuses?: string[];
   startDate?: string;
   endDate?: string;
 }

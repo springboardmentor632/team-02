@@ -62,6 +62,7 @@
             <p>Application Mode: {{ scheme.applicationMode || 'Online' }}</p>
             <p>State: {{ scheme.state || 'All India' }}</p>
             <p>Launch Date: {{ formatDate(scheme.launchDate) }}</p>
+            <a [routerLink]="['/citizen/scheme', scheme._id, 'apply']" class="btn-apply-tab">Apply for this Scheme →</a>
           </div>
         </div>
       </div>
@@ -69,7 +70,8 @@
       <div class="side-col">
         <div class="card action-card">
           <h3>Quick Actions</h3>
-          <a routerLink="/citizen/eligibility" class="btn-action btn-fill">✓ Check Eligibility</a>
+          <a [routerLink]="['/citizen/scheme', scheme._id, 'apply']" class="btn-action btn-fill">📝 Apply Now</a>
+          <a routerLink="/citizen/eligibility" class="btn-action btn-outline-dark">✓ Check Eligibility</a>
           <a routerLink="/citizen/compare" class="btn-action btn-outline-dark">⇄ Add to Compare</a>
         </div>
 

@@ -76,7 +76,7 @@
         <span class="result-count" *ngIf="loading">Searching...</span>
         <div class="sort-wrap">
           <label>Sort:</label>
-          <select [(ngModel)]="sortBy" (change)="onSearch()" class="filter-select sort-select">
+          <select [(ngModel)]="sortBy" (change)="applySort()" class="filter-select sort-select">
             <option *ngFor="let s of sortOptions" [value]="s">{{ s }}</option>
           </select>
         </div>

@@ -8,6 +8,8 @@ import { SchemeService } from '../services/scheme.service';
 import { NotificationService } from '../services/notification.service';
 import { getCategoryIcon, parseIncome, mapDisability } from '../utils/helpers';
 
+const ELIGIBILITY_STORAGE_KEY = 'citizenEligibilityProfile';
+
 interface MatchedScheme {
   id: string;
   name: string;
@@ -147,6 +149,22 @@ export class EligibilityComponent {
   restart(): void {
     this.currentStep = 1;
     this.matchedSchemes = [];
+  }
+
+  applyForScheme(schemeId: string): void {
+    sessionStorage.setItem(ELIGIBILITY_STORAGE_KEY, JSON.stringify({
+      age: this.age,
+      gender: this.gender,
+      education: this.education,
+      incomeLabel: this.income,
+      occupation: this.occupation,
+      socialCategory: this.socialCategory,
+      disability: this.disability,
+      state: this.state,
+      district: this.district,
+      areaType: this.areaType,
+    }));
+    this.router.navigate(['/citizen/scheme', schemeId, 'apply']);
   }
 
   onLogout(): void {

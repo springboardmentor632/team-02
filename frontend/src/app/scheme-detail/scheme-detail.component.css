@@ -48,6 +48,11 @@
 .tab-content p { font-size: 13.5px; color: var(--text-2); line-height: 1.7; margin: 0 0 10px; }
 .tab-content ul { padding-left: 18px; margin: 0; }
 .tab-content li { font-size: 13px; color: var(--text-2); margin-bottom: 6px; line-height: 1.5; }
+.btn-apply-tab {
+  display: inline-block; margin-top: 12px; background: var(--navy); color: #fff;
+  padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none;
+}
+.btn-apply-tab:hover { background: var(--navy-lt); }
 
 .side-col .card h3 { font-size: 13.5px; font-weight: 700; color: var(--text-1); margin: 0 0 12px; }
 .action-card { background: linear-gradient(135deg, #2E5430, #4A7A52); border: none; }

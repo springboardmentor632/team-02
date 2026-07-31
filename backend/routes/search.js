@@ -9,14 +9,18 @@ const router = express.Router();
 router.post('/', authenticate, async (req, res, next) => {
   try {
     const { query, category, ministry, state, department, status, statuses, startDate, endDate } = req.body;
+    const searchTerm = typeof query === 'string' ? query.trim() : '';
 
     // Build policy filters
     const policyFilters = {};
-    if (query) {
+    if (searchTerm) {
       policyFilters.$or = [
-        { title: { $regex: query, $options: 'i' } },
-        { summary: { $regex: query, $options: 'i' } },
-        { content: { $regex: query, $options: 'i' } },
+        { title: { $regex: searchTerm, $options: 'i' } },
+        { summary: { $regex: searchTerm, $options: 'i' } },
+        { content: { $regex: searchTerm, $options: 'i' } },
+        { ministry: { $regex: searchTerm, $options: 'i' } },
+        { department: { $regex: searchTerm, $options: 'i' } },
+        { tags: { $regex: searchTerm, $options: 'i' } },
       ];
     }
     if (category && category !== 'All Categories') policyFilters.category = category;
@@ -39,11 +43,14 @@ router.post('/', authenticate, async (req, res, next) => {
 
     // Build scheme filters
     const schemeFilters = {};
-    if (query) {
+    if (searchTerm) {
       schemeFilters.$or = [
-        { name: { $regex: query, $options: 'i' } },
-        { summary: { $regex: query, $options: 'i' } },
-        { details: { $regex: query, $options: 'i' } },
+        { name: { $regex: searchTerm, $options: 'i' } },
+        { summary: { $regex: searchTerm, $options: 'i' } },
+        { details: { $regex: searchTerm, $options: 'i' } },
+        { ministry: { $regex: searchTerm, $options: 'i' } },
+        { department: { $regex: searchTerm, $options: 'i' } },
+        { tags: { $regex: searchTerm, $options: 'i' } },
       ];
     }
     if (category && category !== 'All Categories') schemeFilters.category = category;
@@ -62,11 +69,11 @@ router.post('/', authenticate, async (req, res, next) => {
     ]);
 
     // Only save to history if a query was provided
-    if (query && query.trim()) {
+    if (searchTerm) {
       try {
         await SearchHistory.create({
           user: req.user._id,
-          query: query.trim(),
+          query: searchTerm,
           filters: { category, ministry, state, status },
           resultsCount: policies.length + schemes.length,
         });

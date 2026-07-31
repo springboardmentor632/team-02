@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -11,11 +11,8 @@ export class StatsService {
   constructor(private http: HttpClient) {}
 
   getPlatformStats(): Observable<{ stats: PlatformStats; trending: string[] }> {
-    // Add no-cache headers to prevent 304 responses with empty body
-    const headers = new HttpHeaders({
-      'Cache-Control': 'no-cache, no-store',
-      'Pragma': 'no-cache'
-    });
-    return this.http.get<{ stats: PlatformStats; trending: string[] }>(this.baseUrl, { headers });
+    return this.http.get<{ stats: PlatformStats; trending: string[] }>(
+      `${this.baseUrl}?_=${Date.now()}`
+    );
   }
 }
