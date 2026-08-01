@@ -207,6 +207,8 @@ router.post('/', authenticate, async (req, res, next) => {
   }
 });
 
+const { dispatchNotification } = require('../utils/notificationDispatcher');
+
 router.put('/:id/status', authenticate, authorize('Administrator', 'Government Official'), async (req, res, next) => {
   try {
     const { status, govNotes } = req.body;
@@ -225,14 +227,15 @@ router.put('/:id/status', authenticate, authorize('Administrator', 'Government O
 
     const itemName = getItemName(application);
     const typeMap = { Approved: 'success', Rejected: 'danger', 'Under Review': 'info' };
-    await Notification.create({
-      title: `Application ${application.status}`,
+
+    await dispatchNotification({
+      title: `📝 Application ${application.status}`,
       message: `Your application for "${itemName}" is now ${application.status}.${govNotes ? ` Note: ${govNotes}` : ''}`,
       type: typeMap[application.status] || 'info',
-      category: 'Application',
-      targetRoles: [],
+      category: 'application_update',
       user: application.user,
       link: '/citizen/applications',
+      channels: ['in_app', 'email', 'sms'],
     });
 
     res.json({ application });

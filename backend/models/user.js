@@ -14,6 +14,12 @@ const userSchema = new mongoose.Schema({
   phone: { type: String, trim: true },
   status: { type: String, enum: ['Active', 'Inactive'], default: 'Active' },
   profilePicture: { type: String },
+  notificationPreferences: {
+    emailAlerts: { type: Boolean, default: true },
+    smsAlerts: { type: Boolean, default: true },
+    inAppAlerts: { type: Boolean, default: true },
+    deadlineReminders: { type: Boolean, default: true },
+  },
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Date },
 }, { timestamps: true });

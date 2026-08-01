@@ -81,6 +81,8 @@ router.get('/:id', authenticate, async (req, res, next) => {
   }
 });
 
+const { dispatchNotification } = require('../utils/notificationDispatcher');
+
 router.post('/', authenticate, authorize('Administrator', 'Government Official'), async (req, res, next) => {
   try {
     const policy = await Policy.create({
@@ -89,6 +91,18 @@ router.post('/', authenticate, authorize('Administrator', 'Government Official')
       status: req.body.status || 'Draft',
     });
     await logAction(req.user._id, 'CREATE_POLICY', 'Policy', policy._id, `Created policy: "${policy.title}"`, req.ip);
+
+    // Trigger New Policy Alert notification
+    await dispatchNotification({
+      title: `📢 New Policy Alert: ${policy.title}`,
+      message: `A new policy under ${policy.ministry || 'Government of India'} has been published.`,
+      category: 'policy_alert',
+      type: 'info',
+      targetRoles: ['Citizen', 'Researcher', 'Organization'],
+      link: `/citizen/policy/${policy._id}`,
+      channels: ['in_app', 'email', 'sms'],
+    });
+
     res.status(201).json({ policy });
   } catch (err) {
     next(err);

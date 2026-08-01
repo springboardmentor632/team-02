@@ -2,6 +2,7 @@ const express = require('express');
 const Scheme = require('../models/scheme');
 const { authenticate, authorize } = require('../middleware/auth');
 const { logAction } = require('../middleware/auditLogger');
+const { dispatchNotification } = require('../utils/notificationDispatcher');
 
 const router = express.Router();
 
@@ -63,6 +64,17 @@ router.post('/', authenticate, authorize('Administrator', 'Government Official')
       status: req.body.status || 'Draft',
     });
     await logAction(req.user._id, 'CREATE_SCHEME', 'Scheme', scheme._id, `Created scheme: "${scheme.name}"`, req.ip);
+
+    await dispatchNotification({
+      title: `🎖️ New Scheme Alert: ${scheme.name}`,
+      message: `A new government scheme "${scheme.name}" is now active in ${scheme.state || 'All India'}.`,
+      category: 'scheme_update',
+      type: 'success',
+      targetRoles: ['Citizen', 'Organization'],
+      link: `/citizen/scheme/${scheme._id}`,
+      channels: ['in_app', 'email', 'sms'],
+    });
+
     res.status(201).json({ scheme });
   } catch (err) {
     next(err);
@@ -74,6 +86,16 @@ router.put('/:id', authenticate, authorize('Administrator', 'Government Official
     const scheme = await Scheme.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (scheme) {
       await logAction(req.user._id, 'UPDATE_SCHEME', 'Scheme', scheme._id, `Updated scheme: "${scheme.name}"`, req.ip);
+
+      await dispatchNotification({
+        title: `🔄 Scheme Update: ${scheme.name}`,
+        message: `The guidelines and details for scheme "${scheme.name}" have been updated.`,
+        category: 'scheme_update',
+        type: 'warning',
+        targetRoles: ['Citizen', 'Organization'],
+        link: `/citizen/scheme/${scheme._id}`,
+        channels: ['in_app', 'email', 'sms'],
+      });
     }
     res.json({ scheme });
   } catch (err) {

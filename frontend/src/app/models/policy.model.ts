@@ -85,7 +85,13 @@ export interface Notification {
   title: string;
   message: string;
   type: 'info' | 'success' | 'warning' | 'danger';
-  category?: string;
+  category?: 'policy_alert' | 'scheme_update' | 'deadline_reminder' | 'application_update' | 'system' | string;
+  channels?: ('in_app' | 'email' | 'sms')[];
+  deliveryStatus?: {
+    email?: string;
+    sms?: string;
+    inApp?: string;
+  };
   read: boolean;
   sentAt: string;
   link?: string;
