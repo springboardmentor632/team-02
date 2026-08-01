@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterModule } from '@angular/router';
 import { ApplicationService } from '../services/application.service';
@@ -19,7 +19,10 @@ export class MyApplicationsComponent implements OnInit {
   error = '';
   activeFilter: 'all' | 'policy' | 'scheme' | 'Approved' | 'Under Review' = 'all';
 
-  constructor(private applicationService: ApplicationService) {}
+  constructor(
+    private applicationService: ApplicationService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.loadApplications();
@@ -28,15 +31,19 @@ export class MyApplicationsComponent implements OnInit {
   loadApplications(): void {
     this.loading = true;
     this.error = '';
+    this.cdr.detectChanges();
+
     this.applicationService.getMine().subscribe({
       next: (res) => {
         this.applications = res.applications || [];
         this.applyFilter('all');
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.error = err?.error?.message || 'Failed to load your applications.';
         this.loading = false;
+        this.cdr.detectChanges();
       },
     });
   }
@@ -54,6 +61,7 @@ export class MyApplicationsComponent implements OnInit {
         (app) => app.status === filter
       );
     }
+    this.cdr.detectChanges();
   }
 
   schemeName(app: SchemeApplication): string {

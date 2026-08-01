@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -26,7 +26,8 @@ export class PolicyManagementComponent implements OnInit {
   constructor(
     private router: Router,
     private auth: AuthService,
-    private policyService: PolicyService
+    private policyService: PolicyService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -35,20 +36,26 @@ export class PolicyManagementComponent implements OnInit {
 
   loadPolicies(): void {
     this.loading = true;
+    this.error = '';
+    this.cdr.detectChanges();
+
     this.policyService.getAll().subscribe({
       next: (res) => {
-        this.policies = res.policies;
+        this.policies = res.policies || [];
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.error = 'Failed to load policies.';
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
 
   toggleForm(): void {
     this.showForm = !this.showForm;
+    this.cdr.detectChanges();
   }
 
   addPolicy(): void {
@@ -67,14 +74,20 @@ export class PolicyManagementComponent implements OnInit {
         this.showForm = false;
         this.loadPolicies();
       },
-      error: () => { this.error = 'Failed to create policy.'; }
+      error: () => {
+        this.error = 'Failed to create policy.';
+        this.cdr.detectChanges();
+      }
     });
   }
 
   approve(p: Policy): void {
     this.policyService.update(p._id, { status: 'Active', publishedAt: new Date().toISOString() }).subscribe({
       next: () => this.loadPolicies(),
-      error: () => { this.error = 'Failed to approve policy.'; }
+      error: () => {
+        this.error = 'Failed to approve policy.';
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -87,7 +100,10 @@ export class PolicyManagementComponent implements OnInit {
   archive(p: Policy): void {
     this.policyService.update(p._id, { status: 'Archived' }).subscribe({
       next: () => this.loadPolicies(),
-      error: () => { this.error = 'Failed to archive policy.'; }
+      error: () => {
+        this.error = 'Failed to archive policy.';
+        this.cdr.detectChanges();
+      }
     });
   }
 

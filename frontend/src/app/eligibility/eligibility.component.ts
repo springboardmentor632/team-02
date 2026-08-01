@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -63,20 +63,28 @@ export class EligibilityComponent {
     private auth: AuthService,
     private eligibilityService: EligibilityService,
     private schemeService: SchemeService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
   ) {
     this.userName = this.auth.getUserDisplayName();
     this.userLocation = this.auth.getUserSubtitle();
     this.userInitials = this.auth.getUserInitials();
     this.schemeService.getAll({ status: 'Active' }).subscribe({
       next: (res) => {
-        this.previewSchemes = res.schemes.map((s) => s.name);
-        this.previewCount = res.schemes.length;
+        this.previewSchemes = (res.schemes || []).map((s) => s.name);
+        this.previewCount = (res.schemes || []).length;
+        this.cdr.detectChanges();
       }
     });
     this.notificationService.getAll().subscribe({
-      next: (res) => { this.notifications = res.notifications.filter(n => !n.read); },
-      error: () => { this.notifications = []; }
+      next: (res) => {
+        this.notifications = (res.notifications || []).filter(n => !n.read);
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.notifications = [];
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -117,6 +125,7 @@ export class EligibilityComponent {
   private runEligibilityCheck(): void {
     this.loading = true;
     this.error = '';
+    this.cdr.detectChanges();
     const location = this.areaType === 'Rural' ? 'Rural' : (this.state || 'Any');
 
     this.eligibilityService.check({
@@ -130,7 +139,7 @@ export class EligibilityComponent {
       disabilityStatus: mapDisability(this.disability),
     }).subscribe({
       next: (res) => {
-        this.matchedSchemes = res.matches.map((m) => ({
+        this.matchedSchemes = (res.matches || []).map((m) => ({
           id: m.scheme._id,
           name: m.scheme.name,
           category: m.scheme.category,
@@ -138,10 +147,12 @@ export class EligibilityComponent {
           icon: getCategoryIcon(m.scheme.category),
         }));
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.error = 'Eligibility check failed. Please try again.';
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -149,6 +160,7 @@ export class EligibilityComponent {
   restart(): void {
     this.currentStep = 1;
     this.matchedSchemes = [];
+    this.cdr.detectChanges();
   }
 
   applyForScheme(schemeId: string): void {

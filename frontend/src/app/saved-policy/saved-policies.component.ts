@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../services/auth.service';
@@ -38,7 +38,8 @@ export class SavedPoliciesComponent implements OnInit {
     private router: Router,
     private auth: AuthService,
     private policyService: PolicyService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -47,17 +48,25 @@ export class SavedPoliciesComponent implements OnInit {
     this.userInitials = this.auth.getUserInitials();
     this.loadSavedPolicies();
     this.notificationService.getAll().subscribe({
-      next: (res) => { this.notifications = res.notifications.filter(n => !n.read); },
-      error: () => { this.notifications = []; }
+      next: (res) => {
+        this.notifications = res.notifications.filter(n => !n.read);
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.notifications = [];
+        this.cdr.detectChanges();
+      }
     });
   }
 
   loadSavedPolicies(): void {
     this.loading = true;
     this.error = '';
+    this.cdr.detectChanges();
+
     this.policyService.getSavedPolicies().subscribe({
       next: (res: { saved: any[]; }) => {
-        this.savedItems = res.saved.map((item: any) => ({
+        this.savedItems = (res.saved || []).map((item: any) => ({
           id: item._id,
           type: item.type || 'policy',
           name: item.title || item.name,
@@ -68,10 +77,12 @@ export class SavedPoliciesComponent implements OnInit {
           icon: getCategoryIcon(item.category),
         }));
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.error = 'Failed to load saved policies.';
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -80,9 +91,11 @@ export class SavedPoliciesComponent implements OnInit {
     this.policyService.unsavePolicy(item.id).subscribe({
       next: () => {
         this.savedItems = this.savedItems.filter(s => s.id !== item.id);
+        this.cdr.detectChanges();
       },
       error: () => {
         this.error = 'Failed to remove saved policy. Please try again.';
+        this.cdr.detectChanges();
       }
     });
   }

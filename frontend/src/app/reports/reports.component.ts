@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -43,7 +43,8 @@ export class ReportsComponent implements OnInit {
     private policyService: PolicyService,
     private schemeService: SchemeService,
     private searchService: SearchService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -52,13 +53,20 @@ export class ReportsComponent implements OnInit {
     this.userInitials = this.auth.getUserInitials();
     this.loadReports();
     this.notificationService.getAll().subscribe({
-      next: (res) => { this.notifications = res.notifications.filter(n => !n.read); },
-      error: () => { this.notifications = []; }
+      next: (res) => {
+        this.notifications = (res.notifications || []).filter(n => !n.read);
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.notifications = [];
+        this.cdr.detectChanges();
+      }
     });
   }
 
   loadReports(): void {
     this.loading = true;
+    this.cdr.detectChanges();
     const today = formatDate(new Date().toISOString());
 
     forkJoin({
@@ -73,8 +81,12 @@ export class ReportsComponent implements OnInit {
           { id: '3', name: 'Your Search Activity', category: 'Search Activity', generatedOn: today, format: 'PDF', value: `${history.history.length} searches recorded` },
         ];
         this.loading = false;
+        this.cdr.detectChanges();
       },
-      error: () => { this.loading = false; }
+      error: () => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -84,12 +96,17 @@ export class ReportsComponent implements OnInit {
 
   setCategory(cat: string): void {
     this.selectedCategory = cat;
+    this.cdr.detectChanges();
   }
 
   generateNewReport(): void {
     this.generating = true;
+    this.cdr.detectChanges();
     this.loadReports();
-    setTimeout(() => { this.generating = false; }, 800);
+    setTimeout(() => {
+      this.generating = false;
+      this.cdr.detectChanges();
+    }, 800);
   }
 
   downloadReport(report: ReportRow): void {

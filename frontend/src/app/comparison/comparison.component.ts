@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -35,6 +35,7 @@ export class ComparisonComponent implements OnInit {
   selectedIds: string[] = [];
   showPicker = false;
   loading = true;
+  error = '';
   notifications: { _id: string }[] = [];
   userName = '';
   userLocation = '';
@@ -43,24 +44,45 @@ export class ComparisonComponent implements OnInit {
   constructor(
     private auth: AuthService,
     private schemeService: SchemeService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.userName = this.auth.getUserDisplayName();
     this.userLocation = this.auth.getUserSubtitle();
     this.userInitials = this.auth.getUserInitials();
+    this.loading = true;
+    this.cdr.detectChanges();
+
     this.schemeService.getAll({ status: 'Active' }).subscribe({
       next: (res) => {
-        this.allSchemes = res.schemes;
-        const defaultIds = res.schemes.slice(0, 3).map((s) => s._id);
-        this.loadComparison(defaultIds);
+        this.allSchemes = res.schemes || [];
+        const defaultIds = (res.schemes || []).slice(0, 3).map((s) => s._id);
+        if (defaultIds.length > 0) {
+          this.loadComparison(defaultIds);
+        } else {
+          this.loading = false;
+          this.cdr.detectChanges();
+        }
       },
-      error: () => { this.loading = false; }
+      error: (err) => {
+        console.error('[Comparison] Error loading schemes:', err);
+        this.error = 'Failed to load schemes for comparison.';
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
     });
+
     this.notificationService.getAll().subscribe({
-      next: (res) => { this.notifications = res.notifications.filter(n => !n.read); },
-      error: () => { this.notifications = []; }
+      next: (res) => {
+        this.notifications = (res.notifications || []).filter(n => !n.read);
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.notifications = [];
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -68,13 +90,18 @@ export class ComparisonComponent implements OnInit {
     if (ids.length === 0) {
       this.schemes = [];
       this.loading = false;
+      this.cdr.detectChanges();
       return;
     }
     this.loading = true;
+    this.error = '';
+    this.cdr.detectChanges();
+
     this.schemeService.compare(ids).subscribe({
       next: (res) => {
-        this.schemes = res.schemes.map((s) => {
-          const rule: EligibilityRule | undefined = res.rules[s._id];
+        const rulesMap: Record<string, EligibilityRule> = res.rules || {};
+        this.schemes = (res.schemes || []).map((s) => {
+          const rule: EligibilityRule | undefined = rulesMap[s._id];
           return {
             id: s._id,
             name: s.name,
@@ -91,13 +118,20 @@ export class ComparisonComponent implements OnInit {
         });
         this.selectedIds = ids;
         this.loading = false;
+        this.cdr.detectChanges();
       },
-      error: () => { this.loading = false; }
+      error: (err) => {
+        console.error('[Comparison] Compare API error:', err);
+        this.error = 'Failed to load scheme comparison details.';
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
   addScheme(): void {
     this.showPicker = !this.showPicker;
+    this.cdr.detectChanges();
   }
 
   toggleScheme(id: string): void {

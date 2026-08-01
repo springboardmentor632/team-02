@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -26,7 +26,8 @@ export class SchemeManagementComponent implements OnInit {
   constructor(
     private router: Router,
     private auth: AuthService,
-    private schemeService: SchemeService
+    private schemeService: SchemeService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -35,20 +36,26 @@ export class SchemeManagementComponent implements OnInit {
 
   loadSchemes(): void {
     this.loading = true;
+    this.error = '';
+    this.cdr.detectChanges();
+
     this.schemeService.getAll().subscribe({
       next: (res) => {
-        this.schemes = res.schemes;
+        this.schemes = res.schemes || [];
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.error = 'Failed to load schemes.';
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
 
   toggleForm(): void {
     this.showForm = !this.showForm;
+    this.cdr.detectChanges();
   }
 
   addScheme(): void {
@@ -68,7 +75,10 @@ export class SchemeManagementComponent implements OnInit {
         this.showForm = false;
         this.loadSchemes();
       },
-      error: () => { this.error = 'Failed to create scheme.'; }
+      error: () => {
+        this.error = 'Failed to create scheme.';
+        this.cdr.detectChanges();
+      }
     });
   }
 
