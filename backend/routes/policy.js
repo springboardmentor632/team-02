@@ -27,6 +27,48 @@ router.get('/', authenticate, async (req, res, next) => {
   }
 });
 
+// ── Saved policies (must be BEFORE /:id so Express doesn't match 'saved' as an ObjectId) ──────────────
+const SavedPolicy = require('../models/savedPolicy');
+
+router.get('/saved', authenticate, async (req, res, next) => {
+  try {
+    const saved = await SavedPolicy.find({ user: req.user._id }).populate('policy');
+    res.json({ saved: saved.map(s => s.policy).filter(Boolean) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/:id/is-saved', authenticate, async (req, res, next) => {
+  try {
+    const exists = await SavedPolicy.findOne({ user: req.user._id, policy: req.params.id });
+    res.json({ saved: !!exists });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/:id/save', authenticate, async (req, res, next) => {
+  try {
+    const exists = await SavedPolicy.findOne({ user: req.user._id, policy: req.params.id });
+    if (!exists) {
+      await SavedPolicy.create({ user: req.user._id, policy: req.params.id });
+    }
+    res.json({ message: 'Policy saved' });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete('/:id/save', authenticate, async (req, res, next) => {
+  try {
+    await SavedPolicy.deleteOne({ user: req.user._id, policy: req.params.id });
+    res.json({ message: 'Policy unsaved' });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/:id', authenticate, async (req, res, next) => {
   try {
     const policy = await Policy.findById(req.params.id);

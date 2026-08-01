@@ -112,8 +112,8 @@
       <div *ngIf="!loading && results.length > 0" class="results-grid">
         <a
           *ngFor="let r of results"
-          [routerLink]="getDetailLink(r)"
           class="result-card"
+          [routerLink]="getDetailLink(r)"
         >
           <div class="card-top">
             <span class="card-icon">{{ r.icon }}</span>

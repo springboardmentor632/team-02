@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { SearchService } from '../services/search.service';
 import { NotificationService } from '../services/notification.service';
@@ -11,7 +11,7 @@ import { getCategoryIcon, getLaunchYear } from '../utils/helpers';
 @Component({
   selector: 'app-policy-search',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './policy-search.component.html',
   styleUrl: './policy-search.component.css'
 })
@@ -189,9 +189,13 @@ export class PolicySearchComponent implements OnInit {
   }
 
   getDetailLink(r: SearchResult): string[] {
-    const role = this.auth.getUserRole()?.toLowerCase() || 'citizen';
-    if (r.type === 'policy') return [`/${role}/policy`, r.id];
-    return [`/${role}/scheme`, r.id];
+    if (r.type === 'policy') return ['/citizen/policy', r.id];
+    return ['/citizen/scheme', r.id];
+  }
+
+  navigateToDetail(r: SearchResult): void {
+    const path = this.getDetailLink(r);
+    this.router.navigate(path);
   }
 
   onLogout(): void {

@@ -1,12 +1,27 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const Policy = require('../models/policy');
 const Scheme = require('../models/scheme');
 const SearchHistory = require('../models/searchHistory');
+const User = require('../models/user');
 const { authenticate } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.post('/', authenticate, async (req, res, next) => {
+const getAuthenticatedUser = async (req) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
+
+  try {
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return await User.findById(decoded.id).select('-password');
+  } catch {
+    return null;
+  }
+};
+
+router.post('/', async (req, res, next) => {
   try {
     const { query, category, ministry, state, department, status, statuses, startDate, endDate } = req.body;
     const searchTerm = typeof query === 'string' ? query.trim() : '';
@@ -63,13 +78,16 @@ router.post('/', authenticate, async (req, res, next) => {
       schemeFilters.status = status;
     }
 
+    const user = await getAuthenticatedUser(req);
+    req.user = user;
+
     const [policies, schemes] = await Promise.all([
       Policy.find(policyFilters).sort({ publishedAt: -1 }),
       Scheme.find(schemeFilters).sort({ launchDate: -1 }),
     ]);
 
-    // Only save to history if a query was provided
-    if (searchTerm) {
+    // Save to history only if the user is authenticated and a query was provided.
+    if (searchTerm && req.user) {
       try {
         await SearchHistory.create({
           user: req.user._id,

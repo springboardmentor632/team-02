@@ -125,6 +125,8 @@ export interface ApplicationFormData {
 export interface SchemeApplication {
   _id: string;
   user: string;
+  applicationType?: 'scheme' | 'policy';
+  policy?: Policy | string;
   scheme: Scheme | string;
   status: 'Submitted' | 'Under Review' | 'Approved' | 'Rejected';
   applicantName: string;

@@ -70,7 +70,7 @@ export class LandingComponent implements OnInit {
 
   onSearch(): void {
     if (this.searchQuery.trim()) {
-      window.location.href = `/login?returnUrl=policy-search&q=${encodeURIComponent(this.searchQuery)}`;
+      window.location.href = `/login?returnUrl=citizen/search&q=${encodeURIComponent(this.searchQuery)}`;
     }
   }
 }

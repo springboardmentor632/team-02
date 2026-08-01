@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -58,21 +58,33 @@ export class SchemeApplyComponent implements OnInit {
     private auth: AuthService,
     private schemeService: SchemeService,
     private eligibilityService: EligibilityService,
-    private applicationService: ApplicationService
+    private applicationService: ApplicationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this.schemeId = this.route.snapshot.paramMap.get('id') || '';
-    if (!this.schemeId) {
-      this.error = 'Scheme not found.';
-      this.loading = false;
-      return;
-    }
-
     this.prefillFromProfile();
     this.loadSavedEligibility();
 
-    this.schemeService.getById(this.schemeId).subscribe({
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.schemeId = id;
+        this.loadSchemeDetails(id);
+      } else {
+        this.error = 'Scheme not found.';
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private loadSchemeDetails(id: string): void {
+    this.loading = true;
+    this.error = '';
+    this.cdr.detectChanges();
+
+    this.schemeService.getById(id).subscribe({
       next: (res) => {
         this.scheme = res.scheme;
         this.requiredDocuments = [
@@ -82,11 +94,13 @@ export class SchemeApplyComponent implements OnInit {
           ...(this.scheme.eligibilityCriteria?.slice(0, 2) || []),
         ];
         this.loading = false;
+        this.cdr.detectChanges();
         this.verifyEligibility();
       },
       error: () => {
         this.error = 'Failed to load scheme details.';
         this.loading = false;
+        this.cdr.detectChanges();
       },
     });
   }

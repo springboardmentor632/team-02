@@ -2,7 +2,9 @@ const mongoose = require('mongoose');
 
 const applicationSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  scheme: { type: mongoose.Schema.Types.ObjectId, ref: 'Scheme', required: true },
+  applicationType: { type: String, enum: ['policy', 'scheme'], default: 'scheme' },
+  scheme: { type: mongoose.Schema.Types.ObjectId, ref: 'Scheme' },
+  policy: { type: mongoose.Schema.Types.ObjectId, ref: 'Policy' },
   status: {
     type: String,
     enum: ['Submitted', 'Under Review', 'Approved', 'Rejected'],
@@ -36,5 +38,6 @@ const applicationSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 applicationSchema.index({ user: 1, scheme: 1 });
+applicationSchema.index({ user: 1, policy: 1 });
 
 module.exports = mongoose.model('Application', applicationSchema);

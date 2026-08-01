@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../services/auth.service';
@@ -24,16 +24,28 @@ export class SchemeDetailComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private auth: AuthService,
-    private schemeService: SchemeService
+    private schemeService: SchemeService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (!id) {
-      this.error = 'Scheme not found';
-      this.loading = false;
-      return;
-    }
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.loadScheme(id);
+      } else {
+        this.error = 'Scheme not found';
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  loadScheme(id: string): void {
+    this.loading = true;
+    this.error = '';
+    this.cdr.detectChanges();
+
     this.schemeService.getById(id).subscribe({
       next: (res) => {
         this.scheme = res.scheme;
@@ -44,10 +56,12 @@ export class SchemeDetailComponent implements OnInit {
           { value: this.scheme.status, label: 'Status' },
         ];
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.error = 'Scheme not found or failed to load.';
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }

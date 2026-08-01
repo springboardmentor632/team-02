@@ -9,8 +9,10 @@ import {
 } from '../models/policy.model';
 
 export interface SubmitApplicationPayload {
-  schemeId: string;
-  eligibilitySnapshot: EligibilityProfile;
+  applicationType?: 'scheme' | 'policy';
+  schemeId?: string;
+  policyId?: string;
+  eligibilitySnapshot?: EligibilityProfile;
   formData: ApplicationFormData;
 }
 
@@ -28,7 +30,18 @@ export class ApplicationService {
     return this.http.get<{ application: SchemeApplication }>(`${this.baseUrl}/${id}`);
   }
 
+  getAll(): Observable<{ applications: SchemeApplication[] }> {
+    return this.http.get<{ applications: SchemeApplication[] }>(this.baseUrl);
+  }
+
   submit(payload: SubmitApplicationPayload): Observable<{ application: SchemeApplication }> {
     return this.http.post<{ application: SchemeApplication }>(this.baseUrl, payload);
+  }
+
+  updateStatus(id: string, status: string, govNotes?: string): Observable<{ application: SchemeApplication }> {
+    return this.http.put<{ application: SchemeApplication }>(`${this.baseUrl}/${id}/status`, {
+      status,
+      govNotes,
+    });
   }
 }

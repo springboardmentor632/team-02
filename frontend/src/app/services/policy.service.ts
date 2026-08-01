@@ -47,4 +47,8 @@ export class PolicyService {
   unsavePolicy(id: string): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.baseUrl}/${id}/save`);
   }
+
+  isSaved(id: string): Observable<{ saved: boolean }> {
+    return this.http.get<{ saved: boolean }>(`${this.baseUrl}/${id}/is-saved`);
+  }
 }

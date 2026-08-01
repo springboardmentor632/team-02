@@ -15,6 +15,7 @@ import { SchemeDetailComponent } from './scheme-detail/scheme-detail.component';
 import { ComparisonComponent } from './comparison/comparison.component';
 import { EligibilityComponent } from './eligibility/eligibility.component';
 import { SchemeApplyComponent } from './scheme-apply/scheme-apply.component';
+import { PolicyApplyComponent } from './policy-apply/policy-apply.component';
 import { MyApplicationsComponent } from './my-applications/my-applications.component';
 import { NotificationsComponent } from './notifications/notifications.component';
 import { ReportsComponent } from './reports/reports.component';
@@ -60,9 +61,10 @@ export const routes: Routes = [
       { path: 'profile',       component: ProfileComponent },
       { path: 'feedback',      component: FeedbackComponent },
       { path: 'settings',      component: SettingsComponent },
+      { path: 'policy/:id/apply', component: PolicyApplyComponent },
       { path: 'policy/:id',    component: PolicyDetailComponent },
-      { path: 'scheme/:id',    component: SchemeDetailComponent },
       { path: 'scheme/:id/apply', component: SchemeApplyComponent },
+      { path: 'scheme/:id',    component: SchemeDetailComponent },
     ]
   },
 
@@ -104,6 +106,7 @@ export const routes: Routes = [
   { path: 'citizen-dashboard',    redirectTo: '/citizen/dashboard',    pathMatch: 'full' },
   { path: 'government-dashboard', redirectTo: '/government/dashboard', pathMatch: 'full' },
   { path: 'admin-dashboard',      redirectTo: '/admin/dashboard',      pathMatch: 'full' },
+  { path: 'policy-search',        redirectTo: '/citizen/search',      pathMatch: 'full' },
 
   // ── 404 fallback ──────────────────────────────────────────────────────────
   { path: '**', redirectTo: '' }

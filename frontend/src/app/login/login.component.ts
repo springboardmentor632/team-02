@@ -175,8 +175,9 @@ export class LoginComponent implements OnInit {
         this.authService.saveSession(response);
         const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
         const q = this.route.snapshot.queryParamMap.get('q');
-        if (returnUrl === 'policy-search') {
-          this.router.navigate(['/policy-search'], { queryParams: q ? { q } : {} });
+        if (returnUrl) {
+          const redirect = returnUrl === 'policy-search' ? '/citizen/search' : returnUrl;
+          this.router.navigate([redirect], { queryParams: q ? { q } : {} });
         } else {
           this.authService.navigateByRole(response.user?.role);
         }

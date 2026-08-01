@@ -6,6 +6,7 @@ import { PolicyService } from '../services/policy.service';
 import { SchemeService } from '../services/scheme.service';
 import { NotificationService } from '../services/notification.service';
 import { StatsService } from '../services/stats.service';
+import { ApplicationService } from '../services/application.service';
 
 @Component({
   selector: 'app-government-dashboard',
@@ -40,6 +41,7 @@ export class GovernmentDashboardComponent implements OnInit {
     private schemeService: SchemeService,
     private notificationService: NotificationService,
     private statsService: StatsService,
+    private applicationService: ApplicationService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -117,6 +119,18 @@ export class GovernmentDashboardComponent implements OnInit {
         console.error('[GovtDashboard] Notifications error:', err);
         this.stats = this.stats.map((s, i) => i === 3 ? { ...s, value: '0' } : s);
         this.cdr.detectChanges();
+      }
+    });
+
+    // also fetch application counts for government dashboard overview
+    this.applicationService.getAll().subscribe({
+      next: (res) => {
+        const apps = res.applications || [];
+        this.stats = this.stats.map((s, i) => i === 3 ? { ...s, value: String(apps.length) } : s);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('[GovtDashboard] Applications error:', err);
       }
     });
   }

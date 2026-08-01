@@ -5,6 +5,7 @@ import { AuthService } from '../services/auth.service';
 import { PolicyService } from '../services/policy.service';
 import { SchemeService } from '../services/scheme.service';
 import { StatsService } from '../services/stats.service';
+import { ApplicationService } from '../services/application.service';
 import { Policy } from '../models/policy.model';
 
 @Component({
@@ -32,6 +33,7 @@ export class AdminDashboardComponent implements OnInit {
     private policyService: PolicyService,
     private schemeService: SchemeService,
     private statsService: StatsService,
+    private applicationService: ApplicationService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -69,6 +71,17 @@ export class AdminDashboardComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => console.error('[AdminDashboard] Policies error:', err)
+    });
+
+    this.applicationService.getAll().subscribe({
+      next: (res) => {
+        const apps = res.applications || [];
+        const pending = apps.filter(a => a.status === 'Submitted' || a.status === 'Under Review').length;
+        // update pending approvals stat
+        this.stats = this.stats.map((s, i) => i === 4 ? { ...s, value: String(pending) } : s);
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('[AdminDashboard] Applications error:', err)
     });
   }
 

@@ -1,6 +1,7 @@
 const express = require('express');
 const Application = require('../models/application');
 const Scheme = require('../models/scheme');
+const Policy = require('../models/policy');
 const EligibilityRule = require('../models/eligibilityRule');
 const Notification = require('../models/notification');
 const { authenticate, authorize } = require('../middleware/auth');
@@ -29,10 +30,21 @@ function isEligible(rule, profile) {
     && matchesEducation && matchesLocation && matchesSocial && matchesDisability;
 }
 
+function getItemName(application) {
+  if (application.applicationType === 'policy' && application.policy) {
+    return application.policy.title || 'Policy';
+  }
+  if (application.scheme) {
+    return application.scheme.name || 'Scheme';
+  }
+  return 'Application';
+}
+
 router.get('/mine', authenticate, async (req, res, next) => {
   try {
     const applications = await Application.find({ user: req.user._id })
       .populate('scheme', 'name category ministry status applicationMode')
+      .populate('policy', 'title category ministry status')
       .sort({ createdAt: -1 });
     res.json({ applications });
   } catch (err) {
@@ -44,6 +56,7 @@ router.get('/', authenticate, authorize('Administrator', 'Government Official'),
   try {
     const applications = await Application.find()
       .populate('scheme', 'name category ministry status')
+      .populate('policy', 'title category ministry department status')
       .populate('user', 'firstName lastName email phone')
       .sort({ createdAt: -1 });
     res.json({ applications });
@@ -56,6 +69,7 @@ router.get('/:id', authenticate, async (req, res, next) => {
   try {
     const application = await Application.findById(req.params.id)
       .populate('scheme')
+      .populate('policy')
       .populate('user', 'firstName lastName email phone');
 
     if (!application) {
@@ -80,9 +94,67 @@ router.post('/', authenticate, async (req, res, next) => {
       return res.status(403).json({ message: 'Only citizens can submit applications' });
     }
 
-    const { schemeId, eligibilitySnapshot, formData } = req.body;
-    if (!schemeId || !eligibilitySnapshot || !formData) {
-      return res.status(400).json({ message: 'Scheme, eligibility profile, and form data are required' });
+    const {
+      applicationType = 'scheme',
+      schemeId,
+      policyId,
+      eligibilitySnapshot,
+      formData,
+    } = req.body;
+
+    if (!formData) {
+      return res.status(400).json({ message: 'Form data is required' });
+    }
+
+    if (applicationType === 'policy') {
+      if (!policyId) {
+        return res.status(400).json({ message: 'Policy ID is required' });
+      }
+
+      const policy = await Policy.findById(policyId);
+      if (!policy || policy.status !== 'Active') {
+        return res.status(404).json({ message: 'Policy not found or not active' });
+      }
+
+      const existing = await Application.findOne({
+        user: req.user._id,
+        policy: policyId,
+        applicationType: 'policy',
+        status: { $in: ['Submitted', 'Under Review', 'Approved'] },
+      });
+      if (existing) {
+        return res.status(409).json({ message: 'You already have an active application for this policy' });
+      }
+
+      const application = await Application.create({
+        user: req.user._id,
+        applicationType: 'policy',
+        policy: policyId,
+        applicantName: `${req.user.firstName} ${req.user.lastName}`.trim(),
+        applicantEmail: req.user.email,
+        applicantPhone: req.user.phone || '',
+        eligibilitySnapshot: eligibilitySnapshot || {},
+        formData,
+      });
+
+      await Notification.create({
+        title: 'Application Submitted',
+        message: `Your application for policy "${policy.title}" has been submitted successfully.`,
+        type: 'success',
+        category: 'Application',
+        targetRoles: [req.user.role],
+        user: req.user._id,
+        link: '/citizen/applications',
+      });
+
+      const populated = await Application.findById(application._id)
+        .populate('policy', 'title category ministry status');
+
+      return res.status(201).json({ application: populated });
+    }
+
+    if (!schemeId || !eligibilitySnapshot) {
+      return res.status(400).json({ message: 'Scheme and eligibility profile are required' });
     }
 
     const scheme = await Scheme.findById(schemeId);
@@ -98,6 +170,7 @@ router.post('/', authenticate, async (req, res, next) => {
     const existing = await Application.findOne({
       user: req.user._id,
       scheme: schemeId,
+      applicationType: 'scheme',
       status: { $in: ['Submitted', 'Under Review', 'Approved'] },
     });
     if (existing) {
@@ -106,6 +179,7 @@ router.post('/', authenticate, async (req, res, next) => {
 
     const application = await Application.create({
       user: req.user._id,
+      applicationType: 'scheme',
       scheme: schemeId,
       applicantName: `${req.user.firstName} ${req.user.lastName}`.trim(),
       applicantEmail: req.user.email,
@@ -121,7 +195,7 @@ router.post('/', authenticate, async (req, res, next) => {
       category: 'Application',
       targetRoles: [req.user.role],
       user: req.user._id,
-      link: `/citizen/applications`,
+      link: '/citizen/applications',
     });
 
     const populated = await Application.findById(application._id)
@@ -136,7 +210,10 @@ router.post('/', authenticate, async (req, res, next) => {
 router.put('/:id/status', authenticate, authorize('Administrator', 'Government Official'), async (req, res, next) => {
   try {
     const { status, govNotes } = req.body;
-    const application = await Application.findById(req.params.id).populate('scheme', 'name');
+    const application = await Application.findById(req.params.id)
+      .populate('scheme', 'name')
+      .populate('policy', 'title');
+
     if (!application) {
       return res.status(404).json({ message: 'Application not found' });
     }
@@ -146,10 +223,11 @@ router.put('/:id/status', authenticate, authorize('Administrator', 'Government O
     application.reviewedBy = req.user._id;
     await application.save();
 
+    const itemName = getItemName(application);
     const typeMap = { Approved: 'success', Rejected: 'danger', 'Under Review': 'info' };
     await Notification.create({
       title: `Application ${application.status}`,
-      message: `Your application for "${application.scheme.name}" is now ${application.status}.${govNotes ? ` Note: ${govNotes}` : ''}`,
+      message: `Your application for "${itemName}" is now ${application.status}.${govNotes ? ` Note: ${govNotes}` : ''}`,
       type: typeMap[application.status] || 'info',
       category: 'Application',
       targetRoles: [],
