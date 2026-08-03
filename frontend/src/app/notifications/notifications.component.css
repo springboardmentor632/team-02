@@ -61,7 +61,7 @@
 }
 
 .subtitle {
-  color: #64748b;
+  color:#5A7A5A;
   font-size: 14px;
   margin-top: 4px;
 }
@@ -73,7 +73,7 @@
 
 .btn-secondary {
   background: #f1f5f9;
-  color: #334155;
+  color: #5A7A5A;
   border: 1px solid #cbd5e1;
   padding: 10px 16px;
   border-radius: 8px;
@@ -117,7 +117,7 @@
 .tab-btn {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  color: #64748b;
+  color: #5A7A5A;
   padding: 8px 14px;
   border-radius: 20px;
   font-size: 13px;
@@ -133,9 +133,9 @@
 }
 
 .tab-btn.tab-active {
-  background: #1e293b;
+  background: #5A7A5A;
   color: #ffffff;
-  border-color: #1e293b;
+  border-color: #5A7A5A;
   box-shadow: 0 2px 8px rgba(30, 41, 59, 0.2);
 }
 
@@ -296,7 +296,7 @@
 }
 
 .btn-action {
-  background: #2563eb;
+  background:  #5A7A5A;
   color: #ffffff;
   padding: 8px 14px;
   border-radius: 8px;

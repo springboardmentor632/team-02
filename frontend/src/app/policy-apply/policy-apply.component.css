@@ -15,11 +15,11 @@
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: #6b7280;
+  color:#5A7A5A;
   margin-bottom: 20px;
 }
 .breadcrumb a {
-  color: #2d6a4f;
+  color:#5A7A5A;
   text-decoration: none;
   font-weight: 500;
 }

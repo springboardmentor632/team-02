@@ -17,7 +17,7 @@
   margin: 0 0 4px;
 }
 .search-subtitle {
-  color: #64748b;
+  color: #5A7A5A;
   font-size: 0.9rem;
   margin: 0;
 }
@@ -53,10 +53,13 @@
   padding: 10px 0;
 }
 .search-input::placeholder {
-  color: #94a3b8;
+  color: #5A7A5A;
+  opacity: 50%;
+  
 }
 .btn-search {
-  background: linear-gradient(135deg, #2d6a4f, #40916c);
+  /* background: linear-gradient(135deg, #2d6a4f, #40916c); */
+  background-color: #5A7A5A;
   color: white;
   border: none;
   border-radius: 8px;
@@ -84,7 +87,7 @@
 .cat-pill {
   background: #f1f5f9;
   border: 1.5px solid #e2e8f0;
-  color: #475569;
+  color: #5A7A5A;
   padding: 6px 16px;
   border-radius: 50px;
   font-size: 0.875rem;
@@ -99,7 +102,7 @@
   color: #2d6a4f;
 }
 .cat-pill.active {
-  background: #2d6a4f;
+  background: #5A7A5A;
   border-color: #2d6a4f;
   color: white;
 }
@@ -152,7 +155,7 @@
   transition: border-color 0.2s;
 }
 .filter-select:focus {
-  border-color: #2d6a4f;
+  border-color: #5A7A5A;
 }
 .checkbox-row {
   display: flex;
@@ -171,13 +174,13 @@
   letter-spacing: 0 !important;
 }
 .checkbox-label input {
-  accent-color: #2d6a4f;
+  accent-color: #5A7A5A;
   width: 16px;
   height: 16px;
 }
 .btn-apply {
   width: 100%;
-  background: linear-gradient(135deg, #2d6a4f, #40916c);
+  background:#5A7A5A;
   color: white;
   border: none;
   border-radius: 8px;
