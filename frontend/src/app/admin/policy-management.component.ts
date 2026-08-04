@@ -82,8 +82,11 @@ export class PolicyManagementComponent implements OnInit {
   }
 
   approve(p: Policy): void {
-    this.policyService.update(p._id, { status: 'Active', publishedAt: new Date().toISOString() }).subscribe({
-      next: () => this.loadPolicies(),
+    this.policyService.approvePolicy(p._id).subscribe({
+      next: () => {
+        p.status = 'Active';
+        this.loadPolicies();
+      },
       error: () => {
         this.error = 'Failed to approve policy.';
         this.cdr.detectChanges();
@@ -91,17 +94,25 @@ export class PolicyManagementComponent implements OnInit {
     });
   }
 
-  submitForApproval(p: Policy): void {
-    this.policyService.update(p._id, { status: 'Pending' }).subscribe({
-      next: () => this.loadPolicies(),
+  reject(p: Policy): void {
+    this.policyService.rejectPolicy(p._id).subscribe({
+      next: () => {
+        p.status = 'Archived';
+        this.loadPolicies();
+      },
+      error: () => {
+        this.error = 'Failed to reject policy.';
+        this.cdr.detectChanges();
+      }
     });
   }
 
-  archive(p: Policy): void {
-    this.policyService.update(p._id, { status: 'Archived' }).subscribe({
+  deletePolicy(p: Policy): void {
+    if (!confirm(`Are you sure you want to delete policy "${p.title}"?`)) return;
+    this.policyService.delete(p._id).subscribe({
       next: () => this.loadPolicies(),
       error: () => {
-        this.error = 'Failed to archive policy.';
+        this.error = 'Failed to delete policy.';
         this.cdr.detectChanges();
       }
     });

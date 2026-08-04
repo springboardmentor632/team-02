@@ -39,6 +39,14 @@ export class SchemeService {
     return this.http.put<{ scheme: Scheme }>(`${this.baseUrl}/${id}`, data);
   }
 
+  approveScheme(id: string): Observable<{ scheme: Scheme }> {
+    return this.http.put<{ scheme: Scheme }>(`${this.baseUrl}/${id}/approve`, {});
+  }
+
+  rejectScheme(id: string): Observable<{ scheme: Scheme }> {
+    return this.http.put<{ scheme: Scheme }>(`${this.baseUrl}/${id}/reject`, {});
+  }
+
   delete(id: string): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.baseUrl}/${id}`);
   }

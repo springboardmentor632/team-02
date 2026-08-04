@@ -48,7 +48,7 @@ export class LoginComponent implements OnInit {
   regRole = 'Citizen';
   regPassword = '';
 
-  roles = ['Citizen', 'Government Official', 'Researcher', 'Organization'];
+  roles = ['Citizen', 'Government Official', 'Administrator', 'Researcher', 'Organization'];
 
   errorMsg = '';
   loading = false;

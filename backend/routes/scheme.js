@@ -103,6 +103,38 @@ router.put('/:id', authenticate, authorize('Administrator', 'Government Official
   }
 });
 
+router.put('/:id/approve', authenticate, authorize('Administrator'), async (req, res, next) => {
+  try {
+    const scheme = await Scheme.findByIdAndUpdate(
+      req.params.id,
+      { status: 'Active', approvedBy: req.user._id, launchDate: new Date() },
+      { new: true }
+    );
+    if (scheme) {
+      await logAction(req.user._id, 'APPROVE_SCHEME', 'Scheme', scheme._id, `Approved scheme: "${scheme.name}"`, req.ip);
+    }
+    res.json({ scheme });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.put('/:id/reject', authenticate, authorize('Administrator'), async (req, res, next) => {
+  try {
+    const scheme = await Scheme.findByIdAndUpdate(
+      req.params.id,
+      { status: 'Archived' },
+      { new: true }
+    );
+    if (scheme) {
+      await logAction(req.user._id, 'REJECT_SCHEME', 'Scheme', scheme._id, `Rejected scheme: "${scheme.name}"`, req.ip);
+    }
+    res.json({ scheme });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.delete('/:id', authenticate, authorize('Administrator', 'Government Official'), async (req, res, next) => {
   try {
     await Scheme.findByIdAndDelete(req.params.id);

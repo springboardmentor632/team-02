@@ -226,7 +226,13 @@ router.put('/:id/status', authenticate, authorize('Administrator', 'Government O
     await application.save();
 
     const itemName = getItemName(application);
-    const typeMap = { Approved: 'success', Rejected: 'danger', 'Under Review': 'info' };
+    const typeMap = {
+      Approved: 'success',
+      Completed: 'success',
+      Rejected: 'danger',
+      'Under Review': 'info',
+      'Documents Requested': 'warning',
+    };
 
     await dispatchNotification({
       title: `📝 Application ${application.status}`,

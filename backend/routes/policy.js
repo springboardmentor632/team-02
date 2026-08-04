@@ -109,6 +109,38 @@ router.post('/', authenticate, authorize('Administrator', 'Government Official')
   }
 });
 
+router.put('/:id/approve', authenticate, authorize('Administrator'), async (req, res, next) => {
+  try {
+    const policy = await Policy.findByIdAndUpdate(
+      req.params.id,
+      { status: 'Active', approvedBy: req.user._id, publishedAt: new Date() },
+      { new: true }
+    );
+    if (policy) {
+      await logAction(req.user._id, 'APPROVE_POLICY', 'Policy', policy._id, `Approved policy: "${policy.title}"`, req.ip);
+    }
+    res.json({ policy });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.put('/:id/reject', authenticate, authorize('Administrator'), async (req, res, next) => {
+  try {
+    const policy = await Policy.findByIdAndUpdate(
+      req.params.id,
+      { status: 'Archived' },
+      { new: true }
+    );
+    if (policy) {
+      await logAction(req.user._id, 'REJECT_POLICY', 'Policy', policy._id, `Rejected policy: "${policy.title}"`, req.ip);
+    }
+    res.json({ policy });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.put('/:id', authenticate, authorize('Administrator', 'Government Official'), async (req, res, next) => {
   try {
     const policy = await Policy.findByIdAndUpdate(req.params.id, req.body, { new: true });

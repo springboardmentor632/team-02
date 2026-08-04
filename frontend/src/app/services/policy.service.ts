@@ -32,6 +32,14 @@ export class PolicyService {
     return this.http.put<{ policy: Policy }>(`${this.baseUrl}/${id}`, data);
   }
 
+  approvePolicy(id: string): Observable<{ policy: Policy }> {
+    return this.http.put<{ policy: Policy }>(`${this.baseUrl}/${id}/approve`, {});
+  }
+
+  rejectPolicy(id: string): Observable<{ policy: Policy }> {
+    return this.http.put<{ policy: Policy }>(`${this.baseUrl}/${id}/reject`, {});
+  }
+
   delete(id: string): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.baseUrl}/${id}`);
   }

@@ -1,65 +1,159 @@
 <div class="page-wrapper">
+
+  <!-- Toast Notification -->
+  <div class="toast-banner" *ngIf="toastMessage">
+    <span>✨ {{ toastMessage }}</span>
+  </div>
+
+  <!-- Page Header -->
   <div class="page-header">
     <div>
       <h1>User Management</h1>
-      <p>Manage registered citizens, government officials, and administrators.</p>
+      <p class="subtitle">Manage registered citizens, government officials, researchers, organizations, and administrators across the platform.</p>
     </div>
+    
     <div class="header-stats">
       <div class="stat-pill">
-        <span class="stat-pill-label">Total Users</span>
-        <span class="stat-pill-value">{{ loading ? '…' : totalUsers }}</span>
+        <span class="stat-pill-label">Total Registered</span>
+        <span class="stat-pill-value">{{ totalUsersCount }}</span>
+      </div>
+      <div class="stat-pill citizen-pill">
+        <span class="stat-pill-label">Citizens</span>
+        <span class="stat-pill-value">{{ citizenCount }}</span>
+      </div>
+      <div class="stat-pill govt-pill">
+        <span class="stat-pill-label">Officials</span>
+        <span class="stat-pill-value">{{ officialCount }}</span>
+      </div>
+      <div class="stat-pill admin-pill">
+        <span class="stat-pill-label">Admins</span>
+        <span class="stat-pill-value">{{ adminCount }}</span>
       </div>
     </div>
   </div>
 
+  <!-- Filter & Search Toolbar -->
+  <div class="filter-toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        placeholder="Search users by name, email, or organization..."
+        class="search-input"
+      />
+    </div>
+
+    <div class="role-filter-chips">
+      <button
+        *ngFor="let r of roleFilterOptions"
+        class="chip-btn"
+        [class.active]="selectedRoleFilter === r"
+        (click)="setRoleFilter(r)">
+        {{ r }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Users Card -->
   <div class="card">
     <div class="card-header">
-      <h3>All Registered Users</h3>
-      <span class="count-badge">{{ users.length }} shown</span>
+      <div class="header-title-wrap">
+        <h3>All Registered Users</h3>
+        <span class="count-badge">{{ filteredUsers.length }} of {{ users.length }} shown</span>
+      </div>
+      <button class="btn-refresh" (click)="loadUsers()" title="Refresh user list">
+        🔄 Refresh List
+      </button>
     </div>
-    <div class="table-wrapper">
+
+    <!-- Error State -->
+    <div class="error-banner" *ngIf="error">
+      <span>⚠️ {{ error }}</span>
+      <button (click)="loadUsers()">Retry</button>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <p>Loading registered users...</p>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrapper" *ngIf="!loading && filteredUsers.length > 0">
       <table class="users-table">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Role</th>
+            <th>User Info</th>
+            <th>Email Address</th>
+            <th>Role Assignment</th>
             <th>Status</th>
-            <th>Actions</th>
+            <th>Organization / Phone</th>
+            <th class="text-right">Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let user of users">
+          <tr *ngFor="let user of filteredUsers" [class.inactive-row]="user.status !== 'Active'">
             <td>
               <div class="user-cell">
-                <div class="user-avatar">{{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}</div>
-                <span>{{ user.firstName }} {{ user.lastName }}</span>
+                <div class="user-avatar" [ngClass]="getRoleBadgeClass(user.role)">
+                  {{ getInitials(user) }}
+                </div>
+                <div class="user-meta">
+                  <span class="user-fullname">{{ user.firstName }} {{ user.lastName }}</span>
+                  <span class="user-role-badge" [ngClass]="getRoleBadgeClass(user.role)">{{ user.role }}</span>
+                </div>
               </div>
             </td>
-            <td class="email-cell">{{ user.email }}</td>
+
+            <td class="email-cell">
+              <span>{{ user.email }}</span>
+            </td>
+
             <td>
-              <select [ngModel]="user.role" (ngModelChange)="onRoleChange(user, $event)" class="role-select">
+              <select
+                [ngModel]="user.role"
+                (ngModelChange)="onRoleChange(user, $event)"
+                class="role-select"
+                [ngClass]="getRoleBadgeClass(user.role)">
                 <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
               </select>
             </td>
+
             <td>
-              <span class="status-dot" [class.active]="user.status === 'Active'">
+              <span class="status-pill" [class.active]="user.status === 'Active'" [class.inactive]="user.status !== 'Active'">
+                <span class="status-dot"></span>
                 {{ user.status }}
               </span>
             </td>
+
             <td>
-              <div class="action-btns">
-                <button (click)="toggleStatus(user)"
-                        [class.btn-deactivate]="user.status === 'Active'"
-                        [class.btn-activate]="user.status !== 'Active'"
-                        class="btn-sm">
-                  {{ user.status === 'Active' ? 'Deactivate' : 'Activate' }}
-                </button>
-              </div>
+              <span class="org-text" *ngIf="user.organization || user.phone">
+                {{ user.organization || user.phone }}
+              </span>
+              <span class="org-muted" *ngIf="!user.organization && !user.phone">—</span>
+            </td>
+
+            <td class="text-right">
+              <button
+                (click)="toggleStatus(user)"
+                [class.btn-deactivate]="user.status === 'Active'"
+                [class.btn-activate]="user.status !== 'Active'"
+                class="btn-sm">
+                {{ user.status === 'Active' ? 'Deactivate' : 'Activate' }}
+              </button>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
+
+    <!-- Empty Filter State -->
+    <div class="empty-state" *ngIf="!loading && filteredUsers.length === 0">
+      <div class="empty-icon">👥</div>
+      <h3>No users match your criteria</h3>
+      <p>Try searching for another name or clearing the role filter.</p>
+    </div>
+
   </div>
 </div>

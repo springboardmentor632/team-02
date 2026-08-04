@@ -48,9 +48,9 @@
             <td>{{ p.ministry }}</td>
             <td><span class="status-pill" [class]="'pill-' + p.status.toLowerCase()">{{ p.status }}</span></td>
             <td class="action-cell">
-              <button class="btn-small" *ngIf="p.status === 'Draft'" (click)="submitForApproval(p)">Submit</button>
-              <button class="btn-small" *ngIf="p.status === 'Pending'" (click)="approve(p)">Approve</button>
-              <button class="btn-small btn-danger" *ngIf="p.status !== 'Archived'" (click)="archive(p)">Archive</button>
+              <button class="btn-small btn-success" *ngIf="p.status !== 'Active'" (click)="approve(p)">✓ Approve</button>
+              <button class="btn-small btn-warning" *ngIf="p.status !== 'Archived'" (click)="reject(p)">✕ Reject</button>
+              <button class="btn-small btn-danger" (click)="deletePolicy(p)">🗑 Delete</button>
             </td>
           </tr>
           <tr *ngIf="policies.length === 0">

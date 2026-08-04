@@ -7,7 +7,7 @@ const applicationSchema = new mongoose.Schema({
   policy: { type: mongoose.Schema.Types.ObjectId, ref: 'Policy' },
   status: {
     type: String,
-    enum: ['Submitted', 'Under Review', 'Approved', 'Rejected'],
+    enum: ['Submitted', 'Under Review', 'Documents Requested', 'Approved', 'Rejected', 'Completed'],
     default: 'Submitted',
   },
   applicantName: { type: String, trim: true },

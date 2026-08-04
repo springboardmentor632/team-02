@@ -52,8 +52,9 @@
             <td>{{ s.benefits?.[0] || s.summary }}</td>
             <td><span class="status-pill" [class]="'pill-' + s.status.toLowerCase()">{{ s.status }}</span></td>
             <td class="action-cell">
-              <button class="btn-small" *ngIf="s.status !== 'Active'" (click)="activate(s)">Activate</button>
-              <button class="btn-small btn-danger" *ngIf="s.status !== 'Archived'" (click)="archive(s)">Archive</button>
+              <button class="btn-small btn-success" *ngIf="s.status !== 'Active'" (click)="approve(s)">✓ Approve</button>
+              <button class="btn-small btn-warning" *ngIf="s.status !== 'Archived'" (click)="reject(s)">✕ Reject</button>
+              <button class="btn-small btn-danger" (click)="deleteScheme(s)">🗑 Delete</button>
             </td>
           </tr>
           <tr *ngIf="schemes.length === 0">

@@ -82,15 +82,34 @@ export class SchemeManagementComponent implements OnInit {
     });
   }
 
-  activate(s: Scheme): void {
-    this.schemeService.update(s._id, { status: 'Active', launchDate: new Date().toISOString() }).subscribe({
+  approve(s: Scheme): void {
+    this.schemeService.approveScheme(s._id).subscribe({
       next: () => this.loadSchemes(),
+      error: () => {
+        this.error = 'Failed to approve scheme.';
+        this.cdr.detectChanges();
+      }
     });
   }
 
-  archive(s: Scheme): void {
-    this.schemeService.update(s._id, { status: 'Archived' }).subscribe({
+  reject(s: Scheme): void {
+    this.schemeService.rejectScheme(s._id).subscribe({
       next: () => this.loadSchemes(),
+      error: () => {
+        this.error = 'Failed to reject scheme.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  deleteScheme(s: Scheme): void {
+    if (!confirm(`Are you sure you want to delete scheme "${s.name}"?`)) return;
+    this.schemeService.delete(s._id).subscribe({
+      next: () => this.loadSchemes(),
+      error: () => {
+        this.error = 'Failed to delete scheme.';
+        this.cdr.detectChanges();
+      }
     });
   }
 
