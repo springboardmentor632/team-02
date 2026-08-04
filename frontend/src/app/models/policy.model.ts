@@ -27,6 +27,7 @@ export interface Scheme {
   state?: string;
   eligibilityCriteria?: string[];
   benefits?: string[];
+  documentsRequired?: string[];
   applicationMode?: string;
   launchDate?: string;
   status: 'Draft' | 'Pending' | 'Active' | 'Archived';

@@ -55,12 +55,12 @@ export class GovernmentDashboardComponent implements OnInit {
       next: (res) => {
         if (!res || !res.stats) return;
         const s = res.stats;
-        this.stats = [
-          { label: 'Policies Published', value: String(s.policies), sub: 'Active policies' },
-          { label: 'Active Schemes', value: String(s.schemes), sub: 'Live on platform' },
-          { label: 'Pending Policies', value: String(s.pendingPolicies ?? 0), sub: 'Awaiting approval' },
-          { label: 'Notifications', value: '—', sub: 'Platform alerts' }
-        ];
+        this.stats = this.stats.map((item, i) => {
+          if (i === 0) return { ...item, value: String(s.policies) };
+          if (i === 1) return { ...item, value: String(s.schemes) };
+          if (i === 2) return { ...item, value: String(s.pendingPolicies ?? 0) };
+          return item;
+        });
         this.roleStats = [
           { role: 'Policies', percent: Math.min(s.policies * 4, 100), count: `${s.policies} active` },
           { role: 'Schemes', percent: Math.min(s.schemes * 6, 100), count: `${s.schemes} active` },
@@ -125,8 +125,7 @@ export class GovernmentDashboardComponent implements OnInit {
     // also fetch application counts for government dashboard overview
     this.applicationService.getAll().subscribe({
       next: (res) => {
-        const apps = res.applications || [];
-        this.stats = this.stats.map((s, i) => i === 3 ? { ...s, value: String(apps.length) } : s);
+        // applications count handled in app table/reports if needed
         this.cdr.detectChanges();
       },
       error: (err) => {

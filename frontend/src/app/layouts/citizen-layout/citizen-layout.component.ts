@@ -27,8 +27,10 @@ export class CitizenLayoutComponent implements OnInit {
     this.userName = this.auth.getUserDisplayName();
     this.userInitials = this.auth.getUserInitials();
     this.userSubtitle = this.auth.getUserSubtitle();
+    this.notificationService.unreadCount$.subscribe((count) => {
+      this.unreadCount = count;
+    });
     this.notificationService.getAll().subscribe({
-      next: (res) => { this.unreadCount = res.notifications.filter(n => !n.read).length; },
       error: () => { this.unreadCount = 0; }
     });
   }

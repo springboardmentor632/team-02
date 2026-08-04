@@ -27,8 +27,10 @@ export class GovernmentLayoutComponent implements OnInit {
     this.officialName = this.auth.getUserDisplayName();
     this.userInitials = this.auth.getUserInitials();
     this.department = this.auth.getCurrentUser()?.organization || 'Government of India';
+    this.notificationService.unreadCount$.subscribe((count) => {
+      this.unreadCount = count;
+    });
     this.notificationService.getAll().subscribe({
-      next: (res) => { this.unreadCount = res.notifications.filter(n => !n.read).length; },
       error: () => { this.unreadCount = 0; }
     });
   }

@@ -79,13 +79,11 @@ export class CitizenDashboardComponent implements OnInit {
     // ---- STATS: uses public endpoint, no auth needed ----
     this.statsService.getPlatformStats().subscribe({
       next: (res) => {
-        // Replace the entire array to guarantee change detection fires
-        this.stats = [
-          { label: 'Eligible Schemes', value: String(res.stats.schemes), sub: 'Active schemes available', icon: '🎖️' },
-          { label: 'Active Policies', value: String(res.stats.policies), sub: 'Published policies', icon: '🔖' },
-          { label: 'Notifications', value: '—', sub: 'Unread alerts', icon: '🔔', highlight: false },
-          { label: 'Searches Made', value: '—', sub: 'Your recent activity', icon: '🔍' }
-        ];
+        this.stats = this.stats.map((s, i) => {
+          if (i === 0) return { ...s, value: String(res.stats.schemes) };
+          if (i === 1) return { ...s, value: String(res.stats.policies) };
+          return s;
+        });
         this.cdr.markForCheck();
       },
       error: (err) => console.error('[CitizenDashboard] Stats error:', err)
@@ -107,6 +105,13 @@ export class CitizenDashboardComponent implements OnInit {
     });
 
     // ---- NOTIFICATIONS ----
+    this.notificationService.unreadCount$.subscribe((count) => {
+      this.stats = this.stats.map((s, i) =>
+        i === 2 ? { ...s, value: String(count), highlight: count > 0 } : s
+      );
+      this.cdr.markForCheck();
+    });
+
     this.notificationService.getAll().subscribe({
       next: (res) => {
         const unread = res.notifications.filter((n) => !n.read);
@@ -115,7 +120,6 @@ export class CitizenDashboardComponent implements OnInit {
           desc: n.message,
           type: n.type,
         }));
-        // Update notification count in stats array
         this.stats = this.stats.map((s, i) =>
           i === 2
             ? { ...s, value: String(unread.length), highlight: unread.length > 0 }
@@ -125,7 +129,7 @@ export class CitizenDashboardComponent implements OnInit {
       },
       error: (err) => {
         console.error('[CitizenDashboard] Notifications error:', err);
-        this.stats = this.stats.map((s, i) => i === 2 ? { ...s, value: '0' } : s);
+        this.stats = this.stats.map((s, i) => i === 2 ? { ...s, value: '0', highlight: false } : s);
         this.cdr.markForCheck();
       }
     });

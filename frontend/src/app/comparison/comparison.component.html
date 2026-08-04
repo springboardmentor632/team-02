@@ -1,87 +1,277 @@
 <div class="comparison-page-container">
   <div class="page-body">
+
+    <!-- PAGE HEADER -->
     <div class="page-header">
       <div>
-        <h1>Scheme Comparison</h1>
-        <p>Compare government schemes side-by-side to find what suits you best</p>
-      </div>
-      <button class="btn-primary" (click)="addScheme()">{{ showPicker ? 'Done Selecting' : '+ Add Scheme' }}</button>
-    </div>
-
-    <div class="scheme-picker card" *ngIf="showPicker">
-      <h3>Select schemes to compare (max 4)</h3>
-      <div class="picker-grid">
-        <button
-          *ngFor="let s of allSchemes"
-          class="picker-chip"
-          [class.selected]="isSelected(s._id)"
-          (click)="toggleScheme(s._id)">
-          {{ s.name }}
-        </button>
+        <div class="header-badge">⚖️ Side-by-Side Analysis</div>
+        <h1>Scheme Comparison Tool</h1>
+        <p class="subtitle">Compare two government schemes side-by-side to find the best benefits and eligibility requirements for your profile.</p>
       </div>
     </div>
 
-    <p *ngIf="loading">Loading comparison...</p>
+    <!-- COMPARISON SELECTOR CARD -->
+    <div class="selector-card">
+      <div class="selector-grid">
+        
+        <!-- SELECT SCHEME 1 -->
+        <div class="selector-box box-primary">
+          <div class="selector-label">
+            <span class="slot-badge slot-1">Scheme 1</span>
+            <label>Select First Scheme</label>
+          </div>
+          <div class="select-wrapper">
+            <select [ngModel]="scheme1Id" (ngModelChange)="onScheme1Change($event)" class="scheme-select">
+              <option value="" disabled>-- Select Scheme 1 --</option>
+              <option *ngFor="let s of allSchemes" [value]="s._id" [disabled]="s._id === scheme2Id">
+                {{ s.name }} {{ s._id === scheme2Id ? '(Selected as Scheme 2)' : '' }}
+              </option>
+            </select>
+          </div>
+        </div>
 
-    <div class="compare-table-wrap" *ngIf="!loading && schemes.length > 0">
+        <!-- SWAP BUTTON -->
+        <div class="swap-action">
+          <button class="btn-swap" (click)="swapSchemes()" title="Swap Scheme 1 and Scheme 2">
+            <span class="swap-icon">⇄</span>
+            <span class="swap-text">Swap</span>
+          </button>
+        </div>
+
+        <!-- SELECT SCHEME 2 -->
+        <div class="selector-box box-secondary">
+          <div class="selector-label">
+            <span class="slot-badge slot-2">Scheme 2</span>
+            <label>Select Second Scheme</label>
+          </div>
+          <div class="select-wrapper">
+            <select [ngModel]="scheme2Id" (ngModelChange)="onScheme2Change($event)" class="scheme-select">
+              <option value="" disabled>-- Select Scheme 2 --</option>
+              <option *ngFor="let s of allSchemes" [value]="s._id" [disabled]="s._id === scheme1Id">
+                {{ s.name }} {{ s._id === scheme1Id ? '(Selected as Scheme 1)' : '' }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- WARNING ALERT -->
+      <div class="warning-banner" *ngIf="warningMessage">
+        <span>⚠️</span> {{ warningMessage }}
+      </div>
+    </div>
+
+    <!-- LOADING STATE -->
+    <div class="loading-state" *ngIf="loading || comparing">
+      <div class="spinner"></div>
+      <p>Loading comparison details...</p>
+    </div>
+
+    <!-- ERROR STATE -->
+    <div class="error-banner" *ngIf="error && !loading">
+      <span>⚠️ {{ error }}</span>
+    </div>
+
+    <!-- SIDE-BY-SIDE COMPARISON TABLE -->
+    <div class="compare-table-wrap" *ngIf="!loading && scheme1Detail && scheme2Detail">
       <table class="compare-table">
         <thead>
           <tr>
-            <th class="param-col">PARAMETERS</th>
-            <th *ngFor="let s of schemes">
-              <span class="scheme-icon">{{ s.icon }}</span> {{ s.name | uppercase }}
+            <th class="param-col">COMPARISON PARAMETER</th>
+            <th class="scheme-col col-1">
+              <div class="scheme-header-cell">
+                <span class="scheme-icon">{{ scheme1Detail.icon }}</span>
+                <div>
+                  <span class="badge-slot slot-1">Scheme 1</span>
+                  <h3 class="scheme-title">{{ scheme1Detail.name }}</h3>
+                  <p class="scheme-dept">{{ scheme1Detail.category }} · {{ scheme1Detail.ministry }}</p>
+                </div>
+              </div>
+            </th>
+            <th class="scheme-col col-2">
+              <div class="scheme-header-cell">
+                <span class="scheme-icon">{{ scheme2Detail.icon }}</span>
+                <div>
+                  <span class="badge-slot slot-2">Scheme 2</span>
+                  <h3 class="scheme-title">{{ scheme2Detail.name }}</h3>
+                  <p class="scheme-dept">{{ scheme2Detail.category }} · {{ scheme2Detail.ministry }}</p>
+                </div>
+              </div>
             </th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td class="param-label">MINISTRY</td>
-            <td *ngFor="let s of schemes">{{ s.ministry }}</td>
+            <td class="param-label">MINISTRY / DEPT</td>
+            <td>{{ scheme1Detail.ministry }}</td>
+            <td>{{ scheme2Detail.ministry }}</td>
           </tr>
           <tr>
             <td class="param-label">LAUNCH YEAR</td>
-            <td *ngFor="let s of schemes">{{ s.launchYear }}</td>
+            <td>{{ scheme1Detail.launchYear }}</td>
+            <td>{{ scheme2Detail.launchYear }}</td>
           </tr>
-          <tr>
-            <td class="param-label">BENEFIT AMOUNT</td>
-            <td *ngFor="let s of schemes"><strong class="highlight">{{ s.benefit }}</strong></td>
+          <tr class="highlight-row">
+            <td class="param-label">BENEFIT AMOUNT / FINANCIAL SUPPORT</td>
+            <td><strong class="highlight-val">{{ scheme1Detail.benefit }}</strong></td>
+            <td><strong class="highlight-val">{{ scheme2Detail.benefit }}</strong></td>
           </tr>
           <tr>
             <td class="param-label">TARGET BENEFICIARY</td>
-            <td *ngFor="let s of schemes">{{ s.target }}</td>
+            <td>{{ scheme1Detail.target }}</td>
+            <td>{{ scheme2Detail.target }}</td>
           </tr>
           <tr>
             <td class="param-label">INCOME LIMIT</td>
-            <td *ngFor="let s of schemes">{{ s.incomeLimit }}</td>
+            <td><span class="income-badge">{{ scheme1Detail.incomeLimit }}</span></td>
+            <td><span class="income-badge">{{ scheme2Detail.incomeLimit }}</span></td>
           </tr>
           <tr>
             <td class="param-label">APPLICATION MODE</td>
-            <td *ngFor="let s of schemes">{{ s.applicationMode }}</td>
+            <td><span class="mode-pill">{{ scheme1Detail.applicationMode }}</span></td>
+            <td><span class="mode-pill">{{ scheme2Detail.applicationMode }}</span></td>
           </tr>
           <tr>
             <td class="param-label">STATUS</td>
-            <td *ngFor="let s of schemes"><span class="status-pill">{{ s.status }}</span></td>
+            <td><span class="status-pill active">{{ scheme1Detail.status }}</span></td>
+            <td><span class="status-pill active">{{ scheme2Detail.status }}</span></td>
           </tr>
           <tr>
-            <td class="param-label">ELIGIBLE FOR YOU</td>
-            <td *ngFor="let s of schemes">
-              <span class="eligibility-icon" [class.eligible]="s.eligible" [class.not-eligible]="!s.eligible">
-                {{ s.eligible ? '✓' : '✕' }}
-              </span>
+            <td class="param-label">REQUIRED DOCUMENTS</td>
+            <td>
+              <div class="doc-tags">
+                <span class="doc-tag" *ngFor="let doc of scheme1Detail.documents">📄 {{ doc }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="doc-tags">
+                <span class="doc-tag" *ngFor="let doc of scheme2Detail.documents">📄 {{ doc }}</span>
+              </div>
             </td>
           </tr>
+          <tr>
+            <td class="param-label">SCHEME SUMMARY</td>
+            <td class="summary-cell">{{ scheme1Detail.summary }}</td>
+            <td class="summary-cell">{{ scheme2Detail.summary }}</td>
+          </tr>
           <tr class="action-row">
-            <td></td>
-            <td *ngFor="let s of schemes">
-              <a [routerLink]="['/citizen/scheme', s.id]" class="btn-cell btn-cell-primary">View Details</a>
+            <td class="param-label">ACTIONS</td>
+            <td>
+              <a [routerLink]="['/citizen/scheme', scheme1Detail.id]" class="btn-action primary">
+                View Scheme 1 Details →
+              </a>
+            </td>
+            <td>
+              <a [routerLink]="['/citizen/scheme', scheme2Detail.id]" class="btn-action secondary">
+                View Scheme 2 Details →
+              </a>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <div class="empty-state" *ngIf="!loading && schemes.length === 0">
-      <p>No schemes selected for comparison. Click "+ Add Scheme" to choose schemes.</p>
+    <!-- ALL SCHEMES SECTION BELOW -->
+    <div class="all-schemes-section">
+      <div class="section-header">
+        <div>
+          <h2>All Available Schemes for Citizens</h2>
+          <p>Browse all active government schemes below and select any two for side-by-side comparison.</p>
+        </div>
+        <span class="schemes-count-badge">{{ filteredSchemes.length }} Schemes Available</span>
+      </div>
+
+      <!-- SEARCH & CATEGORY FILTERS -->
+      <div class="filter-toolbar">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            [(ngModel)]="searchQuery"
+            placeholder="Search schemes by name, ministry, or benefits..."
+            class="search-input"
+          />
+        </div>
+
+        <div class="category-pills">
+          <button
+            *ngFor="let cat of categories"
+            class="cat-pill"
+            [class.active]="activeCategory === cat"
+            (click)="setCategory(cat)">
+            {{ cat }}
+          </button>
+        </div>
+      </div>
+
+      <!-- SCHEMES GRID -->
+      <div class="schemes-grid" *ngIf="filteredSchemes.length > 0">
+        <div
+          class="scheme-card"
+          *ngFor="let s of filteredSchemes"
+          [class.selected-1]="s._id === scheme1Id"
+          [class.selected-2]="s._id === scheme2Id">
+
+          <div class="card-top">
+            <div class="card-header-left">
+              <span class="scheme-card-icon">{{ getIcon(s.category) }}</span>
+              <div>
+                <span class="card-cat-badge">{{ s.category }}</span>
+                <h3 class="card-title">{{ s.name }}</h3>
+                <p class="card-ministry">{{ s.ministry || 'Government of India' }}</p>
+              </div>
+            </div>
+
+            <!-- Active Slot Indicator -->
+            <div class="active-slot-indicator">
+              <span class="slot-chip chip-1" *ngIf="s._id === scheme1Id">Scheme 1</span>
+              <span class="slot-chip chip-2" *ngIf="s._id === scheme2Id">Scheme 2</span>
+            </div>
+          </div>
+
+          <p class="card-summary">{{ s.summary }}</p>
+
+          <div class="card-meta">
+            <span class="meta-item" *ngIf="s.benefits?.[0]">
+              <strong>Benefit:</strong> {{ s.benefits[0] }}
+            </span>
+            <span class="meta-item">
+              <strong>Mode:</strong> {{ s.applicationMode || 'Online' }}
+            </span>
+          </div>
+
+          <div class="card-actions">
+            <button
+              class="btn-select-slot btn-slot-1"
+              [class.active-slot]="s._id === scheme1Id"
+              (click)="selectForComparison(s._id, 1)">
+              {{ s._id === scheme1Id ? '✓ Selected as Scheme 1' : '+ Set as Scheme 1' }}
+            </button>
+
+            <button
+              class="btn-select-slot btn-slot-2"
+              [class.active-slot]="s._id === scheme2Id"
+              (click)="selectForComparison(s._id, 2)">
+              {{ s._id === scheme2Id ? '✓ Selected as Scheme 2' : '+ Set as Scheme 2' }}
+            </button>
+
+            <a [routerLink]="['/citizen/scheme', s._id]" class="btn-card-link" title="View details">
+              Details →
+            </a>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- EMPTY STATE FOR GRID -->
+      <div class="empty-grid" *ngIf="filteredSchemes.length === 0">
+        <div class="empty-icon">🔍</div>
+        <h3>No schemes match your filter</h3>
+        <p>Try clearing your search query or switching categories.</p>
+      </div>
+
     </div>
+
   </div>
 </div>
