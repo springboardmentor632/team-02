@@ -58,4 +58,4 @@ The server will start on `http://localhost:4000` by default.
 - Citizen
 - Researcher
 - Organization
-- Guest User
+- Guest User 
