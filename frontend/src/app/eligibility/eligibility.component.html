@@ -189,14 +189,27 @@
         <div class="scheme-result-card" *ngFor="let s of matchedSchemes">
           <span class="scheme-result-icon">{{ s.icon }}</span>
           <div class="scheme-result-body">
-            <h4>{{ s.name }}</h4>
+            <div class="scheme-title-row">
+              <h4>{{ s.name }}</h4>
+              <span
+                class="match-badge"
+                [class.badge-open]="s.isOpenScheme"
+                [class.badge-100]="!s.isOpenScheme && s.matchPercentage === 100"
+                [class.badge-high]="!s.isOpenScheme && s.matchPercentage >= 75 && s.matchPercentage < 100"
+                [class.badge-mid]="!s.isOpenScheme && s.matchPercentage >= 50 && s.matchPercentage < 75"
+                [class.badge-low]="!s.isOpenScheme && s.matchPercentage < 50">
+                {{ s.isOpenScheme ? 'Open Scheme · 100% Match' : s.matchPercentage + '% Match' }}
+              </span>
+            </div>
             <span class="scheme-cat-tag">{{ s.category }}</span>
             <p>{{ s.benefit }}</p>
           </div>
-          <a [routerLink]="['/citizen/scheme', s.id]" class="btn-small">View</a>
-          <button type="button" class="btn-apply" (click)="applyForScheme(s.id)">Apply</button>
+          <div class="scheme-card-actions">
+            <a [routerLink]="['/citizen/scheme', s.id]" class="btn-small">View</a>
+            <button type="button" class="btn-apply" (click)="applyForScheme(s.id)">Apply</button>
+          </div>
         </div>
-        <p *ngIf="matchedSchemes.length === 0">No matching schemes found for your profile. Try adjusting your details.</p>
+        <p *ngIf="matchedSchemes.length === 0" class="no-matches-msg">No matching schemes found for your profile. Try adjusting your details.</p>
       </div>
 
       <p *ngIf="error" class="error-msg">{{ error }}</p>

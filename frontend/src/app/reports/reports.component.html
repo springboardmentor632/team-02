@@ -2,13 +2,12 @@
   <div class="page-body">
     <div class="page-header">
       <div>
-        <h1>Reports Dashboard</h1>
-        <p>Generate and download policy, scheme, and activity reports</p>
+        <div class="role-badge-row">
+          <h1>My Reports</h1>
+          <span class="role-tag">{{ userRole }} Workspace</span>
+        </div>
+        <p>Real-time statistics & analytics reports for policies, schemes, and user activities</p>
       </div>
-      <button class="btn-primary" (click)="generateNewReport()" [disabled]="generating">
-        <span *ngIf="!generating">+ Generate New Report</span>
-        <span *ngIf="generating">Generating...</span>
-      </button>
     </div>
 
     <div class="filter-tabs">
@@ -18,22 +17,46 @@
     </div>
 
     <div class="card">
-      <p *ngIf="loading">Loading reports...</p>
-      <table class="report-table" *ngIf="!loading && filteredReports.length > 0">
-        <thead>
-          <tr><th>Report Name</th><th>Category</th><th>Summary</th><th>Generated On</th><th>Format</th><th></th></tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let r of filteredReports">
-            <td>{{ r.name }}</td>
-            <td><span class="scheme-badge">{{ r.category }}</span></td>
-            <td>{{ r.value }}</td>
-            <td>{{ r.generatedOn }}</td>
-            <td>{{ r.format }}</td>
-            <td><button class="btn-outline btn-sm" (click)="downloadReport(r)">Download</button></td>
-          </tr>
-        </tbody>
-      </table>
+      <p *ngIf="loading" class="loading-text">Loading reports...</p>
+      
+      <div class="table-responsive" *ngIf="!loading && filteredReports.length > 0">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Report Name</th>
+              <th>Category</th>
+              <th>Summary</th>
+              <th>Generated On</th>
+              <th>Export Options</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of filteredReports">
+              <td>
+                <div class="report-name-cell">
+                  <strong>{{ r.name }}</strong>
+                </div>
+              </td>
+              <td><span class="scheme-badge">{{ r.category }}</span></td>
+              <td><span class="summary-text">{{ r.value }}</span></td>
+              <td><span class="date-text">{{ r.generatedOn }}</span></td>
+              <td>
+                <div class="export-actions">
+                  <button type="button" class="btn-export btn-pdf" (click)="openPdfInNewTab(r)" title="Open PDF in new tab">
+                    📄 PDF <span class="tab-indicator">↗</span>
+                  </button>
+                  <button type="button" class="btn-export btn-excel" (click)="downloadExcel(r)" title="Download Excel CSV">
+                    📊 Excel
+                  </button>
+                  <button type="button" class="btn-export btn-doc" (click)="downloadDocument(r)" title="Download Word Document">
+                    📝 Word
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <div class="empty-state" *ngIf="!loading && filteredReports.length === 0">
         <p>No reports found for this category.</p>

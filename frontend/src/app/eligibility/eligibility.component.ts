@@ -16,6 +16,8 @@ interface MatchedScheme {
   category: string;
   benefit: string;
   icon: string;
+  matchPercentage: number;
+  isOpenScheme: boolean;
 }
 
 @Component({
@@ -145,6 +147,8 @@ export class EligibilityComponent {
           category: m.scheme.category,
           benefit: m.scheme.benefits?.[0] || m.scheme.summary || '',
           icon: getCategoryIcon(m.scheme.category),
+          matchPercentage: m.matchPercentage ?? 100,
+          isOpenScheme: !!m.isOpenScheme,
         }));
         this.loading = false;
         this.cdr.detectChanges();

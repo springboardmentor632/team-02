@@ -82,20 +82,32 @@ input:focus, select:focus { border-color: var(--navy-lt); }
 
 .results-grid { display: flex; flex-direction: column; gap: 12px; }
 .scheme-result-card {
-  display: flex; align-items: center; gap: 12px;
-  background: #F6FAF4; border: 1.5px solid var(--border); border-radius: 10px; padding: 14px;
+  display: flex; align-items: center; gap: 14px;
+  background: #F6FAF4; border: 1.5px solid var(--border); border-radius: 10px; padding: 16px;
+  flex-wrap: wrap;
 }
-.scheme-result-icon { font-size: 22px; }
-.scheme-result-body { flex: 1; }
-.scheme-result-body h4 { margin: 0; font-size: 13.5px; color: var(--text-1); }
+.scheme-result-icon { font-size: 24px; }
+.scheme-result-body { flex: 1; min-width: 240px; }
+.scheme-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 2px; }
+.scheme-title-row h4 { margin: 0; font-size: 14px; color: var(--text-1); font-weight: 700; }
+
+.match-badge {
+  font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 12px;
+  display: inline-flex; align-items: center; gap: 4px; line-height: 1.4;
+}
+.badge-open { background: #E3F2FD; color: #1565C0; border: 1px solid #BBDEFB; }
+.badge-100 { background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9; }
+.badge-high { background: #F1F8E9; color: #33691E; border: 1px solid #DCEDC8; }
+.badge-mid { background: #FFF8E1; color: #F57F17; border: 1px solid #FFE082; }
+.badge-low { background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2; }
+
 .scheme-cat-tag { display: inline-block; background: var(--badge-bg); color: var(--navy); font-size: 10.5px; font-weight: 600; padding: 2px 9px; border-radius: 10px; margin: 4px 0; }
-.scheme-result-body p { margin: 2px 0 0; font-size: 12px; color: var(--text-2); }
+.scheme-result-body p { margin: 4px 0 0; font-size: 12px; color: var(--text-2); }
+.scheme-card-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .btn-small { background: var(--navy); color: #fff; border: none; border-radius: 7px; padding: 7px 14px; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; }
 .btn-small:hover { background: var(--navy-lt); }
 .btn-apply { background: #2E5430; color: #fff; border: none; border-radius: 7px; padding: 7px 14px; font-size: 12px; font-weight: 600; cursor: pointer; }
 .btn-apply:hover { background: var(--navy); }
-.scheme-result-card { flex-wrap: wrap; }
-.scheme-result-card .btn-small, .scheme-result-card .btn-apply { flex-shrink: 0; }
 
 .preview-banner {
   display: flex; align-items: center; gap: 14px;

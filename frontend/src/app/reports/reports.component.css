@@ -58,18 +58,44 @@
 
 .card { background: #fff; border: 1.5px solid var(--border); border-radius: 12px; padding: 10px 20px; }
 
+.role-badge-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+.role-tag { background: #E8F5E9; color: #2E5430; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 12px; border: 1px solid #C8E6C9; text-transform: uppercase; letter-spacing: 0.4px; }
+
+.table-responsive { width: 100%; overflow-x: auto; }
 .report-table { width: 100%; border-collapse: collapse; }
-.report-table th { text-align: left; font-size: 12px; font-weight: 600; color: var(--text-2); padding: 14px 10px; border-bottom: 1.5px solid var(--border); }
-.report-table td { font-size: 13.5px; color: var(--text-1); padding: 14px 10px; border-bottom: 1px solid var(--border); }
+.report-table th { text-align: left; font-size: 12px; font-weight: 700; color: var(--text-2); padding: 14px 10px; border-bottom: 1.5px solid var(--border); text-transform: uppercase; letter-spacing: 0.3px; }
+.report-table td { font-size: 13px; color: var(--text-1); padding: 14px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
 .report-table tr:last-child td { border-bottom: none; }
 
-.scheme-badge { background: var(--badge-bg); color: var(--navy); font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+.report-name-cell strong { color: var(--text-1); font-size: 13.5px; }
+.summary-text { color: var(--text-2); font-size: 12.5px; }
+.date-text { color: var(--text-3); font-size: 12px; white-space: nowrap; }
+
+.export-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.btn-export {
+  border: none; border-radius: 6px; padding: 6px 11px; font-size: 12px; font-weight: 600;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.btn-pdf { background: #2E5430; color: #ffffff; }
+.btn-pdf:hover { background: #1b361d; box-shadow: 0 2px 6px rgba(46,84,48,0.2); }
+
+.btn-excel { background: #E8F5E9; color: #1b5e20; border: 1px solid #c8e6c9; }
+.btn-excel:hover { background: #c8e6c9; }
+
+.btn-doc { background: #E3F2FD; color: #1565c0; border: 1px solid #bbdefb; }
+.btn-doc:hover { background: #bbdefb; }
+
+.tab-indicator { font-size: 10px; font-weight: bold; opacity: 0.85; }
+
+.scheme-badge { background: var(--badge-bg); color: var(--navy); font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; display: inline-block; white-space: nowrap; }
 
 .empty-state { text-align: center; padding: 40px 20px; color: var(--text-3); font-size: 13.5px; }
 
 @media (max-width: 700px) {
   .page-header { flex-direction: column; }
   .report-table { font-size: 12px; }
+  .export-actions { flex-direction: column; align-items: stretch; }
 }
 
 .sidebar {

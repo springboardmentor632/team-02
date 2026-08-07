@@ -78,7 +78,9 @@ export interface EligibilityCheckPayload {
 
 export interface EligibilityMatch {
   scheme: Scheme;
-  rule: EligibilityRule;
+  rule?: EligibilityRule | null;
+  matchPercentage?: number;
+  isOpenScheme?: boolean;
 }
 
 export interface Notification {
