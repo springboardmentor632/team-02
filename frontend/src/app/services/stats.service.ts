@@ -15,4 +15,16 @@ export class StatsService {
       `${this.baseUrl}?_=${Date.now()}`
     );
   }
+
+  getCitizenAnalytics(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/citizen`);
+  }
+
+  getDepartmentAnalytics(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/department`);
+  }
+
+  getUsageStatistics(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/usage`);
+  }
 }

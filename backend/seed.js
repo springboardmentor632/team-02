@@ -7,6 +7,8 @@ const Policy = require('./models/policy');
 const Scheme = require('./models/scheme');
 const EligibilityRule = require('./models/eligibilityRule');
 const Notification = require('./models/notification');
+const Feedback = require('./models/feedback');
+const FAQ = require('./models/faq');
 const { policies: policyPayloads, schemes: schemePayloads } = require('./seed-data-payloads');
 
 const seed = async () => {
@@ -18,6 +20,8 @@ const seed = async () => {
     Scheme.deleteMany({}),
     EligibilityRule.deleteMany({}),
     Notification.deleteMany({}),
+    Feedback.deleteMany({}),
+    FAQ.deleteMany({}),
   ]);
 
   const password = await bcrypt.hash('Password123', 10);
@@ -470,6 +474,248 @@ const seed = async () => {
       targetRoles: ['Administrator', 'Government Official'],
       link: '/admin/policies',
     },
+  ]);
+
+  await FAQ.insertMany([
+    {
+      question: 'How do I check my scheme eligibility?',
+      answer: 'Go to the Eligibility Checker page and fill in your personal, financial, and location details to see matching schemes.',
+      category: 'Healthcare',
+      targetRole: 'All',
+      helpfulCount: 42,
+      unhelpfulCount: 2,
+      isPublished: true,
+      createdBy: official._id
+    },
+    {
+      question: 'What documents are mandatory for PM-JAY hospital treatment?',
+      answer: 'You require your Aadhaar Card, SECC Ration Card/Letter, and PM-JAY Golden Card at any empanelled hospital.',
+      category: 'Healthcare',
+      targetRole: 'Citizen',
+      helpfulCount: 38,
+      unhelpfulCount: 1,
+      isPublished: true,
+      createdBy: official._id
+    },
+    {
+      question: 'How long does it take to hear back on support feedback?',
+      answer: 'Our government support desk typically reviews and responds to feedback tickets within 3 to 24 hours.',
+      category: 'General',
+      targetRole: 'All',
+      helpfulCount: 29,
+      unhelpfulCount: 0,
+      isPublished: true,
+      createdBy: admin._id
+    },
+    {
+      question: 'Can I track my scheme application status online?',
+      answer: 'Yes, your application status updates appear in real-time under My Applications and Notifications on your Citizen Dashboard.',
+      category: 'Agriculture',
+      targetRole: 'Citizen',
+      helpfulCount: 56,
+      unhelpfulCount: 3,
+      isPublished: true,
+      createdBy: official._id
+    },
+    {
+      question: 'How can government officers publish or update a policy?',
+      answer: 'Government Officers can create policy drafts in the Policy Management tab, which are submitted to Administrators for approval and publication.',
+      category: 'Technical Support',
+      targetRole: 'Government Official',
+      helpfulCount: 19,
+      unhelpfulCount: 0,
+      isPublished: true,
+      createdBy: admin._id
+    }
+  ]);
+
+  await Feedback.insertMany([
+    // (i) Citizen Feedback
+    {
+      ticketId: 'FB-1001',
+      moduleType: 'Citizen Feedback',
+      user: citizen._id,
+      userRole: 'Citizen',
+      name: 'Rahul Sharma',
+      email: 'citizen@example.com',
+      subject: 'Excellent portal experience for Ayushman Bharat',
+      message: 'The scheme filtering and eligibility checker saved me hours. Very smooth experience and clear breakdown of benefits.',
+      category: 'General Feedback',
+      priority: 'Low',
+      rating: 5,
+      department: 'Ministry of Health',
+      status: 'Resolved',
+      assignedTo: official._id,
+      response: 'Thank you for your feedback! We are constantly working to improve citizen access to healthcare benefits.',
+      respondedBy: official._id,
+      respondedAt: new Date(),
+      resolutionTimeHours: 1.5,
+      messages: [
+        { sender: citizen._id, senderName: 'Rahul Sharma', senderRole: 'Citizen', message: 'The scheme filtering saved me hours. Very smooth experience.' },
+        { sender: official._id, senderName: 'Govt Official', senderRole: 'Government Official', message: 'Thank you for your feedback! We are glad the tool helped you.' }
+      ]
+    },
+    {
+      ticketId: 'FB-1002',
+      moduleType: 'Citizen Feedback',
+      user: citizen._id,
+      userRole: 'Citizen',
+      name: 'Priya Singh',
+      email: 'priya.research@institute.org',
+      subject: 'Suggestion for adding regional language support',
+      message: 'Adding Hindi and Tamil translation options on policy documents would greatly help rural applicants.',
+      category: 'General Feedback',
+      priority: 'Medium',
+      rating: 4,
+      department: 'IT Support Desk',
+      status: 'In Progress',
+      assignedTo: official._id,
+      messages: [
+        { sender: citizen._id, senderName: 'Priya Singh', senderRole: 'Researcher', message: 'Adding Hindi and Tamil translation options on policy documents would greatly help rural applicants.' }
+      ]
+    },
+
+    // (ii) Issue Reporting
+    {
+      ticketId: 'ISS-2001',
+      moduleType: 'Issue Reporting',
+      user: citizen._id,
+      userRole: 'Citizen',
+      name: 'Rahul Sharma',
+      email: 'citizen@example.com',
+      subject: 'PDF download button unresponsive on Chrome Mobile',
+      message: 'When clicking Download Summary PDF on mobile Chrome version 124, the loading spinner hangs.',
+      category: 'System Bug',
+      priority: 'High',
+      rating: 3,
+      department: 'IT Support Desk',
+      status: 'In Progress',
+      assignedTo: official._id,
+      messages: [
+        { sender: citizen._id, senderName: 'Rahul Sharma', senderRole: 'Citizen', message: 'When clicking Download Summary PDF on mobile Chrome, the loading spinner hangs.' },
+        { sender: official._id, senderName: 'Govt Official', senderRole: 'Government Official', message: 'Our IT team is looking into the mobile PDF renderer. Fix scheduled for deployment.' }
+      ]
+    },
+    {
+      ticketId: 'ISS-2002',
+      moduleType: 'Issue Reporting',
+      user: citizen._id,
+      userRole: 'Organization',
+      name: 'Anil Kumar',
+      email: 'ngo.contact@ruraldev.org',
+      subject: 'Eligibility calculator mismatch for agricultural income',
+      message: 'PM-Kisan rule checking shows ineligible when income is exactly ₹2.5L per annum.',
+      category: 'Eligibility Calculation Issue',
+      priority: 'Critical',
+      rating: 2,
+      department: 'Department of Agriculture',
+      status: 'Resolved',
+      assignedTo: official._id,
+      response: 'Resolved. Eligibility threshold logic updated to inclusive boundary check (<= 2,50,000).',
+      respondedBy: official._id,
+      respondedAt: new Date(),
+      resolutionTimeHours: 3.2,
+      messages: [
+        { sender: citizen._id, senderName: 'Anil Kumar', senderRole: 'Organization', message: 'PM-Kisan rule checking shows ineligible when income is exactly ₹2.5L per annum.' },
+        { sender: official._id, senderName: 'Govt Official', senderRole: 'Government Official', message: 'Resolved. Eligibility threshold logic updated.' }
+      ]
+    },
+
+    // (iii) Help Desk
+    {
+      ticketId: 'HD-3001',
+      moduleType: 'Help Desk',
+      user: citizen._id,
+      userRole: 'Citizen',
+      name: 'Rahul Sharma',
+      email: 'citizen@example.com',
+      subject: 'Help required with NSP Scholarship document verification',
+      message: 'My mark sheet upload failed with error code ERR-DOC-404. Can support team verify my draft application?',
+      category: 'Application Assistance',
+      priority: 'High',
+      rating: 4,
+      department: 'Ministry of Education',
+      status: 'In Progress',
+      assignedTo: official._id,
+      messages: [
+        { sender: citizen._id, senderName: 'Rahul Sharma', senderRole: 'Citizen', message: 'My mark sheet upload failed with error code ERR-DOC-404.' },
+        { sender: official._id, senderName: 'Govt Official', senderRole: 'Government Official', message: 'Please ensure your uploaded PDF is under 2MB. We have unlocked your draft so you can re-upload.' }
+      ]
+    },
+
+    // (iv) FAQ Management item placeholder
+    {
+      ticketId: 'FAQ-4001',
+      moduleType: 'FAQ Management',
+      user: admin._id,
+      userRole: 'Administrator',
+      name: 'Admin User',
+      email: 'admin@policygpt.gov.in',
+      subject: 'FAQ Audit & Standard Guidelines 2026',
+      message: 'Verified 5 core public FAQs for healthcare, agriculture, and technical eligibility.',
+      category: 'General',
+      priority: 'Low',
+      rating: 5,
+      department: 'IT Support Desk',
+      status: 'Resolved',
+      assignedTo: admin._id,
+      response: 'All public FAQs updated and verified for 2026 compliance.',
+      respondedBy: admin._id,
+      respondedAt: new Date(),
+      resolutionTimeHours: 0.8
+    },
+
+    // (v) Query Resolution
+    {
+      ticketId: 'QR-5001',
+      moduleType: 'Query Resolution',
+      user: citizen._id,
+      userRole: 'Citizen',
+      name: 'Rahul Sharma',
+      email: 'citizen@example.com',
+      subject: 'Is tenant farmer eligible under PM Kisan Samman Nidhi?',
+      message: 'Does PM-Kisan cover tenant farmers without land ownership title in SECC database?',
+      category: 'Policy Question',
+      priority: 'Medium',
+      rating: 5,
+      department: 'Department of Agriculture',
+      status: 'Resolved',
+      assignedTo: official._id,
+      response: 'PM-Kisan scheme requires landholding ownership title in the revenue records of the state/UT. Pure tenant farmers without title are covered under state-specific tenant welfare schemes.',
+      respondedBy: official._id,
+      respondedAt: new Date(),
+      resolutionTimeHours: 2.1,
+      messages: [
+        { sender: citizen._id, senderName: 'Rahul Sharma', senderRole: 'Citizen', message: 'Does PM-Kisan cover tenant farmers without land title?' },
+        { sender: official._id, senderName: 'Govt Official', senderRole: 'Government Official', message: 'PM-Kisan scheme requires landholding ownership title in revenue records.' }
+      ]
+    },
+
+    // (vi) Contact Support
+    {
+      ticketId: 'CS-6001',
+      moduleType: 'Contact Support',
+      user: citizen._id,
+      userRole: 'Citizen',
+      name: 'Rahul Sharma',
+      email: 'citizen@example.com',
+      subject: 'Direct support callback request for Ayushman Bharat Card',
+      message: 'Requesting phone callback regarding golden card registration at district empanelled hospital.',
+      category: 'Contact Helpline',
+      priority: 'High',
+      rating: 5,
+      department: 'Ministry of Health',
+      status: 'Resolved',
+      assignedTo: official._id,
+      response: 'Support representative contacted citizen via phone at 9876543210 and guided to nearest CSC center.',
+      respondedBy: official._id,
+      respondedAt: new Date(),
+      resolutionTimeHours: 1.2,
+      messages: [
+        { sender: citizen._id, senderName: 'Rahul Sharma', senderRole: 'Citizen', message: 'Requesting phone callback regarding golden card registration.' },
+        { sender: official._id, senderName: 'Govt Official', senderRole: 'Government Official', message: 'Official callback completed successfully.' }
+      ]
+    }
   ]);
 
   console.log('Seed completed successfully!');

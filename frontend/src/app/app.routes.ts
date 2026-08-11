@@ -26,6 +26,9 @@ import { SchemeManagementComponent } from './admin/scheme-management.component';
 import { SettingsComponent } from './settings/settings.component';
 import { SavedPoliciesComponent } from './saved-policy/saved-policies.component';
 import { UserManagementComponent } from './admin/user-management/user-management.component';
+import { CitizenAnalyticsComponent } from './analytics/citizen-analytics.component';
+import { DepartmentAnalyticsComponent } from './analytics/department-analytics.component';
+import { UsageStatisticsComponent } from './analytics/usage-statistics.component';
 import {
   citizenGuard,
   governmentGuard,
@@ -51,6 +54,7 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard',     component: CitizenDashboardComponent },
+      { path: 'analytics',     component: CitizenAnalyticsComponent },
       { path: 'search',        component: PolicySearchComponent },
       { path: 'eligibility',   component: EligibilityComponent },
       { path: 'applications',  component: MyApplicationsComponent },
@@ -76,6 +80,7 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard',     component: GovernmentDashboardComponent },
+      { path: 'analytics',     component: DepartmentAnalyticsComponent },
       { path: 'policies',      component: PolicyManagementComponent },
       { path: 'schemes',       component: SchemeManagementComponent },
       { path: 'reports',       component: ReportsComponent },
@@ -92,13 +97,15 @@ export const routes: Routes = [
     canActivate: [adminGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard',  component: AdminDashboardComponent },
-      { path: 'users',      component: UserManagementComponent },
-      { path: 'policies',   component: PolicyManagementComponent },
-      { path: 'schemes',    component: SchemeManagementComponent },
-      { path: 'reports',    component: ReportsComponent },
-      { path: 'settings',   component: SettingsComponent },
-      { path: 'profile',    component: ProfileComponent },
+      { path: 'dashboard',   component: AdminDashboardComponent },
+      { path: 'usage-stats', component: UsageStatisticsComponent },
+      { path: 'users',       component: UserManagementComponent },
+      { path: 'policies',    component: PolicyManagementComponent },
+      { path: 'schemes',     component: SchemeManagementComponent },
+      { path: 'reports',     component: ReportsComponent },
+      { path: 'feedback',    component: FeedbackComponent },
+      { path: 'settings',    component: SettingsComponent },
+      { path: 'profile',     component: ProfileComponent },
     ]
   },
 

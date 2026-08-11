@@ -18,6 +18,7 @@ const schemeRoutes = require('./routes/scheme');
 const eligibilityRoutes = require('./routes/eligibility');
 const notificationRoutes = require('./routes/notification');
 const feedbackRoutes = require('./routes/feedback');
+const faqRoutes = require('./routes/faq');
 const reportRoutes = require('./routes/report');
 const searchRoutes = require('./routes/search');
 const statsRoutes = require('./routes/stats');
@@ -46,7 +47,9 @@ app.use('/api/schemes', schemeRoutes);
 app.use('/api/eligibility', eligibilityRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api/faqs', faqRoutes);
 app.use('/api/reports', reportRoutes);
+
 app.use('/api/search', searchRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/applications', applicationRoutes);
