@@ -25,7 +25,10 @@ router.get('/stats', authenticate, async (req, res, next) => {
   try {
     const { role } = req.query;
     let baseFilter = {};
-    if (role && role !== 'All') {
+
+    if (req.user.role !== 'Administrator' && req.user.role !== 'Government Official') {
+      baseFilter.$or = [{ user: req.user._id }, { email: req.user.email }];
+    } else if (role && role !== 'All') {
       baseFilter.userRole = role;
     }
 
@@ -49,6 +52,14 @@ router.get('/stats', authenticate, async (req, res, next) => {
     let ratingCount = 0;
     let totalResTimeHours = 0;
     let resolvedCount = 0;
+    let slaCompliantCount = 0;
+
+    const slaTargetMap = {
+      'Critical': 12,
+      'High': 24,
+      'Medium': 48,
+      'Low': 72
+    };
 
     allItems.forEach(item => {
       if (byModule[item.moduleType] !== undefined) byModule[item.moduleType]++;
@@ -56,20 +67,33 @@ router.get('/stats', authenticate, async (req, res, next) => {
       if (byPriority[item.priority] !== undefined) byPriority[item.priority]++;
       if (byRole[item.userRole] !== undefined) byRole[item.userRole]++;
 
-      if (item.rating) {
+      if (item.rating && item.rating > 0) {
         totalRating += item.rating;
         ratingCount++;
       }
 
       if (item.status === 'Resolved' || item.status === 'Closed') {
         resolvedCount++;
-        totalResTimeHours += (item.resolutionTimeHours || 4);
+        let resHours = item.resolutionTimeHours;
+        if (resHours === undefined || resHours === null) {
+          const endDate = item.respondedAt || item.updatedAt || new Date();
+          const startDate = item.createdAt || new Date();
+          resHours = Number(((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60)).toFixed(1));
+          if (isNaN(resHours) || resHours < 0) resHours = 0;
+        }
+        totalResTimeHours += resHours;
+
+        const targetHours = slaTargetMap[item.priority] || 24;
+        if (resHours <= targetHours) {
+          slaCompliantCount++;
+        }
       }
     });
 
-    const averageRating = ratingCount > 0 ? (totalRating / ratingCount).toFixed(1) : '4.8';
-    const resolutionRate = totalCount > 0 ? Math.round((resolvedCount / totalCount) * 100) : 92;
-    const avgResponseTimeHours = resolvedCount > 0 ? (totalResTimeHours / resolvedCount).toFixed(1) : '3.5';
+    const averageRating = ratingCount > 0 ? Number((totalRating / ratingCount).toFixed(1)) : 0;
+    const resolutionRate = totalCount > 0 ? Math.round((resolvedCount / totalCount) * 100) : 0;
+    const avgResponseTimeHours = resolvedCount > 0 ? Number((totalResTimeHours / resolvedCount).toFixed(1)) : 0;
+    const slaCompliancePercent = resolvedCount > 0 ? Math.round((slaCompliantCount / resolvedCount) * 100) : 0;
 
     res.json({
       stats: {
@@ -78,10 +102,10 @@ router.get('/stats', authenticate, async (req, res, next) => {
         byStatus,
         byPriority,
         byRole,
-        averageRating: Number(averageRating),
+        averageRating,
         resolutionRate,
-        avgResponseTimeHours: Number(avgResponseTimeHours),
-        slaCompliancePercent: Math.min(99, Math.max(85, resolutionRate + 4))
+        avgResponseTimeHours,
+        slaCompliancePercent
       }
     });
   } catch (err) {
@@ -192,7 +216,8 @@ router.put('/:id', authenticate, async (req, res, next) => {
         updateData.respondedBy = req.user._id;
         updateData.respondedAt = new Date();
         const diffMs = new Date() - new Date(existing.createdAt);
-        updateData.resolutionTimeHours = Number((diffMs / (1000 * 60 * 60)).toFixed(1)) || 2.5;
+        const calcHours = Number((diffMs / (1000 * 60 * 60)).toFixed(1));
+        updateData.resolutionTimeHours = isNaN(calcHours) ? 0 : calcHours;
       }
     }
 

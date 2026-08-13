@@ -485,7 +485,13 @@ const seed = async () => {
       helpfulCount: 42,
       unhelpfulCount: 2,
       isPublished: true,
-      createdBy: official._id
+      askedByName: 'Rahul Sharma',
+      askedByRole: 'Citizen',
+      createdBy: citizen._id,
+      messages: [
+        { sender: citizen._id, senderName: 'Rahul Sharma', senderRole: 'Citizen', message: 'How do I check my scheme eligibility?' },
+        { sender: official._id, senderName: 'Govt Official', senderRole: 'Government Official', message: 'Go to the Eligibility Checker page and fill in your personal, financial, and location details to see matching schemes.' }
+      ]
     },
     {
       question: 'What documents are mandatory for PM-JAY hospital treatment?',
@@ -495,7 +501,13 @@ const seed = async () => {
       helpfulCount: 38,
       unhelpfulCount: 1,
       isPublished: true,
-      createdBy: official._id
+      askedByName: 'Priya Singh',
+      askedByRole: 'Citizen',
+      createdBy: citizen._id,
+      messages: [
+        { sender: citizen._id, senderName: 'Priya Singh', senderRole: 'Citizen', message: 'What documents are mandatory for PM-JAY hospital treatment?' },
+        { sender: admin._id, senderName: 'Admin User', senderRole: 'Administrator', message: 'You require your Aadhaar Card, SECC Ration Card/Letter, and PM-JAY Golden Card at any empanelled hospital.' }
+      ]
     },
     {
       question: 'How long does it take to hear back on support feedback?',
@@ -505,7 +517,13 @@ const seed = async () => {
       helpfulCount: 29,
       unhelpfulCount: 0,
       isPublished: true,
-      createdBy: admin._id
+      askedByName: 'Anil Kumar',
+      askedByRole: 'Organization',
+      createdBy: citizen._id,
+      messages: [
+        { sender: citizen._id, senderName: 'Anil Kumar', senderRole: 'Organization', message: 'How long does it take to hear back on support feedback?' },
+        { sender: admin._id, senderName: 'Admin User', senderRole: 'Administrator', message: 'Our government support desk typically reviews and responds to feedback tickets within 3 to 24 hours.' }
+      ]
     },
     {
       question: 'Can I track my scheme application status online?',
@@ -515,7 +533,13 @@ const seed = async () => {
       helpfulCount: 56,
       unhelpfulCount: 3,
       isPublished: true,
-      createdBy: official._id
+      askedByName: 'Rahul Sharma',
+      askedByRole: 'Citizen',
+      createdBy: citizen._id,
+      messages: [
+        { sender: citizen._id, senderName: 'Rahul Sharma', senderRole: 'Citizen', message: 'Can I track my scheme application status online?' },
+        { sender: official._id, senderName: 'Govt Official', senderRole: 'Government Official', message: 'Yes, your application status updates appear in real-time under My Applications and Notifications on your Citizen Dashboard.' }
+      ]
     },
     {
       question: 'How can government officers publish or update a policy?',
@@ -525,7 +549,13 @@ const seed = async () => {
       helpfulCount: 19,
       unhelpfulCount: 0,
       isPublished: true,
-      createdBy: admin._id
+      askedByName: 'Govt Official',
+      askedByRole: 'Government Official',
+      createdBy: official._id,
+      messages: [
+        { sender: official._id, senderName: 'Govt Official', senderRole: 'Government Official', message: 'How can government officers publish or update a policy?' },
+        { sender: admin._id, senderName: 'Admin User', senderRole: 'Administrator', message: 'Government Officers can create policy drafts in the Policy Management tab, which are submitted to Administrators for approval and publication.' }
+      ]
     }
   ]);
 

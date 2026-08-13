@@ -45,22 +45,22 @@ export class FeedbackComponent implements OnInit {
   selectedStatsRole = 'All';
   rolesList = ['All', 'Citizen', 'Government Official', 'Administrator', 'Researcher', 'Organization'];
   stats: FeedbackStats = {
-    totalCount: 12,
+    totalCount: 0,
     byModule: {
-      'Citizen Feedback': 3,
-      'Issue Reporting': 2,
-      'Help Desk': 2,
-      'FAQ Management': 1,
-      'Query Resolution': 2,
-      'Contact Support': 2
+      'Citizen Feedback': 0,
+      'Issue Reporting': 0,
+      'Help Desk': 0,
+      'FAQ Management': 0,
+      'Query Resolution': 0,
+      'Contact Support': 0
     },
-    byStatus: { 'New': 2, 'In Progress': 3, 'Resolved': 6, 'Closed': 1 },
-    byPriority: { 'Low': 3, 'Medium': 4, 'High': 4, 'Critical': 1 },
-    byRole: { 'Citizen': 8, 'Government Official': 1, 'Administrator': 1, 'Researcher': 1, 'Organization': 1 },
-    averageRating: 4.8,
-    resolutionRate: 92,
-    avgResponseTimeHours: 3.5,
-    slaCompliancePercent: 96
+    byStatus: { 'New': 0, 'In Progress': 0, 'Resolved': 0, 'Closed': 0 },
+    byPriority: { 'Low': 0, 'Medium': 0, 'High': 0, 'Critical': 0 },
+    byRole: { 'Citizen': 0, 'Government Official': 0, 'Administrator': 0, 'Researcher': 0, 'Organization': 0 },
+    averageRating: 0,
+    resolutionRate: 0,
+    avgResponseTimeHours: 0,
+    slaCompliancePercent: 0
   };
 
   // ── Feedback Items State ──────────────────────────────────────────────────
@@ -112,6 +112,7 @@ export class FeedbackComponent implements OnInit {
   faqSearch = '';
   faqCategory = 'All';
   showFaqModal = false;
+  showAskModal = false;
   editingFaqId: string | null = null;
   faqForm = {
     question: '',
@@ -120,6 +121,12 @@ export class FeedbackComponent implements OnInit {
     targetRole: 'All',
     isPublished: true
   };
+  askForm = {
+    question: '',
+    category: 'General'
+  };
+  faqChatInputs: Record<string, string> = {};
+  submittingFaqChat: Record<string, boolean> = {};
 
   // ── Convert Query to FAQ Modal State ───────────────────────────────────────
   showConvertModal = false;
@@ -188,7 +195,19 @@ export class FeedbackComponent implements OnInit {
           this.stats = res.stats;
         }
       },
-      error: () => { /* keep default realistic stats */ }
+      error: () => {
+        this.stats = {
+          totalCount: 0,
+          byModule: { 'Citizen Feedback': 0, 'Issue Reporting': 0, 'Help Desk': 0, 'FAQ Management': 0, 'Query Resolution': 0, 'Contact Support': 0 },
+          byStatus: { 'New': 0, 'In Progress': 0, 'Resolved': 0, 'Closed': 0 },
+          byPriority: { 'Low': 0, 'Medium': 0, 'High': 0, 'Critical': 0 },
+          byRole: { 'Citizen': 0, 'Government Official': 0, 'Administrator': 0, 'Researcher': 0, 'Organization': 0 },
+          averageRating: 0,
+          resolutionRate: 0,
+          avgResponseTimeHours: 0,
+          slaCompliancePercent: 0
+        };
+      }
     });
   }
 
@@ -321,6 +340,7 @@ export class FeedbackComponent implements OnInit {
         this.activeFeedback = res.feedback;
         this.threadMessage = '';
         this.loadFeedbacks();
+        this.loadStats();
       },
       error: () => alert('Failed to send message.')
     });
@@ -340,7 +360,7 @@ export class FeedbackComponent implements OnInit {
     }
   }
 
-  // ── FAQ Operations (Sub-module iv) ──────────────────────────────────────────
+  // ── FAQ Operations & Public Chat Thread ─────────────────────────────────────
   voteFaq(faq: FAQ, type: 'helpful' | 'unhelpful'): void {
     if (!faq._id) return;
     this.feedbackService.voteFaq(faq._id, type).subscribe({
@@ -349,6 +369,60 @@ export class FeedbackComponent implements OnInit {
           faq.helpfulCount = res.faq.helpfulCount;
           faq.unhelpfulCount = res.faq.unhelpfulCount;
         }
+      }
+    });
+  }
+
+  sendFaqMessage(faq: FAQ): void {
+    const faqId = faq._id;
+    if (!faqId) return;
+    const text = (this.faqChatInputs[faqId] || '').trim();
+    if (!text) return;
+
+    this.submittingFaqChat[faqId] = true;
+    this.feedbackService.addFaqMessage(faqId, text).subscribe({
+      next: (res) => {
+        this.faqChatInputs[faqId] = '';
+        this.submittingFaqChat[faqId] = false;
+        if (res && res.faq) {
+          faq.messages = res.faq.messages;
+          faq.answer = res.faq.answer;
+        } else {
+          this.loadFaqs();
+        }
+      },
+      error: (err) => {
+        this.submittingFaqChat[faqId] = false;
+        const msg = err.error?.message || 'Failed to send message in FAQ thread.';
+        alert(msg);
+      }
+    });
+  }
+
+  openAskModal(): void {
+    this.askForm = { question: '', category: 'General' };
+    this.showAskModal = true;
+  }
+
+  closeAskModal(): void {
+    this.showAskModal = false;
+  }
+
+  submitAskQuestion(): void {
+    if (!this.askForm.question.trim()) return;
+    this.feedbackService.createFaq({
+      question: this.askForm.question.trim(),
+      category: this.askForm.category,
+      isPublished: true
+    }).subscribe({
+      next: () => {
+        this.closeAskModal();
+        this.loadFaqs();
+        alert('Your question has been posted to the public FAQ portal! Administrators and Officers can now view and reply.');
+      },
+      error: (err) => {
+        const msg = err.error?.message || 'Failed to submit question.';
+        alert(msg);
       }
     });
   }
@@ -382,7 +456,7 @@ export class FeedbackComponent implements OnInit {
   }
 
   saveFaq(): void {
-    if (!this.faqForm.question || !this.faqForm.answer) return;
+    if (!this.faqForm.question) return;
 
     if (this.editingFaqId) {
       this.feedbackService.updateFaq(this.editingFaqId, this.faqForm).subscribe({

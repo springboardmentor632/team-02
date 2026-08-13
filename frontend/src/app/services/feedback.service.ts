@@ -37,6 +37,15 @@ export interface FeedbackEntry {
   updatedAt?: string;
 }
 
+export interface FAQMessage {
+  _id?: string;
+  sender?: any;
+  senderName?: string;
+  senderRole?: string;
+  message: string;
+  createdAt?: string;
+}
+
 export interface FAQ {
   _id?: string;
   question: string;
@@ -46,8 +55,12 @@ export interface FAQ {
   helpfulCount?: number;
   unhelpfulCount?: number;
   isPublished?: boolean;
+  askedByName?: string;
+  askedByRole?: string;
   createdBy?: any;
+  messages?: FAQMessage[];
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface FeedbackStats {
@@ -137,6 +150,10 @@ export class FeedbackService {
 
   voteFaq(id: string, type: 'helpful' | 'unhelpful'): Observable<{ faq: FAQ }> {
     return this.http.post<{ faq: FAQ }>(`${this.faqUrl}/${id}/vote`, { type });
+  }
+
+  addFaqMessage(id: string, message: string): Observable<{ faq: FAQ }> {
+    return this.http.post<{ faq: FAQ }>(`${this.faqUrl}/${id}/messages`, { message });
   }
 
   convertQueryToFaq(data: { queryId?: string; question: string; answer: string; category?: string; targetRole?: string }): Observable<{ faq: FAQ }> {

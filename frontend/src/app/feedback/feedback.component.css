@@ -799,3 +799,130 @@
   .portal-header { flex-direction: column; align-items: flex-start; gap: 14px; }
   .stats-role-filter { align-items: flex-start; }
 }
+
+/* ── FAQ LIVE CHAT & DISCUSSION THREAD STYLES ────────────────────────── */
+.faq-toolbar-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.asked-by-tag {
+  background: var(--badge-bg);
+  color: var(--navy-dk);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.official-answer-banner {
+  background: #F0F7EF;
+  border-left: 4px solid var(--navy-dk);
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin: 10px 0;
+}
+
+.answer-badge {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--navy-dk);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.faq-chat-thread {
+  background: #FAFCFA;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  margin: 14px 0;
+}
+
+.thread-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy-dk);
+  margin: 0 0 10px 0;
+}
+
+.messages-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 280px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+  padding-right: 4px;
+}
+
+.faq-msg-bubble {
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.45;
+  width: 92%;
+}
+
+.msg-citizen {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  align-self: flex-start;
+  color: var(--text-1);
+}
+
+.msg-admin {
+  background: var(--badge-bg);
+  border: 1.5px solid var(--navy-lt);
+  align-self: flex-end;
+  color: var(--navy-dk);
+}
+
+.msg-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  font-size: 11px;
+}
+
+.sender-name {
+  font-weight: 700;
+}
+
+.role-badge {
+  background: #E2E8F0;
+  color: #475569;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.role-badge.badge-admin {
+  background: var(--navy-dk);
+  color: #FFFFFF;
+}
+
+.msg-time {
+  color: var(--text-2);
+  margin-left: auto;
+  font-size: 10.5px;
+}
+
+.msg-body {
+  word-break: break-word;
+}
+
+.faq-chat-reply-box {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.chat-input {
+  flex: 1;
+  font-size: 12.5px;
+}
+
+.chat-send-btn {
+  white-space: nowrap;
+}
