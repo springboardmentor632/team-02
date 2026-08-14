@@ -85,8 +85,9 @@
             </mat-form-field>
 
             <div class="forgot-row">
-              <a routerLink="/forgot-password">Forgot password?</a>
+              <a [routerLink]="['/forgot-password']" [queryParams]="loginEmail ? { email: loginEmail } : {}">Forgot password?</a>
             </div>
+
 
             <button id="but" mat-raised-button color="primary" type="submit" class="full-width btn-submit"
               [disabled]="loading">

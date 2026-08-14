@@ -1,12 +1,12 @@
-import { HttpClient } from '@angular/common/http';
-import { Component } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { AuthService } from '../services/auth.service';
 
 type ForgotStep = 'email' | 'otp';
 
@@ -29,7 +29,7 @@ type ForgotStep = 'email' | 'otp';
 
         <ng-container *ngIf="step === 'email'">
           <h3 class="form-title">Reset your password</h3>
-          <p class="form-sub color">Enter your registered email and we'll send you an OTP</p>
+          <p class="form-sub color">Enter your registered email and we'll send you an OTP from PolicyGPT support.</p>
 
           <div class="error-banner" *ngIf="errorMsg">{{ errorMsg }}</div>
 
@@ -48,7 +48,7 @@ type ForgotStep = 'email' | 'otp';
 
         <ng-container *ngIf="step === 'otp'">
           <h3 class="form-title">Enter OTP</h3>
-          <p class="form-sub color">We've sent a 6-digit OTP to {{ email }}. Enter it below along with your new password.</p>
+          <p class="form-sub color">We've sent a 6-digit OTP to <strong>{{ email }}</strong>. Enter it below along with your new password.</p>
 
           <div class="error-banner" *ngIf="errorMsg">{{ errorMsg }}</div>
           <div class="error-banner" style="background:#EAF7EC; color:#2E7D32; border-color:#B9E6C0;" *ngIf="successMsg">
@@ -57,7 +57,7 @@ type ForgotStep = 'email' | 'otp';
 
           <form #otpForm="ngForm" (ngSubmit)="onResetPassword(otpForm)" novalidate *ngIf="!successMsg">
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label class="color">OTP</mat-label>
+              <mat-label class="color">OTP Code</mat-label>
               <input matInput type="text" name="otp" placeholder="Enter 6-digit OTP" [(ngModel)]="otp" required minlength="6" maxlength="6" />
             </mat-form-field>
 
@@ -89,7 +89,7 @@ type ForgotStep = 'email' | 'otp';
     </div>
   `
 })
-export class ForgotPasswordComponent {
+export class ForgotPasswordComponent implements OnInit {
   step: ForgotStep = 'email';
 
   email = '';
@@ -102,32 +102,41 @@ export class ForgotPasswordComponent {
   successMsg = '';
 
   constructor(
-    private http: HttpClient,
-    private router: Router
+    private authService: AuthService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
+  ngOnInit(): void {
+    const emailParam = this.route.snapshot.queryParams['email'];
+    if (emailParam) {
+      this.email = emailParam;
+    }
+  }
+
   onSendOtp(form: NgForm): void {
-    if (form.invalid) {
+    if (form.invalid || !this.email) {
       this.errorMsg = 'Please enter a valid email address';
       return;
     }
 
     this.loading = true;
     this.errorMsg = '';
+    this.cdr.detectChanges();
 
-    this.http.post<any>(
-      'http://localhost:5000/api/auth/forgot-password',
-      { email: this.email }
-    ).subscribe({
+    this.authService.forgotPassword(this.email.trim()).subscribe({
       next: (response) => {
         this.loading = false;
-        console.log(response);
         this.step = 'otp';
+        console.log('OTP sent successfully, step changed to otp:', response);
+        this.cdr.detectChanges();
       },
       error: (error) => {
         this.loading = false;
-        this.errorMsg = error?.error?.message || 'Failed to send OTP. Please check the email and try again.';
-        console.log(error);
+        this.errorMsg = error?.error?.message || 'Failed to send OTP. Please check the email address and try again.';
+        console.error('OTP request failed:', error);
+        this.cdr.detectChanges();
       }
     });
   }
@@ -139,20 +148,24 @@ export class ForgotPasswordComponent {
 
     this.loading = true;
     this.errorMsg = '';
+    this.cdr.detectChanges();
 
-    this.http.post<any>(
-      'http://localhost:5000/api/auth/forgot-password',
-      { email: this.email }
-    ).subscribe({
+    this.authService.forgotPassword(this.email.trim()).subscribe({
       next: (response) => {
         this.loading = false;
-        console.log(response);
         this.errorMsg = '';
+        this.successMsg = 'A new OTP has been sent to your email.';
+        this.cdr.detectChanges();
+        setTimeout(() => {
+          this.successMsg = '';
+          this.cdr.detectChanges();
+        }, 3000);
       },
       error: (error) => {
         this.loading = false;
         this.errorMsg = error?.error?.message || 'Failed to resend OTP. Please try again.';
-        console.log(error);
+        console.error('Resend OTP failed:', error);
+        this.cdr.detectChanges();
       }
     });
   }
@@ -170,27 +183,26 @@ export class ForgotPasswordComponent {
 
     this.loading = true;
     this.errorMsg = '';
+    this.cdr.detectChanges();
 
-    this.http.post<any>(
-      'http://localhost:5000/api/auth/reset-password',
-      {
-        email: this.email,
-        otp: this.otp,
-        newPassword: this.newPassword
-      }
-    ).subscribe({
+    this.authService.resetPassword({
+      email: this.email.trim(),
+      otp: this.otp.trim(),
+      newPassword: this.newPassword
+    }).subscribe({
       next: (response) => {
         this.loading = false;
-        console.log(response);
-        this.successMsg = 'Your password has been reset successfully. You can now log in.';
+        this.successMsg = response?.message || 'Your password has been reset successfully. You can now log in.';
+        this.cdr.detectChanges();
         setTimeout(() => {
           this.router.navigate(['/login']);
-        }, 1500);
+        }, 1800);
       },
       error: (error) => {
         this.loading = false;
         this.errorMsg = error?.error?.message || 'Invalid or expired OTP. Please try again.';
-        console.log(error);
+        console.error('Reset password failed:', error);
+        this.cdr.detectChanges();
       }
     });
   }

@@ -13,11 +13,17 @@ router.get('/', authenticate, async (req, res, next) => {
     const filter = {
       $or: [
         { user: req.user._id },
-        { targetRoles: req.user.role },
-        { targetRoles: [] },
-        { targetRoles: { $exists: false } },
+        {
+          category: { $nin: ['application', 'application_update'] },
+          $or: [
+            { targetRoles: req.user.role },
+            { targetRoles: [] },
+            { targetRoles: { $exists: false } },
+          ],
+        },
       ],
     };
+
 
     if (category && category !== 'all') {
       filter.category = category;

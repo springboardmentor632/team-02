@@ -4,8 +4,10 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const { authenticate, authorize } = require('../middleware/auth');
 const { logAction } = require('../middleware/auditLogger');
+const { sendOtpEmail } = require('../utils/mailer');
 
 const router = express.Router();
+
 
 const signToken = (userId) => {
   return jwt.sign(
@@ -81,7 +83,76 @@ router.post('/login', async (req, res, next) => {
   }
 });
 
+router.post('/forgot-password', async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Email address is required' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ message: 'No registered user found with this email address' });
+    }
+
+    // Generate 6-digit numerical OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+    user.resetPasswordToken = otp;
+    user.resetPasswordExpires = expiresAt;
+    await user.save();
+
+    // Send email asynchronously in background for instant response
+    sendOtpEmail(user.email, otp).catch((err) => {
+      console.error('[ASYNC EMAIL ERROR]', err);
+    });
+
+    return res.json({ message: 'OTP sent to your email successfully', email: user.email });
+
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/reset-password', async (req, res, next) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ message: 'Email, OTP, and new password are required' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!user.resetPasswordToken || user.resetPasswordToken !== otp.toString().trim()) {
+      return res.status(400).json({ message: 'Invalid OTP. Please check the code and try again.' });
+    }
+
+    if (!user.resetPasswordExpires || user.resetPasswordExpires < new Date()) {
+      return res.status(400).json({ message: 'OTP has expired. Please request a new OTP.' });
+    }
+
+    // Update password
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    return res.json({ message: 'Password reset successfully. You can now log in with your new password.' });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/profile', authenticate, async (req, res, next) => {
+
   try {
     res.json({ user: req.user });
   } catch (err) {
