@@ -29,7 +29,11 @@
     <button class="filter-pill" [class.active]="activeFilter === 'Approved'" (click)="applyFilter('Approved')">
       ✅ Approved
     </button>
+    <button class="filter-pill" [class.active]="activeFilter === 'Rejected'" (click)="applyFilter('Rejected')">
+      ❌ Rejected
+    </button>
   </div>
+
 
   <!-- Loading State -->
   <div *ngIf="loading" class="loading-state">

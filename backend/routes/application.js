@@ -226,6 +226,21 @@ router.put('/:id/status', authenticate, authorize('Administrator', 'Government O
     await application.save();
 
     const itemName = getItemName(application);
+    const isApproved = application.status === 'Approved';
+    const isRejected = application.status === 'Rejected';
+
+    const notifTitle = isApproved
+      ? `✅ Application Accepted & Approved`
+      : isRejected
+      ? `❌ Application Rejected`
+      : `📝 Application Status: ${application.status}`;
+
+    const notifMessage = isApproved
+      ? `Congratulations! Your application for "${itemName}" has been Accepted and Approved by ${req.user.role}.${govNotes ? ` Official Note: ${govNotes}` : ''}`
+      : isRejected
+      ? `Your application for "${itemName}" has been Rejected by ${req.user.role}.${govNotes ? ` Official Note: ${govNotes}` : ''}`
+      : `Your application for "${itemName}" status is now ${application.status}.${govNotes ? ` Note: ${govNotes}` : ''}`;
+
     const typeMap = {
       Approved: 'success',
       Completed: 'success',
@@ -235,8 +250,8 @@ router.put('/:id/status', authenticate, authorize('Administrator', 'Government O
     };
 
     await dispatchNotification({
-      title: `📝 Application ${application.status}`,
-      message: `Your application for "${itemName}" is now ${application.status}.${govNotes ? ` Note: ${govNotes}` : ''}`,
+      title: notifTitle,
+      message: notifMessage,
       type: typeMap[application.status] || 'info',
       category: 'application_update',
       user: application.user,
@@ -245,6 +260,7 @@ router.put('/:id/status', authenticate, authorize('Administrator', 'Government O
     });
 
     res.json({ application });
+
   } catch (err) {
     next(err);
   }

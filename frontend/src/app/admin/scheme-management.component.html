@@ -43,13 +43,18 @@
       <p *ngIf="loading">Loading schemes...</p>
       <table class="admin-table" *ngIf="!loading">
         <thead>
-          <tr><th>Scheme Name</th><th>Category</th><th>Benefit</th><th>Status</th><th>Actions</th></tr>
+          <tr><th>Scheme Name</th><th>Category</th><th>Benefit</th><th>Applications Applied</th><th>Status</th><th>Actions</th></tr>
         </thead>
         <tbody>
           <tr *ngFor="let s of schemes">
             <td>{{ s.name }}</td>
             <td><span class="tag">{{ s.category }}</span></td>
             <td>{{ s.benefits?.[0] || s.summary }}</td>
+            <td>
+              <span class="status-pill" style="background:#E8F5E9; color:#1B5E20; border:1px solid #C8E6C9; font-weight:600;">
+                📄 {{ s.applicationCount || 0 }} Applied
+              </span>
+            </td>
             <td><span class="status-pill" [class]="'pill-' + s.status.toLowerCase()">{{ s.status }}</span></td>
             <td class="action-cell">
               <button class="btn-small btn-success" *ngIf="s.status !== 'Active'" (click)="approve(s)">✓ Approve</button>
@@ -58,8 +63,9 @@
             </td>
           </tr>
           <tr *ngIf="schemes.length === 0">
-            <td colspan="5">No schemes found. Create one using the Add button.</td>
+            <td colspan="6">No schemes found. Create one using the Add button.</td>
           </tr>
+
         </tbody>
       </table>
     </div>

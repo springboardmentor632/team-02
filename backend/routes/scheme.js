@@ -6,6 +6,8 @@ const { dispatchNotification } = require('../utils/notificationDispatcher');
 
 const router = express.Router();
 
+const Application = require('../models/application');
+
 router.get('/', authenticate, async (req, res, next) => {
   try {
     const filters = {};
@@ -21,11 +23,27 @@ router.get('/', authenticate, async (req, res, next) => {
     }
 
     const schemes = await Scheme.find(filters).sort({ launchDate: -1 });
-    res.json({ schemes });
+
+    // Calculate citizen application count per scheme
+    const schemeCounts = await Application.aggregate([
+      { $match: { applicationType: 'scheme', scheme: { $ne: null } } },
+      { $group: { _id: '$scheme', count: { $sum: 1 } } }
+    ]);
+    const countMap = {};
+    schemeCounts.forEach(c => { if (c._id) countMap[c._id.toString()] = c.count; });
+
+    const schemesWithCounts = schemes.map(s => {
+      const sObj = s.toObject();
+      sObj.applicationCount = countMap[s._id.toString()] || 0;
+      return sObj;
+    });
+
+    res.json({ schemes: schemesWithCounts });
   } catch (err) {
     next(err);
   }
 });
+
 
 router.post('/compare', authenticate, async (req, res, next) => {
   try {

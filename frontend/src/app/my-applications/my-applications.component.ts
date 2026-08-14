@@ -17,7 +17,8 @@ export class MyApplicationsComponent implements OnInit {
   filteredApplications: SchemeApplication[] = [];
   loading = true;
   error = '';
-  activeFilter: 'all' | 'policy' | 'scheme' | 'Approved' | 'Under Review' = 'all';
+  activeFilter: 'all' | 'policy' | 'scheme' | 'Approved' | 'Rejected' | 'Under Review' = 'all';
+
 
   constructor(
     private applicationService: ApplicationService,

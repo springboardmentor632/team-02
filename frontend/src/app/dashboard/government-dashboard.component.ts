@@ -7,6 +7,7 @@ import { SchemeService } from '../services/scheme.service';
 import { NotificationService } from '../services/notification.service';
 import { StatsService } from '../services/stats.service';
 import { ApplicationService } from '../services/application.service';
+import { SchemeApplication } from '../models/policy.model';
 
 @Component({
   selector: 'app-government-dashboard',
@@ -23,7 +24,7 @@ export class GovernmentDashboardComponent implements OnInit {
     { label: 'Policies Published', value: '—', sub: 'Active policies' },
     { label: 'Active Schemes', value: '—', sub: 'Live on platform' },
     { label: 'Pending Policies', value: '—', sub: 'Awaiting approval' },
-    { label: 'Notifications', value: '—', sub: 'Platform alerts' }
+    { label: 'Citizen Applications', value: '—', sub: 'Total applications' }
   ];
 
   schemeUsage: { name: string; usage: number }[] = [];
@@ -33,6 +34,9 @@ export class GovernmentDashboardComponent implements OnInit {
     { day: 'Thu', value: 62 }, { day: 'Fri', value: 50 }, { day: 'Sat', value: 30 }, { day: 'Sun', value: 25 }
   ];
   notifStats: { channel: string; sent: string; delivered: string }[] = [];
+  roleStats: { role: string; percent: number; count: string }[] = [];
+  applications: SchemeApplication[] = [];
+  loadingApps = false;
 
   constructor(
     private router: Router,
@@ -50,7 +54,6 @@ export class GovernmentDashboardComponent implements OnInit {
     this.officialName = this.auth.getUserDisplayName();
     this.department = user?.organization || 'Government of India';
 
-    // Replace entire stats array on load from public endpoint (no 304 cache issue)
     this.statsService.getPlatformStats().subscribe({
       next: (res) => {
         if (!res || !res.stats) return;
@@ -106,35 +109,65 @@ export class GovernmentDashboardComponent implements OnInit {
       next: (res) => {
         const total = (res.notifications || []).length;
         const unread = (res.notifications || []).filter(n => !n.read).length;
-        this.stats = this.stats.map((s, i) =>
-          i === 3 ? { ...s, value: String(total) } : s
-        );
         this.notifStats = [
           { channel: 'In-App', sent: String(total), delivered: '100%' },
           { channel: 'Platform Alerts', sent: String(total), delivered: `${unread} unread` },
         ];
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error('[GovtDashboard] Notifications error:', err);
-        this.stats = this.stats.map((s, i) => i === 3 ? { ...s, value: '0' } : s);
-        this.cdr.detectChanges();
-      }
+      error: (err) => console.error('[GovtDashboard] Notifications error:', err)
     });
 
-    // also fetch application counts for government dashboard overview
+    this.loadApplications();
+  }
+
+  loadApplications(): void {
+    this.loadingApps = true;
     this.applicationService.getAll().subscribe({
       next: (res) => {
-        // applications count handled in app table/reports if needed
+        this.applications = res.applications || [];
+        this.loadingApps = false;
+        this.stats = this.stats.map((s, i) => i === 3 ? { ...s, value: String(this.applications.length) } : s);
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('[GovtDashboard] Applications error:', err);
+        this.loadingApps = false;
+        this.cdr.detectChanges();
       }
     });
   }
 
-  roleStats: { role: string; percent: number; count: string }[] = [];
+  updateApplicationStatus(app: SchemeApplication, status: 'Approved' | 'Rejected'): void {
+    const actionLabel = status === 'Approved' ? 'Accept / Approve' : 'Reject';
+    const note = prompt(`Enter optional official note for making this application "${actionLabel}":`) ?? '';
+    this.applicationService.updateStatus(app._id, status, note).subscribe({
+      next: () => {
+        app.status = status;
+        app.govNotes = note;
+        this.loadApplications();
+      },
+      error: (err) => alert(err?.error?.message || 'Failed to update application status')
+    });
+  }
+
+  getItemTitle(app: any): string {
+    if (app.applicationType === 'policy' && app.policy && typeof app.policy === 'object') {
+      return app.policy.title || 'Policy Application';
+    }
+    if (app.scheme && typeof app.scheme === 'object') {
+      return app.scheme.name || 'Scheme Application';
+    }
+    return 'Application';
+  }
+
+  getApplicantName(app: any): string {
+    if (app.applicantName) return app.applicantName;
+    if (app.user && typeof app.user === 'object') {
+      return `${app.user.firstName || ''} ${app.user.lastName || ''}`.trim() || app.user.email || 'Citizen';
+    }
+    return 'Citizen Applicant';
+  }
 
   onLogout(): void {
     if (confirm('Are you sure you want to logout?')) {

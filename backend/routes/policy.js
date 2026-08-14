@@ -5,6 +5,8 @@ const { logAction } = require('../middleware/auditLogger');
 
 const router = express.Router();
 
+const Application = require('../models/application');
+
 router.get('/', authenticate, async (req, res, next) => {
   try {
     const filters = {};
@@ -21,11 +23,27 @@ router.get('/', authenticate, async (req, res, next) => {
     }
 
     const policies = await Policy.find(filters).sort({ publishedAt: -1 });
-    res.json({ policies });
+
+    // Calculate citizen application count per policy
+    const policyCounts = await Application.aggregate([
+      { $match: { applicationType: 'policy', policy: { $ne: null } } },
+      { $group: { _id: '$policy', count: { $sum: 1 } } }
+    ]);
+    const countMap = {};
+    policyCounts.forEach(c => { if (c._id) countMap[c._id.toString()] = c.count; });
+
+    const policiesWithCounts = policies.map(p => {
+      const pObj = p.toObject();
+      pObj.applicationCount = countMap[p._id.toString()] || 0;
+      return pObj;
+    });
+
+    res.json({ policies: policiesWithCounts });
   } catch (err) {
     next(err);
   }
 });
+
 
 // ── Saved policies (must be BEFORE /:id so Express doesn't match 'saved' as an ObjectId) ──────────────
 const SavedPolicy = require('../models/savedPolicy');

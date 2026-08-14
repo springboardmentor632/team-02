@@ -39,13 +39,18 @@
       <p *ngIf="loading">Loading policies...</p>
       <table class="admin-table" *ngIf="!loading">
         <thead>
-          <tr><th>Policy Name</th><th>Category</th><th>Ministry</th><th>Status</th><th>Actions</th></tr>
+          <tr><th>Policy Name</th><th>Category</th><th>Ministry</th><th>Applications Applied</th><th>Status</th><th>Actions</th></tr>
         </thead>
         <tbody>
           <tr *ngFor="let p of policies">
             <td>{{ p.title }}</td>
             <td><span class="tag">{{ p.category }}</span></td>
             <td>{{ p.ministry }}</td>
+            <td>
+              <span class="status-pill" style="background:#E3F2FD; color:#0D47A1; border:1px solid #BBDEFB; font-weight:600;">
+                📄 {{ p.applicationCount || 0 }} Applied
+              </span>
+            </td>
             <td><span class="status-pill" [class]="'pill-' + p.status.toLowerCase()">{{ p.status }}</span></td>
             <td class="action-cell">
               <button class="btn-small btn-success" *ngIf="p.status !== 'Active'" (click)="approve(p)">✓ Approve</button>
@@ -54,8 +59,9 @@
             </td>
           </tr>
           <tr *ngIf="policies.length === 0">
-            <td colspan="5">No policies found. Create one using the Upload button.</td>
+            <td colspan="6">No policies found. Create one using the Upload button.</td>
           </tr>
+
         </tbody>
       </table>
     </div>
