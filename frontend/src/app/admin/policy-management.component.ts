@@ -21,7 +21,7 @@ export class PolicyManagementComponent implements OnInit {
   newPolicy = { title: '', category: 'Education', ministry: '', summary: '', content: '' };
   categories = ['Education', 'Healthcare', 'Agriculture', 'Employment', 'Finance', 'Women & Child Welfare', 'Housing', 'Environment', 'Digital Governance', 'Infrastructure'];
 
-  policies: Policy[] = [];
+  policies: any[] = [];
 
   constructor(
     private router: Router,

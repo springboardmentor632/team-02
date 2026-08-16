@@ -21,7 +21,7 @@ export class SchemeManagementComponent implements OnInit {
   newScheme = { name: '', category: 'Scholarships', summary: '', benefit: '', ministry: '', applicationMode: 'Online' };
   categories = ['Scholarships', 'Farmer Welfare', 'Healthcare', 'Housing', 'Business Support', 'Women Empowerment', 'Senior Citizen Welfare', 'Student Schemes', 'Employment Programs', 'Social Security'];
 
-  schemes: Scheme[] = [];
+  schemes: any[] = [];
 
   constructor(
     private router: Router,

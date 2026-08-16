@@ -46,7 +46,7 @@
           <tr *ngFor="let app of applications">
             <td>
               <strong>{{ getApplicantName(app) }}</strong><br />
-              <small style="color:#6B7280;">{{ app.applicantEmail || (app.user && typeof app.user === 'object' ? app.user.email : '') }}</small>
+              <small style="color: #667280;">{{ app.applicantEmail || ($any(app).user && typeof $any(app).user === 'object' ? $any(app).user?.email : '') }}</small>
             </td>
             <td>{{ getItemTitle(app) }}</td>
             <td>
