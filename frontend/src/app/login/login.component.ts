@@ -1,8 +1,7 @@
-import { HttpClient } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,6 +9,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { finalize } from 'rxjs';
+import { AuthService } from '../services/auth.service';
 
 declare const google: any;
 
@@ -34,9 +35,10 @@ type AuthMode = 'login' | 'register';
   styleUrl: './login.component.css'
 })
 export class LoginComponent implements OnInit {
-
+  hidePassword = true;
+  hideRegisterPassword = true;
   authMode: AuthMode = 'login';
-
+  selectedTabIndex = 0;
   loginEmail = '';
   loginPassword = '';
 
@@ -46,30 +48,34 @@ export class LoginComponent implements OnInit {
   regRole = 'Citizen';
   regPassword = '';
 
-  roles = ['Citizen', 'Government Official', 'Researcher', 'Organisation'];
+  roles = ['Citizen', 'Government Official', 'Administrator', 'Researcher', 'Organization'];
 
   errorMsg = '';
   loading = false;
   googleLoading = false;
 
-  // Replace with actual Client ID from Google Cloud Console > APIs & Services > Credentials
   private readonly GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
 
   private googleClient: any;
   private googleReady = false;
 
   constructor(
-  private router: Router,
-  private http: HttpClient
-) {}
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.initGoogleClient();
+    if (this.authService.isLoggedIn()) {
+      const user = this.authService.getCurrentUser();
+      this.authService.navigateByRole(user?.role);
+    }
   }
 
   private initGoogleClient(retryCount = 0): void {
     if (typeof google === 'undefined' || !google.accounts) {
-      // Google script may still be loading, retry a few times before giving up
       if (retryCount < 10) {
         setTimeout(() => this.initGoogleClient(retryCount + 1), 300);
       } else {
@@ -97,6 +103,7 @@ export class LoginComponent implements OnInit {
   }
 
   onTabChange(index: number): void {
+    this.selectedTabIndex = index;
     this.authMode = index === 0 ? 'login' : 'register';
     this.errorMsg = '';
   }
@@ -120,6 +127,7 @@ export class LoginComponent implements OnInit {
     if (!response || response.error) {
       this.googleLoading = false;
       this.errorMsg = 'Google login failed, please try again';
+      this.cdr.detectChanges();
       return;
     }
 
@@ -128,19 +136,24 @@ export class LoginComponent implements OnInit {
     })
       .then(res => res.json())
       .then(profile => {
-        // TODO: send access_token to backend (FastAPI/Node /auth/google) for verification
         console.log('Google profile:', profile);
         this.googleLoading = false;
-        this.router.navigate(['/dashboard']);
+        this.authService.navigateByRole('Citizen');
+        this.cdr.detectChanges();
       })
       .catch(err => {
         this.googleLoading = false;
         this.errorMsg = 'Something went wrong while fetching the profile';
         console.error(err);
+        this.cdr.detectChanges();
       });
   }
 
   onLogin(form: NgForm): void {
+    if (this.loading) {
+      return;
+    }
+
     if (form.invalid) {
       this.errorMsg = 'Please fill in both email and password';
       return;
@@ -149,29 +162,37 @@ export class LoginComponent implements OnInit {
     this.loading = true;
     this.errorMsg = '';
 
-    // TODO: replace with real backend call (POST /auth/login)
-   const loginData = {
-  email: this.loginEmail,
-  password: this.loginPassword
-};
-
-this.http.post<any>(
-  'http://localhost:5000/api/auth/login',
-  loginData
-).subscribe({
-  next: (response) => {
-    this.loading = false;
-    console.log(response);
-  },
-
-  error: (error) => {
-    this.loading = false;
-    console.log(error);
-  }
-});
+    this.authService.login({
+      email: this.loginEmail,
+      password: this.loginPassword
+    }).pipe(
+      finalize(() => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      })
+    ).subscribe({
+      next: (response) => {
+        this.authService.saveSession(response);
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+        const q = this.route.snapshot.queryParamMap.get('q');
+        if (returnUrl) {
+          const redirect = returnUrl === 'policy-search' ? '/citizen/search' : returnUrl;
+          this.router.navigate([redirect], { queryParams: q ? { q } : {} });
+        } else {
+          this.authService.navigateByRole(response.user?.role);
+        }
+      },
+      error: (error) => {
+        this.errorMsg = this.getErrorMessage(error);
+      }
+    });
   }
 
   onRegister(form: NgForm): void {
+    if (this.loading) {
+      return;
+    }
+
     if (form.invalid) {
       this.errorMsg = 'Please fill in all required fields';
       return;
@@ -180,10 +201,48 @@ this.http.post<any>(
     this.loading = true;
     this.errorMsg = '';
 
-    // TODO: replace with real backend call (POST /auth/register)
-    setTimeout(() => {
-      this.loading = false;
-      this.router.navigate(['/dashboard']);
-    }, 900);
+    this.authService.register({
+      firstName: this.regFirstName,
+      lastName: this.regLastName,
+      email: this.regEmail,
+      role: this.regRole,
+      password: this.regPassword,
+      confirmPassword: this.regPassword
+    }).pipe(
+      finalize(() => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      })
+    ).subscribe({
+      next: () => {
+        alert('Registration successful! Please login.');
+        form.resetForm();
+        this.regRole = 'Citizen';
+        this.selectedTabIndex = 0;
+        this.authMode = 'login';
+      },
+      error: (error) => {
+        this.errorMsg = this.getErrorMessage(error);
+      }
+    });
+  }
+
+  private getErrorMessage(error: { status?: number; error?: { message?: string } }): string {
+    if (error.status === 401) {
+      return 'Invalid email or password.';
+    }
+    if (error.status === 409) {
+      return error.error?.message || 'User already exists.';
+    }
+    if (error.status === 400) {
+      return error.error?.message || 'Please check your input and try again.';
+    }
+    if (error.status === 500) {
+      return 'Internal server error. Please try again later.';
+    }
+    if (error.status === 0) {
+      return 'Cannot connect to the server. Make sure the backend is running.';
+    }
+    return error.error?.message || 'Something went wrong.';
   }
 }

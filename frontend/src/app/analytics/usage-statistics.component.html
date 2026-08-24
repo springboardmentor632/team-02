@@ -1,0 +1,152 @@
+<div class="analytics-page">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Platform Usage Statistics</h1>
+      <p class="page-sub">System health, search query analytics, audit log activities, and user engagement trends.</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary" (click)="printReport()">🖨️ Export PDF / Print</button>
+      <a routerLink="/admin/reports" class="btn-primary">📈 Platform Analytics</a>
+    </div>
+  </div>
+
+  <!-- SUMMARY KPI CARDS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-top">
+        <span class="stat-value">{{ summary.totalUsers | number }}</span>
+        <span class="stat-icon">👥</span>
+      </div>
+      <div class="stat-label">Total Platform Users</div>
+      <div class="stat-sub">Citizens, Officials & Admins</div>
+    </div>
+
+    <div class="stat-card highlight-success">
+      <div class="stat-top">
+        <span class="stat-value">{{ summary.totalSearches | number }}</span>
+        <span class="stat-icon">🔍</span>
+      </div>
+      <div class="stat-label">Search Queries Logged</div>
+      <div class="stat-sub">Citizen policy inquiries</div>
+    </div>
+
+    <div class="stat-card highlight-warning">
+      <div class="stat-top">
+        <span class="stat-value">{{ summary.totalApplications | number }}</span>
+        <span class="stat-icon">📝</span>
+      </div>
+      <div class="stat-label">Total Applications</div>
+      <div class="stat-sub">Submitted platform applications</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-top">
+        <span class="stat-value">{{ summary.systemUptime }}</span>
+        <span class="stat-icon">⚡</span>
+      </div>
+      <div class="stat-label">System Operational Health</div>
+      <div class="stat-sub">Avg API Latency: {{ summary.apiAvgLatency }}</div>
+    </div>
+  </div>
+
+  <!-- ANALYTICS CONTENT GRID -->
+  <div class="analytics-grid">
+
+    <!-- LEFT COLUMN: Search Queries & Role Distribution -->
+    <div class="grid-column">
+
+      <!-- TOP SEARCH INQUIRIES TABLE -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Top Search Queries & Trending Keywords</h3>
+          <span class="sub-text">Most searched terms by citizens</span>
+        </div>
+
+        <div *ngIf="loading" class="loading-state">Loading query statistics...</div>
+
+        <div class="search-ranking-list" *ngIf="!loading">
+          <div class="search-rank-item" *ngFor="let item of topSearches; let i = index">
+            <span class="rank-num">#{{ i + 1 }}</span>
+            <div class="rank-info">
+              <strong class="query-text">{{ item.query }}</strong>
+              <span class="query-freq">{{ item.frequency }} searches logged</span>
+            </div>
+            <span class="trend-badge">🔥 Trending</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRAFFIC & WEEKLY ACTIVITY TREND CHART -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Weekly Platform Activity (Searches vs Applications)</h3>
+        </div>
+        <div class="activity-chart">
+          <div class="chart-col" *ngFor="let act of recentActivityTimeline">
+            <div class="dual-bars">
+              <div class="bar-search" [style.height.px]="act.searches * 1.5" title="Searches: {{act.searches}}"></div>
+              <div class="bar-app" [style.height.px]="act.applications * 2.5" title="Applications: {{act.applications}}"></div>
+            </div>
+            <span class="col-label">{{ act.day }}</span>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-dot search-dot"></span> Search Queries</span>
+          <span class="legend-item"><span class="legend-dot app-dot"></span> Submissions</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: User Roles & Audit Log Stream -->
+    <div class="grid-column">
+
+      <!-- USER ROLE BREAKDOWN -->
+      <div class="card">
+        <div class="card-header">
+          <h3>User Role Distribution</h3>
+        </div>
+        <div class="role-bars">
+          <div class="role-bar-item" *ngFor="let role of roleDistribution">
+            <div class="role-bar-top">
+              <span class="role-name">{{ role.role }}</span>
+              <span class="role-val">{{ role.count }} Registered</span>
+            </div>
+            <div class="bar-bg">
+              <div class="bar-fill" [style.width.%]="(role.count / (summary.totalUsers || 100)) * 100"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SYSTEM AUDIT LOG STREAM -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Recent Audit & System Logs</h3>
+          <span class="sub-text">Live activity monitoring</span>
+        </div>
+
+        <div *ngIf="loading" class="loading-state">Loading audit log stream...</div>
+
+        <div *ngIf="!loading && recentAuditLogs.length === 0" class="empty-state">
+          No audit log events recorded yet.
+        </div>
+
+        <div class="audit-list" *ngIf="!loading && recentAuditLogs.length > 0">
+          <div class="audit-item" *ngFor="let log of recentAuditLogs">
+            <span class="audit-icon">🛡️</span>
+            <div class="audit-details">
+              <h4 class="audit-action">{{ log.action }} <span class="audit-entity">({{ log.entity || 'System' }})</span></h4>
+              <p class="audit-meta">{{ log.user?.firstName || 'System User' }} ({{ log.user?.role || 'Admin' }}) • {{ formatDateStr(log.createdAt) }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

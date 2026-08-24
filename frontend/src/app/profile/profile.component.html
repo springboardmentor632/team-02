@@ -1,18 +1,4 @@
-<div class="dashboard-shell">
-
-  <nav class="top-navbar">
-    <div class="nav-logo"><img src="logo.png" alt="logo" /></div>
-    <div class="nav-links">
-      <a routerLink="/dashboard" class="nav-link">Dashboard</a>
-      <a routerLink="/policy-search" class="nav-link">Policy Search</a>
-      <a routerLink="/policy-detail" class="nav-link">Policy Detail</a>
-      <a routerLink="/eligibility" class="nav-link">Eligibility Checker</a>
-      <a routerLink="/comparison" class="nav-link">Comparison</a>
-      <a routerLink="/admin-dashboard" class="nav-link">Admin Dashboard</a>
-    </div>
-    <a routerLink="/login" class="nav-logout">⏻ Logout</a>
-  </nav>
-
+<div class="comparison-page-container">
   <div class="page-body">
     <div class="page-header">
       <h1>My Profile</h1>
@@ -21,23 +7,28 @@
 
     <div class="profile-grid">
       <div class="card profile-summary">
-        <div class="avatar-large">RS</div>
-        <h3>{{ fullName }}</h3>
-        <p>{{ role }} · {{ state }}</p>
+        <div class="avatar-large">{{ firstName.charAt(0) }}{{ lastName.charAt(0) }}</div>
+        <h3>{{ firstName }} {{ lastName }}</h3>
+        <p>{{ role }}</p>
       </div>
 
       <div class="card profile-form">
         <h3>Edit Details</h3>
         <div *ngIf="saved" class="success-banner">Profile updated successfully!</div>
+        <div *ngIf="error" class="error-msg">{{ error }}</div>
 
         <div class="form-grid">
           <div class="field-group">
-            <label>Full Name</label>
-            <input type="text" [(ngModel)]="fullName" />
+            <label>First Name</label>
+            <input type="text" [(ngModel)]="firstName" />
+          </div>
+          <div class="field-group">
+            <label>Last Name</label>
+            <input type="text" [(ngModel)]="lastName" />
           </div>
           <div class="field-group">
             <label>Email Address</label>
-            <input type="email" [(ngModel)]="email" />
+            <input type="email" [(ngModel)]="email" disabled />
           </div>
           <div class="field-group">
             <label>Phone Number</label>
@@ -45,16 +36,11 @@
           </div>
           <div class="field-group">
             <label>Role</label>
-            <select [(ngModel)]="role">
-              <option>Citizen</option>
-              <option>Government Official</option>
-              <option>Researcher</option>
-              <option>Organisation</option>
-            </select>
+            <input type="text" [(ngModel)]="role" disabled />
           </div>
           <div class="field-group">
-            <label>State</label>
-            <input type="text" [(ngModel)]="state" />
+            <label>Organization</label>
+            <input type="text" [(ngModel)]="organization" />
           </div>
         </div>
 

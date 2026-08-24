@@ -1,48 +1,188 @@
-<div class="dashboard-shell">
-
-  <nav class="top-navbar">
-    <div class="nav-logo"><img src="logo.png" alt="logo" /></div>
-    <div class="nav-links">
-      <a routerLink="/dashboard" class="nav-link">Dashboard</a>
-      <a routerLink="/policy-search" class="nav-link">Policy Search</a>
-      <a routerLink="/policy-detail" class="nav-link">Policy Detail</a>
-      <a routerLink="/eligibility" class="nav-link">Eligibility Checker</a>
-      <a routerLink="/comparison" class="nav-link">Comparison</a>
-      <a routerLink="/admin-dashboard" class="nav-link">Admin Dashboard</a>
-    </div>
-    <a routerLink="/login" class="nav-logout">⏻ Logout</a>
-  </nav>
-
+<div class="notifications-container">
   <div class="page-body">
+
+    <!-- Toast Banner -->
+    <div class="toast-banner" *ngIf="toastMessage">
+      <span>✨ {{ toastMessage }}</span>
+    </div>
+
+    <!-- Page Header -->
     <div class="page-header">
       <div>
-        <h1>Notifications</h1>
-        <p>Stay updated on policies, schemes, and application status</p>
-      </div>
-      <button class="btn-outline" (click)="markAllAsRead()" *ngIf="unreadCount > 0">Mark all as read</button>
-    </div>
-
-    <div class="filter-tabs">
-      <button class="filter-btn" [class.filter-active]="filter === 'all'" (click)="setFilter('all')">All ({{ notifications.length }})</button>
-      <button class="filter-btn" [class.filter-active]="filter === 'unread'" (click)="setFilter('unread')">Unread ({{ unreadCount }})</button>
-    </div>
-
-    <div class="empty-state" *ngIf="filteredNotifications.length === 0">
-      <p>No notifications to show.</p>
-    </div>
-
-    <div class="notif-list">
-      <div class="notif-item" *ngFor="let n of filteredNotifications" [class.notif-unread]="!n.read" (click)="markAsRead(n)">
-        <span class="notif-icon">{{ iconFor(n.type) }}</span>
-        <div class="notif-body">
-          <div class="notif-top">
-            <h4>{{ n.title }}</h4>
-            <span class="notif-time">{{ n.time }}</span>
-          </div>
-          <p>{{ n.message }}</p>
+        <div class="header-title">
+          <h1>Notifications & Alerts</h1>
+          <span class="unread-pill" *ngIf="unreadCount > 0">{{ unreadCount }} Unread</span>
         </div>
-        <span class="unread-dot" *ngIf="!n.read"></span>
+        <p class="subtitle">Multi-channel alerts for policies, scheme updates, deadlines, and application status</p>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn-secondary" (click)="togglePreferencesModal()">
+          ⚙️ Delivery Settings
+        </button>
+        <button class="btn-outline" (click)="markAllAsRead()" *ngIf="unreadCount > 0">
+          ✓ Mark All as Read
+        </button>
       </div>
     </div>
+
+    <!-- Category Filter Tabs -->
+    <div class="category-tabs">
+      <button class="tab-btn" [class.tab-active]="activeTab === 'all'" (click)="setTab('all')">
+        All ({{ notifications.length }})
+      </button>
+      <button class="tab-btn" [class.tab-active]="activeTab === 'policy_alert'" (click)="setTab('policy_alert')">
+        📢 Policy Alerts ({{ policyAlertsCount }})
+      </button>
+      <button class="tab-btn" [class.tab-active]="activeTab === 'scheme_update'" (click)="setTab('scheme_update')">
+        🔄 Scheme Updates ({{ schemeUpdatesCount }})
+      </button>
+      <button class="tab-btn" [class.tab-active]="activeTab === 'deadline_reminder'" (click)="setTab('deadline_reminder')">
+        ⏰ Deadline Reminders ({{ deadlineRemindersCount }})
+      </button>
+      <button class="tab-btn" [class.tab-active]="activeTab === 'application_update'" (click)="setTab('application_update')">
+        📝 Applications ({{ applicationCount }})
+      </button>
+      <button class="tab-btn" [class.tab-active]="activeTab === 'unread'" (click)="setTab('unread')">
+        📩 Unread ({{ unreadCount }})
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <p>Loading your notifications...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!loading && filteredNotifications.length === 0">
+      <div class="empty-icon">🔔</div>
+      <h3>No notifications found</h3>
+      <p *ngIf="activeTab === 'unread'">You have caught up on all your alerts!</p>
+      <p *ngIf="activeTab !== 'unread'">No notifications recorded in this category yet.</p>
+    </div>
+
+    <!-- Notification List -->
+    <div class="notif-list" *ngIf="!loading && filteredNotifications.length > 0">
+      <div class="notif-card" *ngFor="let n of filteredNotifications" [class.notif-unread]="!n.read">
+        
+        <!-- Icon & Unread Dot -->
+        <div class="notif-left">
+          <div class="icon-avatar">{{ iconFor(n) }}</div>
+          <span class="unread-dot" *ngIf="!n.read"></span>
+        </div>
+
+        <!-- Content -->
+        <div class="notif-center">
+          <div class="notif-header">
+            <span class="badge" [ngClass]="categoryBadgeClass(n.category)">{{ categoryLabel(n.category) }}</span>
+            <span class="notif-time">{{ formatTime(n.sentAt) }}</span>
+          </div>
+
+          <h3 class="notif-title">{{ n.title }}</h3>
+          <p class="notif-desc">{{ n.message }}</p>
+
+          <!-- Delivery Channels Bar -->
+          <div class="channels-bar">
+            <span class="channel-pill in-app">
+              🔔 In-App Delivered
+            </span>
+            <span class="channel-pill email" *ngIf="n.deliveryStatus?.email === 'Sent'">
+              📧 Email Sent
+            </span>
+            <span class="channel-pill sms" *ngIf="n.deliveryStatus?.sms === 'Sent'">
+              📱 SMS Dispatched
+            </span>
+          </div>
+        </div>
+
+        <!-- Right Actions -->
+        <div class="notif-right">
+          <a *ngIf="n.link" [routerLink]="n.link" (click)="markAsRead(n)" class="btn-action">
+            Open Details →
+          </a>
+          <button *ngIf="!n.read" (click)="markAsRead(n)" class="btn-mark-read" title="Mark as read">
+            ✓ Read
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Notification Delivery Preferences Modal -->
+<div class="modal-overlay" *ngIf="showPreferencesModal" (click)="togglePreferencesModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    
+    <div class="modal-header">
+      <h2>⚙️ Notification & Alert Settings</h2>
+      <button class="close-btn" (click)="togglePreferencesModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <p class="modal-subtitle">Configure your preferred delivery channels for policy alerts, scheme updates, and deadlines.</p>
+
+      <div class="pref-group">
+        <div class="pref-item">
+          <div>
+            <h4>📧 Email Notifications</h4>
+            <p>Receive official email alerts at <strong>{{ userEmail || 'your registered email' }}</strong></p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" [(ngModel)]="preferences.emailAlerts" (change)="savePreferences()">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="pref-item">
+          <div>
+            <h4>📱 SMS Notifications</h4>
+            <p>Receive high-priority SMS alerts on mobile <strong>{{ userPhone || 'registered phone' }}</strong></p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" [(ngModel)]="preferences.smsAlerts" (change)="savePreferences()">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="pref-item">
+          <div>
+            <h4>🔔 In-App Push Notifications</h4>
+            <p>Show real-time badge counters and header popups in the platform</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" [(ngModel)]="preferences.inAppAlerts" (change)="savePreferences()">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="pref-item">
+          <div>
+            <h4>⏰ Deadline Reminders</h4>
+            <p>Get automated alerts 7 days & 3 days before scheme application deadlines expire</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" [(ngModel)]="preferences.deadlineReminders" (change)="savePreferences()">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="test-dispatch-box">
+        <h4>🧪 Test Delivery Gateway</h4>
+        <p>Send a real-time test notification to verify your Email, SMS, and In-App delivery channels.</p>
+        <button class="btn-test" (click)="sendTestNotification()" [disabled]="testingDispatch">
+          <span *ngIf="!testingDispatch">🚀 Send Test Email & SMS Alert</span>
+          <span *ngIf="testingDispatch">Sending Test Alert...</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="togglePreferencesModal()">Close</button>
+    </div>
+
   </div>
 </div>

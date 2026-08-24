@@ -10,7 +10,7 @@ const connectDB = async () => {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    console.log('MongoDB Atlas connected');
+    console.log(`MongoDB Atlas connected: ${mongoose.connection.name} @ ${mongoose.connection.host}`);
   } catch (error) {
     console.error('MongoDB connection error:', error.message);
     process.exit(1);

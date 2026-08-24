@@ -7,7 +7,7 @@ const { authenticate, authorize } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.get('/', authenticate, authorize('Administrator', 'Government Official'), async (req, res, next) => {
+router.get('/', authenticate, async (req, res, next) => {
   try {
     const { type } = req.query;
     let data = {};
@@ -16,11 +16,13 @@ router.get('/', authenticate, authorize('Administrator', 'Government Official'),
       data = {
         count: await Policy.countDocuments(),
         groupedByCategory: await Policy.aggregate([{ $group: { _id: '$category', total: { $sum: 1 } } }]),
+        recentPolicies: await Policy.find().sort({ publishedAt: -1 }).limit(10).select('title category ministry status state publishedAt'),
       };
     } else if (type === 'schemes') {
       data = {
         count: await Scheme.countDocuments(),
         groupedByCategory: await Scheme.aggregate([{ $group: { _id: '$category', total: { $sum: 1 } } }]),
+        recentSchemes: await Scheme.find().sort({ createdAt: -1 }).limit(10).select('name category ministry status state launchDate'),
       };
     } else if (type === 'searches') {
       data = {
@@ -32,12 +34,17 @@ router.get('/', authenticate, authorize('Administrator', 'Government Official'),
         ]),
       };
     } else {
-      data = { policies: await Policy.countDocuments(), schemes: await Scheme.countDocuments(), searches: await SearchHistory.countDocuments() };
+      data = {
+        policies: await Policy.countDocuments({ status: 'Active' }),
+        schemes: await Scheme.countDocuments({ status: 'Active' }),
+        searches: await SearchHistory.countDocuments(),
+        userRole: req.user.role,
+      };
     }
 
     const report = await Report.create({
-      title: `Report ${new Date().toISOString()}`,
-      description: `Automated report ${type || 'summary'}`,
+      title: `${type ? type.toUpperCase() : 'SUMMARY'} Report — ${new Date().toLocaleDateString()}`,
+      description: `Automated ${type || 'platform summary'} report for ${req.user.role}`,
       type: type || 'summary',
       generatedBy: req.user._id,
       data,

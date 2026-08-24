@@ -1,9 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-
-interface RoleStat { role: string; percent: number; count: string; }
-interface PolicySubmission { name: string; ministry: string; status: 'Pending' | 'Approved' | 'Review'; }
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+import { PolicyService } from '../services/policy.service';
+import { SchemeService } from '../services/scheme.service';
+import { StatsService } from '../services/stats.service';
+import { ApplicationService } from '../services/application.service';
+import { Policy, SchemeApplication } from '../models/policy.model';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -12,27 +15,120 @@ interface PolicySubmission { name: string; ministry: string; status: 'Pending' |
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.css'
 })
-export class AdminDashboardComponent {
+export class AdminDashboardComponent implements OnInit {
   stats = [
-    { label: 'Total Users', value: '5.2M', sub: '↑ 12% MoM' },
-    { label: 'Active Policies', value: '12,480', sub: '↑ 68 new' },
-    { label: 'Live Schemes', value: '3,820', sub: '↑ 12 new' },
-    { label: 'Searches / Month', value: '1.8M', sub: '↑ 24%' },
-    { label: 'Pending Approvals', value: '342', sub: '▲ 18 urgent', danger: true }
+    { label: 'Total Users', value: '—', sub: 'Registered on platform', danger: false },
+    { label: 'Active Policies', value: '—', sub: 'Published policies', danger: false },
+    { label: 'Live Schemes', value: '—', sub: 'Active schemes', danger: false },
+    { label: 'Total Policies', value: '—', sub: 'All statuses', danger: false },
+    { label: 'Pending Applications', value: '—', sub: 'Awaiting review', danger: true }
   ];
 
-  roleStats: RoleStat[] = [
-    { role: 'Citizens', percent: 92, count: '4.8M (92%)' },
-    { role: 'Researchers', percent: 5.4, count: '280K (5.4%)' },
-    { role: 'Organisations', percent: 1.8, count: '96K (1.8%)' },
-    { role: 'Govt Officials', percent: 0.8, count: '44K (0.8%)' }
-  ];
+  submissions: { name: string; ministry: string; status: string }[] = [];
+  roleStats: { role: string; percent: number; count: string }[] = [];
+  applications: SchemeApplication[] = [];
+  loadingApps = false;
 
-  submissions: PolicySubmission[] = [
-    { name: 'Digital India 3.0', ministry: 'MeitY', status: 'Pending' },
-    { name: 'Solar Rooftop Scheme', ministry: 'MNRE', status: 'Approved' },
-    { name: 'EV Adoption Policy', ministry: 'NITI Aayog', status: 'Approved' },
-    { name: 'Skill India 2.0', ministry: 'MSDE', status: 'Pending' },
-    { name: 'Jal Jeevan Mission II', ministry: 'Jal Shakti', status: 'Review' }
-  ];
+  constructor(
+    private router: Router,
+    private auth: AuthService,
+    private policyService: PolicyService,
+    private schemeService: SchemeService,
+    private statsService: StatsService,
+    private applicationService: ApplicationService,
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+    this.statsService.getPlatformStats().subscribe({
+      next: (res) => {
+        if (!res || !res.stats) return;
+        const s = res.stats;
+        this.stats = [
+          { label: 'Total Users', value: String(s.users), sub: 'Registered on platform', danger: false },
+          { label: 'Active Policies', value: String(s.policies), sub: 'Published policies', danger: false },
+          { label: 'Live Schemes', value: String(s.schemes), sub: 'Active schemes', danger: false },
+          { label: 'Total Policies', value: String(s.totalPolicies ?? s.policies), sub: 'All statuses', danger: false },
+          { label: 'Pending Applications', value: String(s.pendingPolicies ?? 0), sub: 'Awaiting review', danger: true },
+        ];
+        this.roleStats = [
+          { role: 'Citizens', percent: 85, count: `${s.users} users` },
+          { role: 'Policies', percent: Math.min(s.policies * 4, 100), count: `${s.policies} active` },
+          { role: 'Schemes', percent: Math.min(s.schemes * 6, 100), count: `${s.schemes} active` },
+        ];
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('[AdminDashboard] Stats error:', err)
+    });
+
+    this.policyService.getAll().subscribe({
+      next: (res) => {
+        const policies = res.policies || [];
+        this.submissions = policies.slice(0, 5).map((p: Policy) => ({
+          name: p.title,
+          ministry: p.ministry || 'N/A',
+          status: p.status === 'Active' ? 'Approved' : p.status,
+        }));
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('[AdminDashboard] Policies error:', err)
+    });
+
+    this.loadApplications();
+  }
+
+  loadApplications(): void {
+    this.loadingApps = true;
+    this.applicationService.getAll().subscribe({
+      next: (res) => {
+        this.applications = res.applications || [];
+        this.loadingApps = false;
+        const pending = this.applications.filter(a => a.status === 'Submitted' || a.status === 'Under Review').length;
+        this.stats = this.stats.map((s, i) => i === 4 ? { ...s, value: String(pending) } : s);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('[AdminDashboard] Applications error:', err);
+        this.loadingApps = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  updateApplicationStatus(app: SchemeApplication, status: 'Approved' | 'Rejected'): void {
+    const actionLabel = status === 'Approved' ? 'Accept / Approve' : 'Reject';
+    const note = prompt(`Enter optional official note for making this application "${actionLabel}":`) ?? '';
+    this.applicationService.updateStatus(app._id, status, note).subscribe({
+      next: () => {
+        app.status = status;
+        app.govNotes = note;
+        this.loadApplications();
+      },
+      error: (err) => alert(err?.error?.message || 'Failed to update application status')
+    });
+  }
+
+  getItemTitle(app: any): string {
+    if (app.applicationType === 'policy' && app.policy && typeof app.policy === 'object') {
+      return app.policy.title || 'Policy Application';
+    }
+    if (app.scheme && typeof app.scheme === 'object') {
+      return app.scheme.name || 'Scheme Application';
+    }
+    return 'Application';
+  }
+
+  getApplicantName(app: any): string {
+    if (app.applicantName) return app.applicantName;
+    if (app.user && typeof app.user === 'object') {
+      return `${app.user.firstName || ''} ${app.user.lastName || ''}`.trim() || app.user.email || 'Citizen';
+    }
+    return 'Citizen Applicant';
+  }
+
+  onLogout(): void {
+    if (confirm('Are you sure you want to logout?')) {
+      this.auth.logout();
+    }
+  }
 }

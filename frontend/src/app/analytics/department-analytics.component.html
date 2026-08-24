@@ -1,0 +1,168 @@
+<div class="analytics-page">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Department Analytics</h1>
+      <p class="page-sub">Comprehensive performance breakdown by ministry, policy reach, SLA resolution, and state coverage.</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary" (click)="printPage()">🖨️ Export PDF / Print</button>
+      <a routerLink="/government/reports" class="btn-primary">📈 Detailed Reports</a>
+    </div>
+  </div>
+
+  <!-- SUMMARY STAT CARDS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-top">
+        <span class="stat-value">{{ summary.totalDepartments || departments.length }}</span>
+        <span class="stat-icon">🏛️</span>
+      </div>
+      <div class="stat-label">Active Ministries & Depts</div>
+      <div class="stat-sub">Registered on national portal</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-top">
+        <span class="stat-value">{{ summary.totalPolicies }}</span>
+        <span class="stat-icon">📋</span>
+      </div>
+      <div class="stat-label">Published Policies</div>
+      <div class="stat-sub">Central & State notifications</div>
+    </div>
+
+    <div class="stat-card highlight-success">
+      <div class="stat-top">
+        <span class="stat-value">{{ summary.totalSchemes }}</span>
+        <span class="stat-icon">🎁</span>
+      </div>
+      <div class="stat-label">Live Active Schemes</div>
+      <div class="stat-sub">Direct benefit schemes</div>
+    </div>
+
+    <div class="stat-card highlight-warning">
+      <div class="stat-top">
+        <span class="stat-value">{{ summary.averageSlaDays }} Days</span>
+        <span class="stat-icon">⏱️</span>
+      </div>
+      <div class="stat-label">Average SLA Processing</div>
+      <div class="stat-sub">Submission to decision time</div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT LAYOUT -->
+  <div class="analytics-layout">
+
+    <!-- DEPARTMENT PERFORMANCE TABLE -->
+    <div class="card full-width">
+      <div class="card-header flex-header">
+        <div>
+          <h3>Department & Ministry Performance Overview</h3>
+          <p class="card-sub">Application throughput, approval rates, and SLA operational metrics</p>
+        </div>
+        <div class="table-controls">
+          <input type="text"
+                 placeholder="Search ministry or dept..."
+                 [(ngModel)]="searchFilter"
+                 class="search-input" />
+          <div class="filter-pills">
+            <button [class.active]="selectedFilter === 'All'" (click)="selectedFilter = 'All'">All</button>
+            <button [class.active]="selectedFilter === 'Optimal'" (click)="selectedFilter = 'Optimal'">Optimal</button>
+            <button [class.active]="selectedFilter === 'Attention'" (click)="selectedFilter = 'Attention'">Attention Needed</button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="loading" class="loading-state">Loading department analytics...</div>
+
+      <div class="table-responsive" *ngIf="!loading">
+        <table class="dept-table">
+          <thead>
+            <tr>
+              <th>Ministry / Department</th>
+              <th>Policies</th>
+              <th>Schemes</th>
+              <th>Applications</th>
+              <th>Approval Rate</th>
+              <th>Avg SLA</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let dept of filteredDepartments">
+              <td class="dept-name-cell">
+                <span class="dept-icon">🏢</span>
+                <strong>{{ dept.department }}</strong>
+              </td>
+              <td>{{ dept.policies }}</td>
+              <td>{{ dept.schemes }}</td>
+              <td>
+                <strong>{{ dept.applications }}</strong>
+                <span class="sub-count">({{ dept.pending }} pending)</span>
+              </td>
+              <td>
+                <div class="rate-wrap">
+                  <div class="rate-bar-bg">
+                    <div class="rate-bar-fill" [style.width.%]="dept.approvalRate"></div>
+                  </div>
+                  <span>{{ dept.approvalRate }}%</span>
+                </div>
+              </td>
+              <td>{{ dept.avgSlaDays }} Days</td>
+              <td>
+                <span class="status-badge" [class.status-attention]="dept.status === 'Attention Needed'">
+                  {{ dept.status }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="filteredDepartments.length === 0">
+              <td colspan="7" class="empty-cell">No departments match the criteria.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- GEOGRAPHICAL COVERAGE & STATE BREAKDOWN -->
+    <div class="grid-split">
+      <div class="card">
+        <div class="card-header">
+          <h3>Geographical Distribution (State Coverage)</h3>
+          <span class="sub-text">Top active implementation states</span>
+        </div>
+        <div class="state-list">
+          <div class="state-item" *ngFor="let item of stateDistribution">
+            <span class="state-name">{{ item.state }}</span>
+            <div class="state-bar-wrap">
+              <div class="state-bar-fill" [style.width.%]="item.count * 2"></div>
+            </div>
+            <span class="state-count">{{ item.count }} initiatives</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLA RESOLUTION TARGETS -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Department SLA Standards</h3>
+        </div>
+        <div class="sla-info-box">
+          <div class="sla-metric">
+            <span class="sla-val">94.8%</span>
+            <span class="sla-lbl">SLA Compliance Rate</span>
+          </div>
+          <div class="sla-metric">
+            <span class="sla-val">3.5 Days</span>
+            <span class="sla-lbl">Target Resolution SLA</span>
+          </div>
+        </div>
+        <p class="sla-desc">
+          Departments are evaluated weekly against National e-Governance standards. Applications pending beyond 7 business days trigger automated notifications to departmental supervisors.
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+</div>

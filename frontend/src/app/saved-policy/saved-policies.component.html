@@ -1,0 +1,36 @@
+<div class="comparison-page-container">
+  <div class="page-body">
+    <div class="page-header">
+      <div>
+        <h1>Saved Policies</h1>
+        <p>Policies and schemes you've bookmarked for later</p>
+      </div>
+    </div>
+
+    <p *ngIf="loading">Loading saved policies...</p>
+    <p *ngIf="error" class="error-msg">{{ error }}</p>
+
+    <div class="saved-list" *ngIf="!loading && savedItems.length > 0">
+      <div class="saved-card" *ngFor="let item of savedItems">
+        <div class="saved-icon">{{ item.icon }}</div>
+        <div class="saved-body">
+          <div class="saved-top">
+            <h3>{{ item.name }}</h3>
+            <span class="badge-status">{{ item.status }}</span>
+          </div>
+          <p class="saved-ministry">{{ item.ministry }}</p>
+          <p class="saved-date">Saved on {{ item.savedOn | date:'mediumDate' }}</p>
+        </div>
+        <div class="saved-actions">
+          <a [routerLink]="getDetailLink(item)" class="btn-view">View Details</a>
+          <button class="btn-remove" (click)="removeSaved(item)">Remove</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="!loading && savedItems.length === 0 && !error">
+      <p>You haven't saved any policies or schemes yet.</p>
+      <a routerLink="/citizen/search" class="btn-outline">Browse Policies</a>
+    </div>
+  </div>
+</div>

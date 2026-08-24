@@ -1,0 +1,125 @@
+<div class="app-shell" [class.sidebar-open]="sidebarOpen">
+
+  <!-- TOP NAVBAR matching exact past dashboard style from screenshot -->
+  <nav class="top-navbar">
+    <div class="nav-left">
+      <button class="hamburger" (click)="toggleSidebar()" id="citizen-menu-toggle">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="nav-brand">
+        <div class="nav-logo">
+          <img src="logo.png" alt="logo" />
+        </div>
+        <span class="brand-title">Dashboard</span>
+      </div>
+    </div>
+
+    <!-- Right side action items: Feedback, Notification, Profile, Logout -->
+    <div class="nav-right">
+      <a routerLink="/citizen/feedback" class="nav-item" id="nav-citizen-feedback">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="nav-icon">
+          <path fill-rule="evenodd" d="M4.848 2.771A49.144 49.144 0 0 1 12 2.25c2.43 0 4.817.178 7.152.52 1.237.181 2.165 1.273 2.165 2.508v11.501c0 1.235-.928 2.327-2.165 2.509A49.313 49.313 0 0 1 12 19.75c-2.43 0-4.817-.178-7.152-.52-.167-.024-.322-.053-.472-.089l-2.275 2.088A.75.75 0 0 1 1 20.685V5.279c0-1.235.928-2.327 2.165-2.509a4.85 4.85 0 0 1 .511-.061ZM12 8.25a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 6a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Z" clip-rule="evenodd" />
+        </svg>
+        <span class="nav-label">Feedback</span>
+      </a>
+
+      <a routerLink="/citizen/notifications" class="nav-item" id="nav-citizen-notifications">
+        <div class="icon-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="nav-icon">
+            <path fill-rule="evenodd" d="M5.25 9a6.75 6.75 0 0 1 13.5 0v.75c0 2.123.8 4.057 2.118 5.52a.75.75 0 0 1-.297 1.206c-1.544.57-3.16.99-4.831 1.243a3.75 3.75 0 0 1-7.48 0 24.585 24.585 0 0 1-4.831-1.244.75.75 0 0 1-.298-1.205A8.217 8.217 0 0 0 5.25 9.75V9Zm4.502 8.9a2.25 2.25 0 0 0 4.496 0 25.757 25.757 0 0 1-4.496 0Z" clip-rule="evenodd" />
+          </svg>
+          <span class="badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+        </div>
+        <span class="nav-label">Notification</span>
+      </a>
+
+      <a routerLink="/citizen/profile" class="nav-item" id="nav-citizen-profile">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="nav-icon">
+          <path fill-rule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clip-rule="evenodd" />
+        </svg>
+        <span class="nav-label">Profile</span>
+      </a>
+
+      <a (click)="onLogout()" class="nav-item" id="nav-citizen-logout" style="cursor: pointer;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="nav-icon">
+          <path fill-rule="evenodd" d="M7.5 3.75A1.5 1.5 0 0 0 6 5.25v13.5a1.5 1.5 0 0 0 1.5 1.5h6a1.5 1.5 0 0 0 1.5-1.5V15a.75.75 0 0 1 1.5 0v3.75a3 3 0 0 1-3 3h-6a3 3 0 0 1-3-3V5.25a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3V9A.75.75 0 0 1 15 9V5.25a1.5 1.5 0 0 0-1.5-1.5h-6Zm10.72 4.72a.75.75 0 0 1 1.06 0l3 3a.75.75 0 0 1 0 1.06l-3 3a.75.75 0 1 1-1.06-1.06l1.72-1.72H9a.75.75 0 0 1 0-1.5h10.94l-1.72-1.72a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+        </svg>
+        <span class="nav-label">Logout</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- LAYOUT BODY -->
+  <div class="body-layout">
+
+    <!-- SIDEBAR matching exact past citizen sidebar style from screenshot -->
+    <aside class="sidebar" [class.open]="sidebarOpen">
+      <div class="sidebar-user">
+        <div class="avatar-lg">{{ userInitials }}</div>
+        <div class="user-info">
+          <div class="user-name">{{ userName }}</div>
+          <div class="user-sub">{{ userSubtitle }}</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+
+        <div class="sidebar-section">
+          <p class="section-label">MENU</p>
+          <a routerLink="/citizen/dashboard" routerLinkActive="active" class="sidebar-link" id="sb-citizen-dashboard">
+            <span class="link-icon">📊</span> Dashboard
+          </a>
+          <a routerLink="/citizen/analytics" routerLinkActive="active" class="sidebar-link" id="sb-citizen-analytics">
+            <span class="link-icon">📈</span> Analytics Dashboard
+          </a>
+          <a routerLink="/citizen/search" routerLinkActive="active" class="sidebar-link" id="sb-citizen-search">
+            <span class="link-icon">🔍</span> Search Policies
+          </a>
+          <a routerLink="/citizen/eligibility" routerLinkActive="active" class="sidebar-link" id="sb-citizen-eligibility">
+            <span class="link-icon">✅</span> Eligibility Checker
+          </a>
+          <a routerLink="/citizen/applications" routerLinkActive="active" class="sidebar-link" id="sb-citizen-applications">
+            <span class="link-icon">📝</span> My Applications
+          </a>
+          <a routerLink="/citizen/compare" routerLinkActive="active" class="sidebar-link" id="sb-citizen-compare">
+            <span class="link-icon">⚖️</span> Compare Schemes
+          </a>
+          <a routerLink="/citizen/notifications" routerLinkActive="active" class="sidebar-link" id="sb-citizen-notif">
+            <span class="link-icon">🔔</span> Notifications
+            <span class="badge-sm" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+          </a>
+          <a routerLink="/citizen/saved" routerLinkActive="active" class="sidebar-link" id="sb-citizen-saved">
+            <span class="link-icon">🔖</span> Saved Policies
+          </a>
+          <a routerLink="/citizen/reports" routerLinkActive="active" class="sidebar-link" id="sb-citizen-reports">
+            <span class="link-icon">📄</span> My Reports
+          </a>
+        </div>
+
+        <div class="sidebar-section">
+          <p class="section-label">ACCOUNT</p>
+          <a routerLink="/citizen/profile" routerLinkActive="active" class="sidebar-link" id="sb-citizen-profile">
+            <span class="link-icon">👤</span> Profile
+          </a>
+          <a routerLink="/citizen/feedback" routerLinkActive="active" class="sidebar-link" id="sb-citizen-feedback">
+            <span class="link-icon">💬</span> Feedback
+          </a>
+          <button class="sidebar-link sidebar-logout" (click)="onLogout()" id="sb-citizen-logout">
+            <span class="link-icon">↩️</span> Logout
+          </button>
+        </div>
+
+      </nav>
+    </aside>
+
+    <!-- PAGE CONTENT -->
+    <main class="main-content">
+      <router-outlet></router-outlet>
+    </main>
+
+  </div>
+
+  <!-- Overlay for mobile -->
+  <div class="sidebar-overlay" [class.show]="sidebarOpen" (click)="toggleSidebar()"></div>
+
+</div>

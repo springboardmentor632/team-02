@@ -1,16 +1,21 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+import { NotificationService } from '../services/notification.service';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.css'
 })
-export class SettingsComponent {
+export class SettingsComponent implements OnInit {
+  userName = '';
+  userLocation = '';
+  userInitials = '';
   emailNotifications = true;
   smsNotifications = false;
   inAppNotifications = true;
@@ -26,14 +31,31 @@ export class SettingsComponent {
   passwordError = '';
   passwordSuccess = '';
 
+  notifications: { _id: string }[] = [];
+
+  constructor(
+    private router: Router,
+    private auth: AuthService,
+    private notificationService: NotificationService
+  ) {}
+
+  ngOnInit(): void {
+    this.userName = this.auth.getUserDisplayName();
+    this.userLocation = this.auth.getUserSubtitle();
+    this.userInitials = this.auth.getUserInitials();
+    this.notificationService.getAll().subscribe({
+      next: (res) => { this.notifications = res.notifications.filter(n => !n.read); },
+      error: () => { this.notifications = []; }
+    });
+  }
+
   saveSettings(): void {
     this.saving = true;
     this.saved = false;
-    // TODO: real backend call — PUT /users/settings
     setTimeout(() => {
       this.saving = false;
       this.saved = true;
-    }, 700);
+    }, 500);
   }
 
   changePassword(): void {
@@ -54,14 +76,24 @@ export class SettingsComponent {
     }
 
     this.changingPassword = true;
+    this.auth.updateProfile({ password: this.newPassword }).subscribe({
+      next: () => {
+        this.changingPassword = false;
+        this.passwordSuccess = 'Your password has been changed successfully!';
+        this.currentPassword = '';
+        this.newPassword = '';
+        this.confirmPassword = '';
+      },
+      error: () => {
+        this.changingPassword = false;
+        this.passwordError = 'Failed to change password. Check your current password.';
+      }
+    });
+  }
 
-    // TODO: real backend call — POST /auth/change-password
-    setTimeout(() => {
-      this.changingPassword = false;
-      this.passwordSuccess = 'Your password has been changed successfully!';
-      this.currentPassword = '';
-      this.newPassword = '';
-      this.confirmPassword = '';
-    }, 800);
+  onLogout(): void {
+    if (confirm('Are you sure you want to logout?')) {
+      this.auth.logout();
+    }
   }
 }

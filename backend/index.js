@@ -1,5 +1,12 @@
+const dns = require('node:dns');
+
+// Force Node.js SRV lookups through public DNS
+dns.setServers(['8.8.8.8', '1.1.1.1']);
+
+// Load environment variables before importing local modules
+require('dotenv').config();
+
 const express = require('express');
-const dotenv = require('dotenv');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -11,19 +18,22 @@ const schemeRoutes = require('./routes/scheme');
 const eligibilityRoutes = require('./routes/eligibility');
 const notificationRoutes = require('./routes/notification');
 const feedbackRoutes = require('./routes/feedback');
+const faqRoutes = require('./routes/faq');
 const reportRoutes = require('./routes/report');
 const searchRoutes = require('./routes/search');
+const statsRoutes = require('./routes/stats');
+const auditLogRoutes = require('./routes/auditLog');
+const applicationRoutes = require('./routes/application');
 const { errorHandler } = require('./middleware/errorHandler');
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-connectDB();
+// API responses are dynamic; ETag 304s return empty bodies that break Angular HttpClient
+app.set('etag', false);
 
-app.use(helmet());
-app.use(cors());
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(morgan('dev'));
 
@@ -37,11 +47,31 @@ app.use('/api/schemes', schemeRoutes);
 app.use('/api/eligibility', eligibilityRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api/faqs', faqRoutes);
 app.use('/api/reports', reportRoutes);
+
 app.use('/api/search', searchRoutes);
+app.use('/api/stats', statsRoutes);
+app.use('/api/applications', applicationRoutes);
+app.use('/api/audit-logs', auditLogRoutes);
 
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`PolicyGPT backend listening on port ${PORT}`);
-});
+const startServer = async () => {
+  try {
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET is missing from .env — auth routes will fail');
+    }
+
+    await connectDB();
+    app.listen(PORT, () => {
+      console.log(`PolicyGPT backend listening on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
+  

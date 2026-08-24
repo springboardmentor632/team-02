@@ -1,117 +1,240 @@
-<div class="dashboard-shell">
+<div class="policy-detail-page">
 
-  <nav class="top-navbar">
-    <div class="nav-logo"><img src="logo.png" alt="logo" /></div>
-    <div class="nav-links">
-      <a routerLink="/dashboard" class="nav-link">Dashboard</a>
-      <a routerLink="/policy-search" class="nav-link">Policy Search</a>
-      <a routerLink="/policy-detail" class="nav-link active">Policy Detail</a>
-      <a routerLink="/eligibility" class="nav-link">Eligibility Checker</a>
-      <a routerLink="/comparison" class="nav-link">Comparison</a>
-      <a routerLink="/admin-dashboard" class="nav-link">Admin Dashboard</a>
-    </div>
-    <a routerLink="/login" class="nav-logout">⏻ Logout</a>
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb" *ngIf="!loading && !error">
+    <a routerLink="/citizen/search">🔍 Search</a>
+    <span class="sep">›</span>
+    <span *ngIf="policy">{{ policy.category }}</span>
+    <span class="sep">›</span>
+    <span class="current" *ngIf="policy">{{ policy.title | slice:0:40 }}{{ policy.title && policy.title.length > 40 ? '…' : '' }}</span>
   </nav>
 
-  <div class="page-body">
-    <p class="breadcrumb">
-      <a routerLink="/policy-search">Search</a> ›
-      <span>Healthcare</span> ›
-      <span>{{ policy.name }}</span>
-    </p>
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner-ring"></div>
+    <p class="loading-text">Loading policy details…</p>
+  </div>
 
-    <div class="content-grid">
-      <!-- MAIN COLUMN -->
+  <!-- Error State -->
+  <div class="error-container" *ngIf="!loading && error">
+    <div class="error-icon">⚠️</div>
+    <h2>{{ error }}</h2>
+    <div class="error-actions">
+      <button class="btn-primary" (click)="retryLoad()">↺ Retry</button>
+      <a routerLink="/citizen/search" class="btn-outline">← Back to Search</a>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="content-wrapper" *ngIf="policy && !loading && !error">
+
+    <!-- Hero Header -->
+    <div class="policy-hero">
+      <div class="hero-left">
+        <div class="hero-icon">{{ categoryIcon }}</div>
+        <div class="hero-meta">
+          <div class="hero-badges">
+            <span class="badge-type">POLICY</span>
+            <span class="badge-status" [class.status-active]="policy.status === 'Active'"
+                  [class.status-archived]="policy.status === 'Archived'"
+                  [class.status-draft]="policy.status === 'Draft'">
+              {{ policy.status }}
+            </span>
+            <span class="badge-scope">📍 {{ policy.state || 'All India' }}</span>
+          </div>
+          <h1 class="hero-title">{{ policy.title }}</h1>
+          <p class="hero-ministry">{{ policy.ministry }}<span *ngIf="policy.department"> · {{ policy.department }}</span></p>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <button class="btn-save" (click)="toggleSave()" [class.saved]="saved" [disabled]="saveLoading">
+          {{ saved ? '❤️ Saved' : '🤍 Save' }}
+        </button>
+        <button class="btn-apply-hero" (click)="goApply()" *ngIf="policy.status === 'Active'">
+          ✍️ Apply Now
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats Strip -->
+    <div class="stats-strip">
+      <div class="stat-item" *ngFor="let s of stats">
+        <span class="stat-icon">{{ s.icon }}</span>
+        <div>
+          <div class="stat-value">{{ s.value }}</div>
+          <div class="stat-label">{{ s.label }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layout: Main + Sidebar -->
+    <div class="detail-layout">
+
+      <!-- Main Column -->
       <div class="main-col">
         <div class="card">
-          <div class="header-row">
-            <div>
-              <h1>{{ policy.name }}</h1>
-              <p class="ministry-line">{{ policy.ministry }}</p>
-            </div>
-            <div class="badges">
-              <span class="badge-status">{{ policy.status }}</span>
-              <span class="badge-scope">{{ policy.scope }}</span>
-            </div>
-          </div>
-
-          <div class="stat-strip">
-            <div class="stat-box" *ngFor="let s of policy.stats">
-              <span class="stat-val">{{ s.value }}</span>
-              <span class="stat-lbl">{{ s.label }}</span>
-            </div>
-          </div>
-
+          <!-- Tabs -->
           <div class="tabs">
-            <button [class.tab-active]="activeTab==='overview'" (click)="setTab('overview')">Overview</button>
-            <button [class.tab-active]="activeTab==='eligibility'" (click)="setTab('eligibility')">Eligibility</button>
-            <button [class.tab-active]="activeTab==='apply'" (click)="setTab('apply')">How to Apply</button>
-            <button [class.tab-active]="activeTab==='documents'" (click)="setTab('documents')">Documents</button>
-            <button [class.tab-active]="activeTab==='faq'" (click)="setTab('faq')">FAQ</button>
+            <button class="tab-btn" [class.active]="activeTab === 'overview'" (click)="setTab('overview')">📄 Overview</button>
+            <button class="tab-btn" [class.active]="activeTab === 'eligibility'" (click)="setTab('eligibility')">✅ Details</button>
+            <button class="tab-btn" [class.active]="activeTab === 'documents'" (click)="setTab('documents')">🏷️ Tags</button>
+            <button class="tab-btn" [class.active]="activeTab === 'faq'" (click)="setTab('faq')">📋 Ministry Info</button>
           </div>
 
+          <!-- Overview Tab -->
           <div class="tab-content" *ngIf="activeTab === 'overview'">
-            <h3>About this Scheme</h3>
-            <p>{{ policy.about }}</p>
-
-            <h3>Key Benefits</h3>
-            <div class="benefits-grid">
-              <div class="benefit-item" *ngFor="let b of policy.benefits">
-                ✓ {{ b }}
+            <div class="section-header">
+              <h3>About This Policy</h3>
+            </div>
+            <p class="summary-text">{{ policy.summary || 'This policy is part of the Government of India\'s initiative. Please refer to the official government portal for full details.' }}</p>
+            <div *ngIf="policy.content && policy.summary" class="full-content">
+              <h4>Full Policy Content</h4>
+              <p>{{ policy.content }}</p>
+            </div>
+            <div class="timeline" *ngIf="policy.publishedAt">
+              <div class="timeline-item">
+                <span class="tl-dot active"></span>
+                <div>
+                  <strong>Policy Published</strong>
+                  <p>{{ formatDate(policy.publishedAt) }}</p>
+                </div>
+              </div>
+              <div class="timeline-item" *ngIf="policy.updatedAt">
+                <span class="tl-dot"></span>
+                <div>
+                  <strong>Last Updated</strong>
+                  <p>{{ formatDate(policy.updatedAt) }}</p>
+                </div>
+              </div>
+              <div class="timeline-item">
+                <span class="tl-dot current"></span>
+                <div>
+                  <strong>Current Status</strong>
+                  <p>{{ policy.status }}</p>
+                </div>
               </div>
             </div>
           </div>
 
+          <!-- Details Tab -->
           <div class="tab-content" *ngIf="activeTab === 'eligibility'">
-            <h3>Eligibility Criteria</h3>
-            <p>Households identified as deprived and occupational criteria families under SECC 2011 database are automatically eligible. No premium payment required.</p>
+            <div class="section-header">
+              <h3>Policy Details</h3>
+            </div>
+            <div class="details-grid">
+              <div class="detail-block">
+                <label>Category</label>
+                <span class="detail-value tag-pill">{{ policy.category }}</span>
+              </div>
+              <div class="detail-block">
+                <label>Ministry</label>
+                <span class="detail-value">{{ policy.ministry || 'Government of India' }}</span>
+              </div>
+              <div class="detail-block">
+                <label>Department</label>
+                <span class="detail-value">{{ policy.department || 'N/A' }}</span>
+              </div>
+              <div class="detail-block">
+                <label>State / Scope</label>
+                <span class="detail-value">{{ policy.state || 'All India (National)' }}</span>
+              </div>
+              <div class="detail-block">
+                <label>Published</label>
+                <span class="detail-value">{{ formatDate(policy.publishedAt) }}</span>
+              </div>
+              <div class="detail-block">
+                <label>Last Updated</label>
+                <span class="detail-value">{{ formatDate(policy.updatedAt) }}</span>
+              </div>
+            </div>
           </div>
 
-          <div class="tab-content" *ngIf="activeTab === 'apply'">
-            <h3>How to Apply</h3>
-            <p>Visit your nearest empanelled hospital or Common Service Centre (CSC) with your Aadhaar and ration card to check eligibility and generate your Ayushman card.</p>
-          </div>
-
+          <!-- Tags Tab -->
           <div class="tab-content" *ngIf="activeTab === 'documents'">
-            <h3>Required Documents</h3>
-            <p>Aadhaar Card, Ration Card / SECC ID, and any other government-issued identity proof.</p>
+            <div class="section-header">
+              <h3>Tags & Keywords</h3>
+            </div>
+            <div class="tags-cloud">
+              <span class="tag-chip" *ngFor="let b of benefits">{{ b }}</span>
+            </div>
           </div>
 
+          <!-- Ministry Info Tab -->
           <div class="tab-content" *ngIf="activeTab === 'faq'">
-            <h3>Frequently Asked Questions</h3>
-            <p>Visit the official PM-JAY portal for a full list of frequently asked questions and support.</p>
+            <div class="section-header">
+              <h3>Ministry Information</h3>
+            </div>
+            <div class="ministry-card">
+              <div class="ministry-row">
+                <span class="mrow-label">🏛️ Ministry</span>
+                <span class="mrow-value">{{ policy.ministry || 'Government of India' }}</span>
+              </div>
+              <div class="ministry-row">
+                <span class="mrow-label">🏢 Department</span>
+                <span class="mrow-value">{{ policy.department || 'N/A' }}</span>
+              </div>
+              <div class="ministry-row">
+                <span class="mrow-label">🗂️ Policy ID</span>
+                <span class="mrow-value mono">{{ policy._id }}</span>
+              </div>
+              <div class="ministry-row">
+                <span class="mrow-label">📌 Status</span>
+                <span class="mrow-value">{{ policy.status }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- SIDEBAR -->
+      <!-- Sidebar -->
       <div class="side-col">
-        <div class="card action-card">
-          <h3>Quick Actions</h3>
-          <button class="btn-action btn-fill">⇗ Apply Online</button>
-          <button class="btn-action btn-outline-light">🔖 Save Policy</button>
-          <button class="btn-action btn-outline-light">⬇ Download PDF</button>
+
+        <!-- Apply Card -->
+        <div class="sidebar-card apply-card" *ngIf="policy.status === 'Active'">
+          <div class="apply-card-header">
+            <span class="apply-icon">✍️</span>
+            <h3>Apply for This Policy</h3>
+          </div>
+          <p>Submit a formal application to the relevant ministry. Ensure you have all required documents.</p>
+          <button class="btn-apply-sidebar" (click)="goApply()">Apply Now →</button>
         </div>
 
-        <div class="card">
-          <h3>Policy Details</h3>
-          <div class="detail-row"><span>Policy ID</span><strong>{{ policy.details.policyId }}</strong></div>
-          <div class="detail-row"><span>Category</span><span class="tag">{{ policy.details.category }}</span></div>
-          <div class="detail-row"><span>Launch Date</span><strong>{{ policy.details.launchDate }}</strong></div>
-          <div class="detail-row"><span>Last Updated</span><strong>{{ policy.details.lastUpdated }}</strong></div>
-          <div class="detail-row"><span>Implementing</span><strong>{{ policy.details.implementing }}</strong></div>
+        <!-- Status Inactive Card -->
+        <div class="sidebar-card inactive-card" *ngIf="policy.status !== 'Active'">
+          <span class="inactive-icon">🔒</span>
+          <h3>Applications Closed</h3>
+          <p>This policy is currently <strong>{{ policy.status }}</strong> and not accepting applications.</p>
         </div>
 
-        <div class="card">
-          <h3>Check Eligibility</h3>
-          <p class="side-note">Answer a few questions to see if you qualify for this scheme.</p>
-          <a routerLink="/eligibility" class="btn-action btn-fill">✓ Check Now</a>
+        <!-- Quick Details -->
+        <div class="sidebar-card">
+          <h3 class="sidebar-title">📊 Quick Info</h3>
+          <div class="quick-row">
+            <span>Category</span>
+            <span class="tag-pill">{{ policy.category }}</span>
+          </div>
+          <div class="quick-row">
+            <span>Published</span>
+            <strong>{{ formatDate(policy.publishedAt) }}</strong>
+          </div>
+          <div class="quick-row">
+            <span>Updated</span>
+            <strong>{{ formatDate(policy.updatedAt) }}</strong>
+          </div>
+          <div class="quick-row">
+            <span>Status</span>
+            <strong>{{ policy.status }}</strong>
+          </div>
         </div>
 
-        <div class="card">
-          <h3>Compare Scheme</h3>
-          <a routerLink="/comparison" class="btn-action btn-outline-dark">⇄ Add to Compare</a>
+        <!-- Tools -->
+        <div class="sidebar-card">
+          <h3 class="sidebar-title">🛠️ Tools</h3>
+          <a routerLink="/citizen/eligibility" class="tool-btn">✓ Check Eligibility</a>
+          <a routerLink="/citizen/compare" class="tool-btn outline">⇄ Compare Policies</a>
+          <a routerLink="/citizen/search" class="tool-btn outline">← Back to Search</a>
         </div>
+
       </div>
     </div>
   </div>

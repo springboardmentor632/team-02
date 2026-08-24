@@ -1,18 +1,4 @@
-<div class="dashboard-shell">
-
-  <nav class="top-navbar">
-    <div class="nav-logo"><img src="logo.png" alt="logo" /></div>
-    <div class="nav-links">
-      <a routerLink="/dashboard" class="nav-link">Dashboard</a>
-      <a routerLink="/policy-search" class="nav-link">Policy Search</a>
-      <a routerLink="/policy-detail" class="nav-link">Policy Detail</a>
-      <a routerLink="/eligibility" class="nav-link active">Eligibility Checker</a>
-      <a routerLink="/comparison" class="nav-link">Comparison</a>
-      <a routerLink="/admin-dashboard" class="nav-link">Admin Dashboard</a>
-    </div>
-    <a routerLink="/login" class="nav-logout">⏻ Logout</a>
-  </nav>
-
+<div class="eligibility-page-container">
   <div class="page-body">
     <div class="checker-header">
       <div class="header-icon">✓</div>
@@ -199,36 +185,53 @@
         <p>Analyzing your profile...</p>
       </div>
 
-      <div class="results-grid" *ngIf="!loading">
+      <div class="results-grid" *ngIf="!loading && !error">
         <div class="scheme-result-card" *ngFor="let s of matchedSchemes">
           <span class="scheme-result-icon">{{ s.icon }}</span>
           <div class="scheme-result-body">
-            <h4>{{ s.name }}</h4>
+            <div class="scheme-title-row">
+              <h4>{{ s.name }}</h4>
+              <span
+                class="match-badge"
+                [class.badge-open]="s.isOpenScheme"
+                [class.badge-100]="!s.isOpenScheme && s.matchPercentage === 100"
+                [class.badge-high]="!s.isOpenScheme && s.matchPercentage >= 75 && s.matchPercentage < 100"
+                [class.badge-mid]="!s.isOpenScheme && s.matchPercentage >= 50 && s.matchPercentage < 75"
+                [class.badge-low]="!s.isOpenScheme && s.matchPercentage < 50">
+                {{ s.isOpenScheme ? 'Open Scheme · 100% Match' : s.matchPercentage + '% Match' }}
+              </span>
+            </div>
             <span class="scheme-cat-tag">{{ s.category }}</span>
             <p>{{ s.benefit }}</p>
           </div>
-          <button class="btn-small">Apply</button>
+          <div class="scheme-card-actions">
+            <a [routerLink]="['/citizen/scheme', s.id]" class="btn-small">View</a>
+            <button type="button" class="btn-apply" (click)="applyForScheme(s.id)">Apply</button>
+          </div>
         </div>
+        <p *ngIf="matchedSchemes.length === 0" class="no-matches-msg">No matching schemes found for your profile. Try adjusting your details.</p>
       </div>
+
+      <p *ngIf="error" class="error-msg">{{ error }}</p>
 
       <div class="nav-row">
         <button class="btn-prev" (click)="restart()">↺ Start Over</button>
-        <a routerLink="/policy-search" class="btn-next">Browse All Schemes →</a>
+        <a routerLink="/citizen/search" class="btn-next">Browse All Schemes →</a>
       </div>
     </div>
 
     <!-- LIVE PREVIEW (shown on steps 1-3) -->
-    <div class="preview-banner" *ngIf="currentStep < 4">
+    <div class="preview-banner" *ngIf="currentStep < 4 && previewSchemes.length">
       <div class="preview-icon">💡</div>
       <div class="preview-text">
-        <strong>Preview: You may qualify for</strong>
-        <p>Based on partial data entered so far</p>
+        <strong>Available schemes on the platform</strong>
+        <p>Complete the form to find schemes you qualify for</p>
         <div class="preview-tags">
           <span *ngFor="let p of previewSchemes.slice(0,4)">{{ p }}</span>
-          <span class="more-tag">+13 more</span>
+          <span class="more-tag" *ngIf="previewCount > 4">+{{ previewCount - 4 }} more</span>
         </div>
       </div>
-      <div class="preview-count">18 Schemes</div>
+      <div class="preview-count">{{ previewCount }} Schemes</div>
     </div>
   </div>
 </div>

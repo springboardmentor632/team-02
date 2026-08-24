@@ -1,0 +1,172 @@
+<div class="analytics-page">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Analytics Dashboard</h1>
+      <p class="page-sub">Track your scheme applications, eligibility match score, and personal benefit analytics.</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary" (click)="printAnalytics()">🖨️ Export PDF / Print</button>
+      <a routerLink="/citizen/applications" class="btn-primary">📝 View Applications</a>
+    </div>
+  </div>
+
+  <!-- SUMMARY STAT CARDS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-top">
+        <span class="stat-value">{{ summary.totalApplications }}</span>
+        <span class="stat-icon">📄</span>
+      </div>
+      <div class="stat-label">Total Applications</div>
+      <div class="stat-sub">Submitted across open schemes</div>
+    </div>
+
+    <div class="stat-card highlight-success">
+      <div class="stat-top">
+        <span class="stat-value">{{ summary.approvedApplications }}</span>
+        <span class="stat-icon">✅</span>
+      </div>
+      <div class="stat-label">Approved & Disbursed</div>
+      <div class="stat-sub">Active government benefits</div>
+    </div>
+
+    <div class="stat-card highlight-warning">
+      <div class="stat-top">
+        <span class="stat-value">{{ summary.pendingApplications }}</span>
+        <span class="stat-icon">⏳</span>
+      </div>
+      <div class="stat-label">Under Review / Pending</div>
+      <div class="stat-sub">Awaiting department processing</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-top">
+        <span class="stat-value">₹{{ summary.estimatedBenefitsValue | number }}</span>
+        <span class="stat-icon">💰</span>
+      </div>
+      <div class="stat-label">Estimated Benefit Value</div>
+      <div class="stat-sub">Total financial aid & subsidies</div>
+    </div>
+  </div>
+
+  <!-- ANALYTICS CONTENT GRID -->
+  <div class="analytics-grid">
+
+    <!-- LEFT COLUMN: Charts & Breakdown -->
+    <div class="grid-column">
+
+      <!-- Profile Score & Benefit Eligibility Match -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Eligibility Profile Match Score</h3>
+          <span class="badge-tag">Score: {{ summary.profileScore }}%</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar" [style.width.%]="summary.profileScore"></div>
+        </div>
+        <p class="score-desc">
+          Your profile matches <strong>{{ summary.profileScore }}%</strong> of active state and central government criteria. Complete your income and occupation details in Profile Settings to unlock maximum scheme eligibility.
+        </p>
+      </div>
+
+      <!-- Category Benefit Distribution -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Category Distribution</h3>
+          <span class="sub-text">Applied & Saved Interests</span>
+        </div>
+        <div class="category-bars">
+          <div class="cat-bar-item" *ngFor="let cat of categoryDistribution">
+            <div class="cat-bar-top">
+              <span class="cat-name">{{ cat.category }}</span>
+              <span class="cat-val">{{ cat.count }} items ({{ cat.percent }}%)</span>
+            </div>
+            <div class="bar-bg">
+              <div class="bar-fill" [style.width.%]="cat.percent"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submission Activity Timeline (Monthly visual bars) -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Application Activity (6-Month Trend)</h3>
+        </div>
+        <div class="chart-bars">
+          <div class="bar-col" *ngFor="let item of activityTimeline">
+            <div class="bar-column-wrap">
+              <div class="bar-column-fill" [style.height.px]="item.count * 18"></div>
+            </div>
+            <span class="bar-label">{{ item.month }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: Application Breakdown & Saved Policies -->
+    <div class="grid-column">
+
+      <!-- Quick Metrics Summary -->
+      <div class="card summary-panel">
+        <h3>Engagement Overview</h3>
+        <ul class="metrics-list">
+          <li>
+            <span>Saved Policies</span>
+            <strong>{{ summary.savedPoliciesCount }} Saved</strong>
+          </li>
+          <li>
+            <span>Search Queries Recorded</span>
+            <strong>{{ summary.searchQueriesCount }} Inquiries</strong>
+          </li>
+          <li>
+            <span>Application Approval Rate</span>
+            <strong>{{ summary.totalApplications > 0 ? (summary.approvedApplications / summary.totalApplications * 100 | number:'1.0-0') : '100' }}%</strong>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Recent Applications Status Table -->
+      <div class="card">
+        <div class="card-header flex-header">
+          <h3>Recent Applications</h3>
+          <div class="filter-pills">
+            <button [class.active]="selectedFilter === 'All'" (click)="setFilter('All')">All</button>
+            <button [class.active]="selectedFilter === 'Approved'" (click)="setFilter('Approved')">Approved</button>
+            <button [class.active]="selectedFilter === 'Under Review'" (click)="setFilter('Under Review')">Pending</button>
+          </div>
+        </div>
+
+        <div *ngIf="loading" class="loading-state">Loading application data...</div>
+
+        <div *ngIf="!loading && filteredApplications.length === 0" class="empty-state">
+          No applications match the selected filter.
+        </div>
+
+        <div class="app-list" *ngIf="!loading && filteredApplications.length > 0">
+          <div class="app-item-card" *ngFor="let app of filteredApplications">
+            <div class="app-item-left">
+              <span class="app-type-icon">📋</span>
+              <div>
+                <h4 class="app-name">{{ getItemTitle(app) }}</h4>
+                <p class="app-meta">{{ getItemCategory(app) }} • Applied {{ formatDateStr(app.createdAt) }}</p>
+              </div>
+            </div>
+            <span class="status-pill"
+                  [class.status-approved]="app.status === 'Approved' || app.status === 'Completed'"
+                  [class.status-pending]="app.status === 'Submitted' || app.status === 'Under Review'"
+                  [class.status-rejected]="app.status === 'Rejected'">
+              {{ app.status }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

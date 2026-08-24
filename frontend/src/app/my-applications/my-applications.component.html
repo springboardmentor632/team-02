@@ -1,0 +1,107 @@
+<div class="applications-page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1>My Applications</h1>
+      <p class="subtitle">Track and manage your submitted policy and scheme applications</p>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/citizen/eligibility" class="btn-primary">✓ Check Eligibility</a>
+      <a routerLink="/citizen/search" class="btn-outline">Browse Policies &amp; Schemes</a>
+    </div>
+  </div>
+
+  <!-- Filter Pills -->
+  <div class="filter-bar" *ngIf="!loading && applications.length > 0">
+    <button class="filter-pill" [class.active]="activeFilter === 'all'" (click)="applyFilter('all')">
+      All ({{ applications.length }})
+    </button>
+    <button class="filter-pill" [class.active]="activeFilter === 'policy'" (click)="applyFilter('policy')">
+      📜 Policies
+    </button>
+    <button class="filter-pill" [class.active]="activeFilter === 'scheme'" (click)="applyFilter('scheme')">
+      🎖️ Schemes
+    </button>
+    <button class="filter-pill" [class.active]="activeFilter === 'Under Review'" (click)="applyFilter('Under Review')">
+      ⏳ Under Review
+    </button>
+    <button class="filter-pill" [class.active]="activeFilter === 'Approved'" (click)="applyFilter('Approved')">
+      ✅ Approved
+    </button>
+    <button class="filter-pill" [class.active]="activeFilter === 'Rejected'" (click)="applyFilter('Rejected')">
+      ❌ Rejected
+    </button>
+  </div>
+
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner-ring"></div>
+    <p>Loading your applications...</p>
+  </div>
+
+  <!-- Error Banner -->
+  <div *ngIf="error" class="error-banner">
+    <span>⚠️</span> {{ error }}
+    <button (click)="loadApplications()" class="btn-retry">Retry</button>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && !error && filteredApplications.length === 0">
+    <span class="empty-icon">📋</span>
+    <h3>No applications found</h3>
+    <p *ngIf="applications.length === 0">You haven't submitted any applications yet. Search policies or check your eligibility to get started.</p>
+    <p *ngIf="applications.length > 0">No applications match the selected filter.</p>
+    <div class="empty-actions">
+      <a routerLink="/citizen/search" class="btn-primary">Search Policies &amp; Schemes</a>
+    </div>
+  </div>
+
+  <!-- Applications List Grid -->
+  <div class="applications-grid" *ngIf="!loading && filteredApplications.length > 0">
+    <div class="app-card" *ngFor="let app of filteredApplications">
+      <div class="app-card-top">
+        <div class="type-badge" [class.type-policy]="app.applicationType === 'policy'">
+          {{ app.applicationType === 'policy' ? '📜 Policy Application' : '🎖️ Scheme Application' }}
+        </div>
+        <span class="status-badge" [ngClass]="statusClass(app.status)">
+          {{ statusIcon(app.status) }} {{ app.status }}
+        </span>
+      </div>
+
+      <h3 class="app-title">{{ schemeName(app) }}</h3>
+      <p class="app-ministry">🏛️ {{ schemeMinistry(app) }} • <span class="cat-tag">{{ schemeCategory(app) }}</span></p>
+
+      <div class="app-info-grid">
+        <div class="info-item">
+          <span class="info-label">Application ID</span>
+          <span class="info-val mono">{{ app._id | slice:0:12 }}...</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Submitted On</span>
+          <span class="info-val">{{ formatDate(app.createdAt) }}</span>
+        </div>
+      </div>
+
+      <!-- Government Notes if available -->
+      <div class="gov-notes-box" *ngIf="app.govNotes">
+        <span class="notes-icon">💬</span>
+        <div>
+          <strong>Official Response:</strong>
+          <p>{{ app.govNotes }}</p>
+        </div>
+      </div>
+
+      <div class="app-card-footer">
+        <a *ngIf="app.applicationType === 'policy'" [routerLink]="['/citizen/policy', schemeId(app)]" class="btn-view">
+          View Policy Details →
+        </a>
+        <a *ngIf="app.applicationType !== 'policy'" [routerLink]="['/citizen/scheme', schemeId(app)]" class="btn-view">
+          View Scheme Details →
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>

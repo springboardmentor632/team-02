@@ -1,0 +1,120 @@
+<div class="apply-page">
+
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb" *ngIf="!loading">
+    <a routerLink="/citizen/search">🔍 Search</a>
+    <span class="sep">›</span>
+    <a *ngIf="policy" [routerLink]="['/citizen/policy', policy._id]">{{ policy.title | slice:0:30 }}…</a>
+    <span class="sep">›</span>
+    <span class="current">Apply</span>
+  </nav>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner-ring"></div>
+    <p>Loading application form...</p>
+  </div>
+
+  <!-- Main Form Content -->
+  <div class="apply-container" *ngIf="!loading">
+
+    <!-- Policy Banner Card -->
+    <div class="policy-banner-card" *ngIf="policy">
+      <div class="banner-badge">FORMAL APPLICATION</div>
+      <h1>{{ policy.title }}</h1>
+      <p class="banner-meta">🏛️ {{ policy.ministry || 'Government of India' }} <span *ngIf="policy.department">• {{ policy.department }}</span></p>
+      <div class="banner-tags">
+        <span class="tag-pill">{{ policy.category }}</span>
+        <span class="tag-pill outline">📍 {{ policy.state || 'All India' }}</span>
+      </div>
+    </div>
+
+    <!-- Error Banner -->
+    <div *ngIf="error" class="error-banner">
+      <span>⚠️</span> {{ error }}
+    </div>
+
+    <!-- Success Confirmation -->
+    <div *ngIf="submitted" class="success-card">
+      <div class="success-icon">🎉</div>
+      <h2>Application Submitted Successfully!</h2>
+      <p>Your application for <strong>{{ policy?.title }}</strong> has been registered with the ministry for review.</p>
+      <div class="success-actions">
+        <button class="btn-primary" (click)="goToApplications()">📋 View My Applications</button>
+        <a routerLink="/citizen/search" class="btn-outline">← Back to Search</a>
+      </div>
+    </div>
+
+    <!-- Application Form Card -->
+    <div *ngIf="policy && !submitted" class="form-card">
+      <div class="form-header">
+        <h2>Applicant Information & Details</h2>
+        <p>Please review your information carefully before submitting.</p>
+      </div>
+
+      <form (ngSubmit)="onSubmit()" #applyForm="ngForm">
+
+        <!-- Readonly Applicant Profile Info -->
+        <div class="section-title">1. Personal Profile</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" [value]="applicantName" readonly class="input-readonly" />
+          </div>
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" [value]="applicantEmail" readonly class="input-readonly" />
+          </div>
+          <div class="form-group" *ngIf="applicantPhone">
+            <label>Phone Number</label>
+            <input type="text" [value]="applicantPhone" readonly class="input-readonly" />
+          </div>
+        </div>
+
+        <!-- Required Inputs -->
+        <div class="section-title">2. Application Form Data</div>
+
+        <div class="form-group">
+          <label>Permanent Residential Address <span class="req">*</span></label>
+          <textarea [(ngModel)]="address" name="address" rows="3" placeholder="Enter full residential address..." required class="form-control"></textarea>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Aadhaar / ID Card Number <span class="req">*</span></label>
+            <input type="text" [(ngModel)]="aadhaarNumber" name="aadhaarNumber" placeholder="e.g. 1234-5678-9012" required class="form-control" />
+          </div>
+
+          <div class="form-group">
+            <label>Bank Account Number (DBT Benefit Transfer)</label>
+            <input type="text" [(ngModel)]="bankAccount" name="bankAccount" placeholder="Account Number / IFSC" class="form-control" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Additional Notes / Remarks for Officials</label>
+          <textarea [(ngModel)]="additionalNotes" name="additionalNotes" rows="2" placeholder="Mention any specific requests or supporting information..." class="form-control"></textarea>
+        </div>
+
+        <!-- Declaration Checkbox -->
+        <div class="declaration-box">
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="documentsAcknowledged" name="documentsAcknowledged" required />
+            <span>I declare that all information provided is true and accurate, and I hold the valid supporting documents required for verification under <strong>{{ policy.title }}</strong>.</span>
+          </label>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button type="submit" class="btn-primary btn-submit" [disabled]="submitting">
+            <span *ngIf="!submitting">Submit Application →</span>
+            <span *ngIf="submitting">Submitting...</span>
+          </button>
+          <a [routerLink]="['/citizen/policy', policy._id]" class="btn-outline">Cancel</a>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</div>

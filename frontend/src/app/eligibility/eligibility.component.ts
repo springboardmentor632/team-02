@@ -1,13 +1,23 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+import { EligibilityService } from '../services/eligibility.service';
+import { SchemeService } from '../services/scheme.service';
+import { NotificationService } from '../services/notification.service';
+import { getCategoryIcon, parseIncome, mapDisability } from '../utils/helpers';
 
-interface Scheme {
+const ELIGIBILITY_STORAGE_KEY = 'citizenEligibilityProfile';
+
+interface MatchedScheme {
+  id: string;
   name: string;
   category: string;
   benefit: string;
   icon: string;
+  matchPercentage: number;
+  isOpenScheme: boolean;
 }
 
 @Component({
@@ -18,35 +28,67 @@ interface Scheme {
   styleUrl: './eligibility.component.css'
 })
 export class EligibilityComponent {
+  userName = '';
+  userLocation = '';
+  userInitials = '';
   currentStep = 1;
   totalSteps = 4;
   steps = ['Personal Info', 'Financial Info', 'Location', 'Results'];
 
-  // Step 1 — Personal Info
   age: number | null = null;
   gender = '';
   education = '';
   maritalStatus = '';
 
-  // Step 2 — Financial & Occupational
   income = '₹1,00,000 - ₹2,50,000';
   occupation = 'Farmer';
   socialCategory = 'OBC';
   disability = 'No Disability';
   landHolding = 'Below 1 Acre';
   housingType = 'Pucca House';
-  interestedCategories = ['Agriculture', 'Finance'];
+  interestedCategories: string[] = [];
   allCategories = ['Agriculture', 'Healthcare', 'Housing', 'Education', 'Employment', 'Finance', 'Women Welfare', 'Senior Citizens'];
 
-  // Step 3 — Location
   state = '';
   district = '';
   areaType = '';
 
   loading = false;
+  error = '';
+  previewSchemes: string[] = [];
+  previewCount = 0;
+  matchedSchemes: MatchedScheme[] = [];
+  notifications: { _id: string }[] = [];
 
-  previewSchemes = ['PM Kisan Samman Nidhi', 'Ayushman Bharat', 'MGNREGA', 'Kisan Credit Card', 'PMFBY (Crop Insurance)'];
-  matchedSchemes: Scheme[] = [];
+  constructor(
+    private router: Router,
+    private auth: AuthService,
+    private eligibilityService: EligibilityService,
+    private schemeService: SchemeService,
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
+  ) {
+    this.userName = this.auth.getUserDisplayName();
+    this.userLocation = this.auth.getUserSubtitle();
+    this.userInitials = this.auth.getUserInitials();
+    this.schemeService.getAll({ status: 'Active' }).subscribe({
+      next: (res) => {
+        this.previewSchemes = (res.schemes || []).map((s) => s.name);
+        this.previewCount = (res.schemes || []).length;
+        this.cdr.detectChanges();
+      }
+    });
+    this.notificationService.getAll().subscribe({
+      next: (res) => {
+        this.notifications = (res.notifications || []).filter(n => !n.read);
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.notifications = [];
+        this.cdr.detectChanges();
+      }
+    });
+  }
 
   toggleCategory(cat: string): void {
     const idx = this.interestedCategories.indexOf(cat);
@@ -84,21 +126,66 @@ export class EligibilityComponent {
 
   private runEligibilityCheck(): void {
     this.loading = true;
-    // TODO: real backend call — POST /eligibility/check
-    setTimeout(() => {
-      this.loading = false;
-      this.matchedSchemes = [
-        { name: 'PM Kisan Samman Nidhi', category: 'Agriculture', benefit: '₹6,000/year', icon: '🌾' },
-        { name: 'Ayushman Bharat PM-JAY', category: 'Healthcare', benefit: 'Up to ₹5 lakh coverage', icon: '❤️' },
-        { name: 'MGNREGA', category: 'Employment', benefit: '100 days guaranteed work', icon: '🛠️' },
-        { name: 'Kisan Credit Card', category: 'Finance', benefit: 'Low-interest crop loans', icon: '💳' },
-        { name: 'PMFBY (Crop Insurance)', category: 'Agriculture', benefit: 'Crop loss protection', icon: '🌦️' }
-      ];
-    }, 1000);
+    this.error = '';
+    this.cdr.detectChanges();
+    const location = this.areaType === 'Rural' ? 'Rural' : (this.state || 'Any');
+
+    this.eligibilityService.check({
+      age: this.age || 25,
+      gender: this.gender || 'Any',
+      income: parseIncome(this.income),
+      occupation: this.occupation,
+      education: this.education || 'Any',
+      location,
+      socialCategory: this.socialCategory,
+      disabilityStatus: mapDisability(this.disability),
+    }).subscribe({
+      next: (res) => {
+        this.matchedSchemes = (res.matches || []).map((m) => ({
+          id: m.scheme._id,
+          name: m.scheme.name,
+          category: m.scheme.category,
+          benefit: m.scheme.benefits?.[0] || m.scheme.summary || '',
+          icon: getCategoryIcon(m.scheme.category),
+          matchPercentage: m.matchPercentage ?? 100,
+          isOpenScheme: !!m.isOpenScheme,
+        }));
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.error = 'Eligibility check failed. Please try again.';
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   restart(): void {
     this.currentStep = 1;
     this.matchedSchemes = [];
+    this.cdr.detectChanges();
+  }
+
+  applyForScheme(schemeId: string): void {
+    sessionStorage.setItem(ELIGIBILITY_STORAGE_KEY, JSON.stringify({
+      age: this.age,
+      gender: this.gender,
+      education: this.education,
+      incomeLabel: this.income,
+      occupation: this.occupation,
+      socialCategory: this.socialCategory,
+      disability: this.disability,
+      state: this.state,
+      district: this.district,
+      areaType: this.areaType,
+    }));
+    this.router.navigate(['/citizen/scheme', schemeId, 'apply']);
+  }
+
+  onLogout(): void {
+    if (confirm('Are you sure you want to logout?')) {
+      this.auth.logout();
+    }
   }
 }

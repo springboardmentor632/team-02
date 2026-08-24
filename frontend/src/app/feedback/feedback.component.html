@@ -1,63 +1,622 @@
-<div class="dashboard-shell">
-
-  <nav class="top-navbar">
-    <div class="nav-logo"><img src="logo.png" alt="logo" /></div>
-    <div class="nav-links">
-      <a routerLink="/dashboard" class="nav-link">Dashboard</a>
-      <a routerLink="/policy-search" class="nav-link">Policy Search</a>
-      <a routerLink="/policy-detail" class="nav-link">Policy Detail</a>
-      <a routerLink="/eligibility" class="nav-link">Eligibility Checker</a>
-      <a routerLink="/comparison" class="nav-link">Comparison</a>
-      <a routerLink="/admin-dashboard" class="nav-link">Admin Dashboard</a>
-    </div>
-    <a routerLink="/login" class="nav-logout">⏻ Logout</a>
-  </nav>
-
+<div class="feedback-page-container">
   <div class="page-body">
-    <div class="page-header">
-      <h1>Feedback & Support</h1>
-      <p>Report issues, ask questions, or share feedback with our team</p>
-    </div>
-
-    <div class="content-grid">
-      <div class="card">
-        <h3>Contact Support</h3>
-        <div *ngIf="submitted" class="success-banner">Thank you! Your message has been submitted.</div>
-
-        <form #fbForm="ngForm" (ngSubmit)="onSubmit(fbForm)" novalidate *ngIf="!submitted">
-          <div class="field-group">
-            <label>Category</label>
-            <select name="category" [(ngModel)]="category">
-              <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
-            </select>
-          </div>
-          <div class="field-group">
-            <label>Subject</label>
-            <input type="text" name="subject" [(ngModel)]="subject" placeholder="Brief summary of your query" required />
-          </div>
-          <div class="field-group">
-            <label>Message</label>
-            <textarea name="message" [(ngModel)]="message" rows="5" placeholder="Describe your issue or feedback in detail..." required></textarea>
-          </div>
-          <button type="submit" class="btn-primary" [disabled]="submitting">
-            <span *ngIf="!submitting">Submit</span>
-            <span *ngIf="submitting">Submitting...</span>
-          </button>
-        </form>
-
-        <button class="btn-outline" *ngIf="submitted" (click)="submitted = false">Submit Another</button>
+    
+    <!-- ── PAGE HEADER ──────────────────────────────────────────────────────── -->
+    <div class="portal-header">
+      <div class="header-content">
+        <h1>Feedback & Support Intelligence Portal</h1>
+        <p *ngIf="!isOfficer">
+          Submit feedback, report system issues, access help desk support, browse FAQs, or send direct queries.
+        </p>
+        <p *ngIf="isOfficer">
+          Manage citizen inquiries, resolve technical issues, oversee support tickets, publish FAQs, and monitor live role statistics.
+        </p>
       </div>
 
-      <div class="card">
-        <h3>Frequently Asked Questions</h3>
-        <div class="faq-item" *ngFor="let f of faqs" (click)="toggleFaq(f)">
-          <div class="faq-q">
-            <span>{{ f.q }}</span>
-            <span class="faq-toggle">{{ f.open ? '−' : '+' }}</span>
-          </div>
-          <p class="faq-a" *ngIf="f.open">{{ f.a }}</p>
+      <!-- Role-based Statistics Scope Selector (Visible to Officers & Admins only) -->
+      <div class="stats-role-filter" *ngIf="isOfficer">
+        <label for="statsRoleSelect">📊 Scope Statistics By Role:</label>
+        <select id="statsRoleSelect" [(ngModel)]="selectedStatsRole" (change)="onStatsRoleChange()">
+          <option *ngFor="let r of rolesList" [value]="r">{{ r }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ── REALISTIC ROLE-BASED STATISTICS CARDS ────────────────────────────── -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon icon-blue">📋</div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats.totalCount }}</span>
+          <span class="stat-label">Total Submissions</span>
+          <span class="stat-sub">Across all 6 sub-modules</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon icon-green">⚡</div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats.resolutionRate }}%</span>
+          <span class="stat-label">Resolution SLA Rate</span>
+          <span class="stat-sub">{{ stats.slaCompliancePercent }}% SLA Compliant</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon icon-purple">⏱️</div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats.avgResponseTimeHours }} hrs</span>
+          <span class="stat-label">Avg Response Time</span>
+          <span class="stat-sub">Officer turnaround time</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon icon-yellow">⭐</div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats.averageRating ? (stats.averageRating | number:'1.1-1') : '0.0' }} / 5.0</span>
+          <span class="stat-label">Citizen Satisfaction</span>
+          <span class="stat-sub">Based on ratings & CSAT</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon icon-red">🔥</div>
+        <div class="stat-info">
+          <span class="stat-value">{{ (stats.byStatus['New'] || 0) + (stats.byStatus['In Progress'] || 0) }}</span>
+          <span class="stat-label">Active Open Tickets</span>
+          <span class="stat-sub">{{ stats.byStatus['New'] || 0 }} New, {{ stats.byStatus['In Progress'] || 0 }} In Progress</span>
         </div>
       </div>
     </div>
+
+
+
+    <!-- ── 6 SUB-MODULE TABBED NAVIGATION BAR ─────────────────────────────── -->
+    <div class="tab-navigation">
+      <button *ngFor="let tab of tabs" 
+              class="tab-btn" 
+              [class.active]="activeTab === tab.id"
+              (click)="switchTab(tab.id)">
+        <span class="tab-icon">{{ tab.icon }}</span>
+        <span class="tab-text">{{ tab.label }}</span>
+        <span class="tab-count-badge" *ngIf="stats.byModule[tab.id]">{{ stats.byModule[tab.id] }}</span>
+      </button>
+    </div>
+
+    <!-- ── SUB-MODULE CONTENT AREA ─────────────────────────────────────────── -->
+
+    <!-- SUB-MODULE (i): CITIZEN FEEDBACK -->
+    <!-- SUB-MODULE (ii): ISSUE REPORTING -->
+    <!-- SUB-MODULE (iii): HELP DESK -->
+    <!-- SUB-MODULE (v): QUERY RESOLUTION -->
+    <!-- SUB-MODULE (vi): CONTACT SUPPORT -->
+
+    <div class="main-content-layout" *ngIf="activeTab !== 'FAQ Management'">
+      
+      <!-- LEFT COLUMN: Submission Form / List of Submissions -->
+      <div class="left-pane card">
+        
+        <!-- Tab Sub-Header & Form Toggle -->
+        <div class="pane-header">
+          <h3>{{ activeTab }} Overview</h3>
+          <button class="btn-secondary btn-sm" *ngIf="!isOfficer" (click)="submitted = false">
+            + New Submission
+          </button>
+        </div>
+
+        <!-- OFFICER FILTER BAR (for Officer/Admin View) -->
+        <div class="filter-bar" *ngIf="isOfficer">
+          <div class="filter-group">
+            <input type="text" [(ngModel)]="searchQuery" (input)="loadFeedbacks()" placeholder="🔍 Search tickets, IDs..." class="search-input" />
+          </div>
+          <div class="filter-group">
+            <select [(ngModel)]="filterStatus" (change)="loadFeedbacks()">
+              <option value="All">All Statuses</option>
+              <option *ngFor="let st of statuses" [value]="st">{{ st }}</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <select [(ngModel)]="filterPriority" (change)="loadFeedbacks()">
+              <option value="All">All Priorities</option>
+              <option *ngFor="let pr of priorities" [value]="pr">{{ pr }}</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <select [(ngModel)]="filterRole" (change)="loadFeedbacks()">
+              <option value="All">All Roles</option>
+              <option *ngFor="let r of rolesList" [value]="r">{{ r }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- CITIZEN FORM (When not submitted or submitting new entry) -->
+        <div class="submission-form-container" *ngIf="!isOfficer && !submitted">
+          <div class="form-banner">
+            <h4>Submit {{ activeTab }} Entry</h4>
+            <p>Your submission will be assigned a unique ticket ID and routed to the responsible government department.</p>
+          </div>
+
+          <form #ticketForm="ngForm" (ngSubmit)="onSubmitTicket(ticketForm)" novalidate>
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label>Category</label>
+                <select name="formCategory" [(ngModel)]="formCategory" class="form-control">
+                  <option *ngFor="let cat of categoriesMap[activeTab]" [value]="cat">{{ cat }}</option>
+                </select>
+              </div>
+
+              <div class="form-group flex-1" *ngIf="activeTab === 'Issue Reporting' || activeTab === 'Help Desk'">
+                <label>Priority Severity</label>
+                <select name="formPriority" [(ngModel)]="formPriority" class="form-control">
+                  <option *ngFor="let pr of priorities" [value]="pr">{{ pr }}</option>
+                </select>
+              </div>
+
+              <div class="form-group flex-1" *ngIf="activeTab === 'Citizen Feedback'">
+                <label>Satisfaction Rating</label>
+                <select name="formRating" [(ngModel)]="formRating" class="form-control">
+                  <option [value]="5">⭐⭐⭐⭐⭐ (5 - Excellent)</option>
+                  <option [value]="4">⭐⭐⭐⭐ (4 - Good)</option>
+                  <option [value]="3">⭐⭐⭐ (3 - Average)</option>
+                  <option [value]="2">⭐⭐ (2 - Poor)</option>
+                  <option [value]="1">⭐ (1 - Needs Work)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Target Department</label>
+              <select name="formDepartment" [(ngModel)]="formDepartment" class="form-control">
+                <option *ngFor="let dep of departments" [value]="dep">{{ dep }}</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Subject / Title</label>
+              <input type="text" name="formSubject" [(ngModel)]="formSubject" placeholder="Brief summary of your ticket or query" class="form-control" required />
+            </div>
+
+            <div class="form-group">
+              <label>Detailed Message</label>
+              <textarea name="formMessage" [(ngModel)]="formMessage" rows="4" placeholder="Provide full details, steps to reproduce, or specific policy questions..." class="form-control" required></textarea>
+            </div>
+
+            <div *ngIf="formError" class="error-banner">{{ formError }}</div>
+
+            <button type="submit" class="btn-primary" [disabled]="submitting">
+              <span *ngIf="!submitting">🚀 Submit {{ activeTab }}</span>
+              <span *ngIf="submitting">Submitting...</span>
+            </button>
+          </form>
+        </div>
+
+        <div *ngIf="!isOfficer && submitted" class="success-box">
+          ✅ <strong>Ticket Submitted Successfully!</strong>
+          <p>Your ticket has been recorded and routed to officers. You can track updates and thread replies below.</p>
+          <button class="btn-secondary btn-sm" (click)="submitted = false">Submit Another Ticket</button>
+        </div>
+
+        <!-- TICKETS LIST -->
+        <div class="tickets-list-header">
+          <h4>Submissions & Tickets ({{ feedbacks.length }})</h4>
+        </div>
+
+        <div *ngIf="loadingFeedbacks" class="loading-spinner">Loading tickets...</div>
+        <div *ngIf="!loadingFeedbacks && feedbacks.length === 0" class="empty-state">
+          No {{ activeTab }} tickets found.
+        </div>
+
+        <div class="tickets-grid">
+          <div *ngFor="let fb of feedbacks" 
+               class="ticket-card"
+               [class.active-card]="activeFeedback?._id === fb._id"
+               (click)="selectFeedback(fb)">
+            
+            <div class="ticket-card-header">
+              <span class="ticket-id-badge">{{ fb.ticketId || 'TICKET' }}</span>
+              <span class="priority-badge" [class]="'pr-' + (fb.priority || 'Medium').toLowerCase()">
+                {{ fb.priority || 'Medium' }}
+              </span>
+              <span class="status-badge" [class]="'st-' + (fb.status || 'New').toLowerCase().replace(' ', '-')">
+                {{ fb.status || 'New' }}
+              </span>
+            </div>
+
+            <h5 class="ticket-subject">{{ fb.subject }}</h5>
+
+            <div class="ticket-meta">
+              <span>👤 {{ fb.name || 'Anonymous' }} ({{ fb.userRole || 'Citizen' }})</span>
+              <span>🏢 {{ fb.department || 'General Support' }}</span>
+              <span *ngIf="fb.rating && fb.moduleType === 'Citizen Feedback'">⭐ {{ fb.rating }}/5</span>
+              <span>🕒 {{ fb.createdAt | date:'short' }}</span>
+            </div>
+
+            <p class="ticket-snippet">{{ fb.message | slice:0:120 }}...</p>
+
+            <div *ngIf="fb.response" class="response-preview">
+              💬 <strong>Officer Response:</strong> {{ fb.response | slice:0:80 }}...
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN: Detail Pane / Officer Response / Thread Chat -->
+      <div class="right-pane card">
+        <div *ngIf="!activeFeedback" class="select-prompt">
+          <div class="prompt-icon">🔍</div>
+          <h4>Select a Ticket to View Details</h4>
+          <p>Click any ticket on the left pane to view full conversation history, status logs, and officer response tools.</p>
+        </div>
+
+        <div *ngIf="activeFeedback" class="ticket-detail-view">
+          
+          <!-- Detail Header -->
+          <div class="detail-header">
+            <div>
+              <span class="ticket-id-large">{{ activeFeedback.ticketId }}</span>
+              <h2>{{ activeFeedback.subject }}</h2>
+              <div class="detail-tags">
+                <span class="tag">{{ activeFeedback.moduleType }}</span>
+                <span class="tag">{{ activeFeedback.category }}</span>
+                <span class="priority-badge" [class]="'pr-' + (activeFeedback.priority || 'Medium').toLowerCase()">
+                  {{ activeFeedback.priority }} Priority
+                </span>
+                <span class="status-badge" [class]="'st-' + (activeFeedback.status || 'New').toLowerCase().replace(' ', '-')">
+                  {{ activeFeedback.status }}
+                </span>
+              </div>
+            </div>
+
+            <button *ngIf="isOfficer" class="btn-danger-outline btn-sm" (click)="deleteTicket(activeFeedback._id)">
+              🗑️ Delete
+            </button>
+          </div>
+
+          <!-- User Info Banner -->
+          <div class="submitter-info-bar">
+            <div><strong>Submitter:</strong> {{ activeFeedback.name }} ({{ activeFeedback.email }})</div>
+            <div><strong>Submitter Role:</strong> <span class="role-pill">{{ activeFeedback.userRole || 'Citizen' }}</span></div>
+            <div><strong>Department:</strong> {{ activeFeedback.department || 'General Support' }}</div>
+            <div *ngIf="activeFeedback.rating"><strong>Rating Given:</strong> ⭐ {{ activeFeedback.rating }}/5</div>
+          </div>
+
+          <!-- Initial Message Box -->
+          <div class="message-bubble primary-message">
+            <div class="bubble-header">
+              <strong>{{ activeFeedback.name }}</strong> ({{ activeFeedback.createdAt | date:'medium' }})
+            </div>
+            <div class="bubble-content">
+              {{ activeFeedback.message }}
+            </div>
+          </div>
+
+          <!-- Official Response Box (If present) -->
+          <div *ngIf="activeFeedback.response" class="message-bubble official-response">
+            <div class="bubble-header">
+              🏛️ <strong>Official Response</strong> 
+              <span *ngIf="activeFeedback.respondedAt">({{ activeFeedback.respondedAt | date:'medium' }})</span>
+              <span *ngIf="activeFeedback.resolutionTimeHours" class="resolution-time">
+                SLA: Resolved in {{ activeFeedback.resolutionTimeHours }} hrs
+              </span>
+            </div>
+            <div class="bubble-content">
+              {{ activeFeedback.response }}
+            </div>
+          </div>
+
+          <!-- Interactive Thread Chat History (Sub-module iii & v) -->
+          <div class="thread-section" *ngIf="activeFeedback.messages && activeFeedback.messages.length > 0">
+            <h4>Conversation Thread History</h4>
+            <div *ngFor="let msg of activeFeedback.messages" class="thread-bubble" [class.officer-msg]="msg.senderRole === 'Government Official' || msg.senderRole === 'Administrator'">
+              <div class="bubble-header">
+                <strong>{{ msg.senderName }}</strong> ({{ msg.senderRole }}) • {{ msg.createdAt | date:'short' }}
+              </div>
+              <div class="bubble-content">{{ msg.message }}</div>
+            </div>
+          </div>
+
+          <!-- Add Thread Message Box -->
+          <div class="thread-reply-box">
+            <label>Reply to Thread / Add Message:</label>
+            <div class="reply-input-group">
+              <textarea [(ngModel)]="threadMessage" rows="2" placeholder="Type a message to append to thread..." class="form-control"></textarea>
+              <button class="btn-secondary" (click)="sendThreadMessage()">Send Message</button>
+            </div>
+          </div>
+
+          <!-- OFFICER MANAGEMENT PANEL (For Government Official & Administrator Roles) -->
+          <div class="officer-action-panel" *ngIf="isOfficer">
+            <h3>🏛️ Officer Management & SLA Response Controls</h3>
+            
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label>Ticket Status</label>
+                <select [(ngModel)]="replyStatus" class="form-control">
+                  <option *ngFor="let st of statuses" [value]="st">{{ st }}</option>
+                </select>
+              </div>
+
+              <div class="form-group flex-1">
+                <label>Priority Severity</label>
+                <select [(ngModel)]="replyPriority" class="form-control">
+                  <option *ngFor="let pr of priorities" [value]="pr">{{ pr }}</option>
+                </select>
+              </div>
+
+              <div class="form-group flex-1">
+                <label>Assigned Department</label>
+                <select [(ngModel)]="replyDepartment" class="form-control">
+                  <option *ngFor="let dep of departments" [value]="dep">{{ dep }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Formal Government Response Text</label>
+              <textarea [(ngModel)]="replyText" rows="4" placeholder="Enter official response to citizen or resolution note..." class="form-control"></textarea>
+            </div>
+
+            <div class="officer-btn-bar">
+              <button class="btn-primary" (click)="submitOfficerUpdate()">
+                💾 Save Officer Response & Update Status
+              </button>
+
+              <button *ngIf="activeFeedback.moduleType === 'Query Resolution'" 
+                      class="btn-sparkle" 
+                      (click)="openConvertModal(activeFeedback)">
+                ✨ Convert Query to Public FAQ
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── SUB-MODULE (iv): FAQ MANAGEMENT ───────────────────────────────── -->
+    <div class="faq-management-layout" *ngIf="activeTab === 'FAQ Management'">
+      
+      <!-- FAQ Toolbar & Search -->
+      <div class="faq-toolbar card">
+        <div class="search-box">
+          <input type="text" [(ngModel)]="faqSearch" (input)="loadFaqs()" placeholder="🔍 Search Frequently Asked Questions & Public Chats..." class="form-control" />
+        </div>
+
+        <div class="faq-category-pills">
+          <button class="cat-pill" [class.active-cat]="faqCategory === 'All'" (click)="faqCategory = 'All'; loadFaqs()">All</button>
+          <button class="cat-pill" [class.active-cat]="faqCategory === 'Healthcare'" (click)="faqCategory = 'Healthcare'; loadFaqs()">Healthcare</button>
+          <button class="cat-pill" [class.active-cat]="faqCategory === 'Education'" (click)="faqCategory = 'Education'; loadFaqs()">Education</button>
+          <button class="cat-pill" [class.active-cat]="faqCategory === 'Agriculture'" (click)="faqCategory = 'Agriculture'; loadFaqs()">Agriculture</button>
+          <button class="cat-pill" [class.active-cat]="faqCategory === 'Technical Support'" (click)="faqCategory = 'Technical Support'; loadFaqs()">Technical</button>
+          <button class="cat-pill" [class.active-cat]="faqCategory === 'General'" (click)="faqCategory = 'General'; loadFaqs()">General</button>
+        </div>
+
+        <div class="faq-toolbar-actions">
+          <button class="btn-primary" (click)="openAskModal()">
+            💬 Ask Public Question
+          </button>
+          <button *ngIf="isOfficer" class="btn-secondary" (click)="openFaqModal()">
+            + Add Official FAQ
+          </button>
+        </div>
+      </div>
+
+      <!-- FAQ Accordion / List Grid with Live Chat Thread -->
+      <div class="faqs-grid">
+        <div *ngIf="faqs.length === 0" class="empty-state card">
+          No Frequently Asked Questions found matching search criteria.
+        </div>
+
+        <div *ngFor="let faq of faqs" class="faq-card card">
+          <div class="faq-card-header">
+            <div>
+              <span class="tag">{{ faq.category || 'General' }}</span>
+              <span class="tag role-tag">For: {{ faq.targetRole || 'All' }}</span>
+              <span class="tag asked-by-tag">👤 Asked by: {{ faq.askedByName || 'Citizen' }} ({{ faq.askedByRole || 'Citizen' }})</span>
+              <span *ngIf="!faq.isPublished" class="draft-badge">Draft (Hidden)</span>
+            </div>
+
+            <div *ngIf="isOfficer" class="faq-officer-actions">
+              <button class="btn-secondary btn-sm" (click)="openFaqModal(faq)">✏️ Edit</button>
+              <button class="btn-danger-outline btn-sm" (click)="deleteFaq(faq._id)">🗑️ Delete</button>
+            </div>
+          </div>
+
+          <h4 class="faq-question">Q: {{ faq.question }}</h4>
+          
+          <div class="official-answer-banner">
+            <span class="answer-badge">💡 Latest Official Response:</span>
+            <p class="faq-answer">{{ faq.answer }}</p>
+          </div>
+
+          <!-- ── REAL LIVE CHAT THREAD BETWEEN CITIZEN & ADMINISTRATOR ── -->
+          <div class="faq-chat-thread">
+            <h5 class="thread-title">💬 Live Discussion & Chat History ({{ faq.messages?.length || 0 }} messages)</h5>
+            
+            <div class="messages-container" *ngIf="faq.messages && faq.messages.length > 0">
+              <div *ngFor="let msg of faq.messages" 
+                   class="faq-msg-bubble"
+                   [class.msg-admin]="['Administrator', 'Government Official'].includes(msg.senderRole || '')"
+                   [class.msg-citizen]="!['Administrator', 'Government Official'].includes(msg.senderRole || '')">
+                <div class="msg-meta">
+                  <span class="sender-name">
+                    {{ ['Administrator', 'Government Official'].includes(msg.senderRole || '') ? '🛡️ ' : '👤 ' }}
+                    {{ msg.senderName || 'User' }}
+                  </span>
+                  <span class="role-badge" [class.badge-admin]="['Administrator', 'Government Official'].includes(msg.senderRole || '')">
+                    {{ msg.senderRole || 'Citizen' }}
+                  </span>
+                  <span class="msg-time">{{ msg.createdAt | date:'short' }}</span>
+                </div>
+                <div class="msg-body">{{ msg.message }}</div>
+              </div>
+            </div>
+
+            <!-- INLINE CHAT REPLY BOX FOR CITIZENS & ADMINISTRATORS -->
+            <div class="faq-chat-reply-box" *ngIf="faq._id">
+              <input type="text" 
+                     [(ngModel)]="faqChatInputs[faq._id]" 
+                     (keyup.enter)="sendFaqMessage(faq)"
+                     placeholder="Type a response or follow-up message to this public thread..." 
+                     class="form-control chat-input" 
+                     [disabled]="submittingFaqChat[faq._id]" />
+              <button class="btn-primary btn-sm chat-send-btn" 
+                      (click)="sendFaqMessage(faq)" 
+                      [disabled]="submittingFaqChat[faq._id] || !(faqChatInputs[faq._id] || '').trim()">
+                <span *ngIf="!submittingFaqChat[faq._id]">Send Reply</span>
+                <span *ngIf="submittingFaqChat[faq._id]">Sending...</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="faq-footer">
+            <div class="voting-box">
+              <span>Was this response helpful?</span>
+              <button class="vote-btn" (click)="voteFaq(faq, 'helpful')">👍 Yes ({{ faq.helpfulCount || 0 }})</button>
+              <button class="vote-btn" (click)="voteFaq(faq, 'unhelpful')">👎 No ({{ faq.unhelpfulCount || 0 }})</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
+
+  <!-- ── MODAL 1: ADD/EDIT FAQ MODAL ────────────────────────────────────── -->
+  <div class="modal-overlay" *ngIf="showFaqModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>{{ editingFaqId ? 'Edit FAQ Item' : 'Add New FAQ Item' }}</h3>
+        <button class="close-btn" (click)="closeFaqModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Question</label>
+          <input type="text" [(ngModel)]="faqForm.question" placeholder="Frequently asked question title" class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label>Answer Content</label>
+          <textarea [(ngModel)]="faqForm.answer" rows="5" placeholder="Detailed official answer..." class="form-control"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>Category</label>
+            <select [(ngModel)]="faqForm.category" class="form-control">
+              <option value="General">General</option>
+              <option value="Healthcare">Healthcare</option>
+              <option value="Education">Education</option>
+              <option value="Agriculture">Agriculture</option>
+              <option value="Technical Support">Technical Support</option>
+            </select>
+          </div>
+
+          <div class="form-group flex-1">
+            <label>Target Role Audience</label>
+            <select [(ngModel)]="faqForm.targetRole" class="form-control">
+              <option value="All">All Users</option>
+              <option value="Citizen">Citizens Only</option>
+              <option value="Government Official">Government Officials</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group checkbox-group">
+          <label>
+            <input type="checkbox" [(ngModel)]="faqForm.isPublished" /> Publish immediately to public portal
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-primary" (click)="saveFaq()">Save FAQ</button>
+        <button class="btn-secondary" (click)="closeFaqModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MODAL 2: CONVERT QUERY TO FAQ MODAL ────────────────────────────── -->
+  <div class="modal-overlay" *ngIf="showConvertModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>✨ Convert Citizen Query to Public FAQ</h3>
+        <button class="close-btn" (click)="closeConvertModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p>This action will resolve ticket <strong>{{ convertQueryItem?.ticketId }}</strong> and publish this question and response to the global FAQ Management section for all citizens.</p>
+
+        <div class="form-group">
+          <label>FAQ Question</label>
+          <input type="text" [(ngModel)]="convertForm.question" class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label>FAQ Answer</label>
+          <textarea [(ngModel)]="convertForm.answer" rows="4" class="form-control"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label>Category</label>
+            <select [(ngModel)]="convertForm.category" class="form-control">
+              <option value="General">General</option>
+              <option value="Healthcare">Healthcare</option>
+              <option value="Education">Education</option>
+              <option value="Agriculture">Agriculture</option>
+              <option value="Technical Support">Technical Support</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-sparkle" (click)="submitConvertQuery()">Publish as FAQ & Resolve Ticket</button>
+        <button class="btn-secondary" (click)="closeConvertModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MODAL 3: ASK PUBLIC QUESTION MODAL ────────────────────────────── -->
+  <div class="modal-overlay" *ngIf="showAskModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>💬 Ask a Public Question</h3>
+        <button class="close-btn" (click)="closeAskModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p>Your question will be posted publicly to the FAQ section and will be visible to <strong>all citizens and administrators</strong>. Administrators and Officers will be able to reply directly to your chat thread.</p>
+
+        <div class="form-group">
+          <label>Question Category</label>
+          <select [(ngModel)]="askForm.category" class="form-control">
+            <option value="General">General</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="Education">Education</option>
+            <option value="Agriculture">Agriculture</option>
+            <option value="Technical Support">Technical Support</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Your Question</label>
+          <textarea [(ngModel)]="askForm.question" rows="4" placeholder="What would you like to ask administrators about government schemes, policy rules, or eligibility?" class="form-control" required></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-primary" (click)="submitAskQuestion()" [disabled]="!askForm.question.trim()">
+          🚀 Post Public Question
+        </button>
+        <button class="btn-secondary" (click)="closeAskModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
 </div>

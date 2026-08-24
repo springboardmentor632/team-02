@@ -82,16 +82,32 @@ input:focus, select:focus { border-color: var(--navy-lt); }
 
 .results-grid { display: flex; flex-direction: column; gap: 12px; }
 .scheme-result-card {
-  display: flex; align-items: center; gap: 12px;
-  background: #F6FAF4; border: 1.5px solid var(--border); border-radius: 10px; padding: 14px;
+  display: flex; align-items: center; gap: 14px;
+  background: #F6FAF4; border: 1.5px solid var(--border); border-radius: 10px; padding: 16px;
+  flex-wrap: wrap;
 }
-.scheme-result-icon { font-size: 22px; }
-.scheme-result-body { flex: 1; }
-.scheme-result-body h4 { margin: 0; font-size: 13.5px; color: var(--text-1); }
+.scheme-result-icon { font-size: 24px; }
+.scheme-result-body { flex: 1; min-width: 240px; }
+.scheme-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 2px; }
+.scheme-title-row h4 { margin: 0; font-size: 14px; color: var(--text-1); font-weight: 700; }
+
+.match-badge {
+  font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 12px;
+  display: inline-flex; align-items: center; gap: 4px; line-height: 1.4;
+}
+.badge-open { background: #E3F2FD; color: #1565C0; border: 1px solid #BBDEFB; }
+.badge-100 { background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9; }
+.badge-high { background: #F1F8E9; color: #33691E; border: 1px solid #DCEDC8; }
+.badge-mid { background: #FFF8E1; color: #F57F17; border: 1px solid #FFE082; }
+.badge-low { background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2; }
+
 .scheme-cat-tag { display: inline-block; background: var(--badge-bg); color: var(--navy); font-size: 10.5px; font-weight: 600; padding: 2px 9px; border-radius: 10px; margin: 4px 0; }
-.scheme-result-body p { margin: 2px 0 0; font-size: 12px; color: var(--text-2); }
-.btn-small { background: var(--navy); color: #fff; border: none; border-radius: 7px; padding: 7px 14px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.scheme-result-body p { margin: 4px 0 0; font-size: 12px; color: var(--text-2); }
+.scheme-card-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.btn-small { background: var(--navy); color: #fff; border: none; border-radius: 7px; padding: 7px 14px; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; }
 .btn-small:hover { background: var(--navy-lt); }
+.btn-apply { background: #2E5430; color: #fff; border: none; border-radius: 7px; padding: 7px 14px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.btn-apply:hover { background: var(--navy); }
 
 .preview-banner {
   display: flex; align-items: center; gap: 14px;
@@ -110,4 +126,42 @@ input:focus, select:focus { border-color: var(--navy-lt); }
   .form-grid { grid-template-columns: 1fr; }
   .step-label { display: none; }
   .preview-banner { flex-direction: column; align-items: flex-start; }
+}
+
+.sidebar {
+  width: 230px;
+  background: #fff;
+  border-right: 1.5px solid var(--border);
+  min-height: calc(100vh - 48px);
+  padding: 20px 14px;
+}
+.sidebar-user { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; padding: 0 6px; }
+.avatar { width: 38px; height: 38px; background: var(--navy); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; }
+.user-name { font-size: 13.5px; font-weight: 700; color: var(--text-1); }
+.user-sub { font-size: 11.5px; color: var(--text-3); }
+
+.sidebar-section { margin-bottom: 20px; }
+.sidebar-heading { font-size: 10.5px; font-weight: 700; color: var(--text-3); letter-spacing: .5px; padding: 0 6px; margin-bottom: 8px; }
+.sidebar-link {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 10px; border-radius: 8px;
+  font-size: 13px; color: var(--text-2); text-decoration: none; margin-bottom: 2px;
+}
+.sidebar-link:hover { background: var(--badge-bg); }
+.sidebar-link.active { background: var(--navy); color: #fff; font-weight: 600; }
+.sidebar-link.logout { color: var(--danger); }
+/* .badge { margin-left: auto; background: var(--danger); color: #fff; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; } */
+.badge { 
+  margin-left: auto; 
+  background: #d32f2f !important; 
+  color: #ffffff !important; 
+  font-size: 10px; 
+  font-weight: 700; 
+  padding: 1px 6px; 
+  border-radius: 10px; 
+}
+.eligibility-page-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }

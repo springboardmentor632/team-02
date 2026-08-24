@@ -1,33 +1,21 @@
-<div class="dashboard-shell">
-
-  <nav class="top-navbar">
-    <div class="nav-logo"><img src="logo.png" alt="logo" /></div>
-    <div class="nav-links">
-      <a routerLink="/admin-dashboard" class="nav-link">Dashboard</a>
-      <a routerLink="/policy-search" class="nav-link">Policy Search</a>
-      <a routerLink="/policy-detail" class="nav-link">Policy Detail</a>
-      <a routerLink="/eligibility" class="nav-link">Eligibility Checker</a>
-      <a routerLink="/comparison" class="nav-link">Comparison</a>
-      <a routerLink="/admin-dashboard" class="nav-link active">Admin Dashboard</a>
-    </div>
-    <a routerLink="/login" class="nav-logout">⏻ Logout</a>
-  </nav>
-
+<div class="policy-mgmt-page-container" style="padding: 20px;">
   <div class="page-body">
     <div class="page-header">
       <div>
         <h1>Policy Management</h1>
         <p>Upload, edit, approve, and archive government policies</p>
       </div>
-      <button class="btn-primary" (click)="toggleForm()">{{ showForm ? '✕ Close' : '+ Upload Policy' }}</button>
+      <button class="btn-primary btn-upload" (click)="toggleForm()">{{ showForm ? '✕ Close' : '+ Upload Policy' }}</button>
     </div>
+
+    <p *ngIf="error" class="error-msg">{{ error }}</p>
 
     <div class="card form-card" *ngIf="showForm">
       <h3>New Policy</h3>
       <div class="form-grid">
         <div class="field-group">
-          <label>Policy Name</label>
-          <input type="text" [(ngModel)]="newPolicy.name" placeholder="e.g. Digital India 4.0" />
+          <label>Policy Title</label>
+          <input type="text" [(ngModel)]="newPolicy.title" placeholder="e.g. Digital India 4.0" />
         </div>
         <div class="field-group">
           <label>Category</label>
@@ -41,28 +29,39 @@
         </div>
       </div>
       <div class="field-group">
-        <label>Description</label>
-        <textarea rows="3" [(ngModel)]="newPolicy.description" placeholder="Brief description of the policy..."></textarea>
+        <label>Summary</label>
+        <textarea rows="3" [(ngModel)]="newPolicy.summary" placeholder="Brief description of the policy..."></textarea>
       </div>
-      <button class="btn-primary" (click)="addPolicy()">Save Policy</button>
+      <button class="btn-primary btn-upload" (click)="addPolicy()">Save Policy</button>
     </div>
 
     <div class="card">
-      <table class="admin-table">
+      <p *ngIf="loading">Loading policies...</p>
+      <table class="admin-table" *ngIf="!loading">
         <thead>
-          <tr><th>Policy Name</th><th>Category</th><th>Ministry</th><th>Status</th><th>Actions</th></tr>
+          <tr><th>Policy Name</th><th>Category</th><th>Ministry</th><th>Applications Applied</th><th>Status</th><th>Actions</th></tr>
         </thead>
         <tbody>
           <tr *ngFor="let p of policies">
-            <td>{{ p.name }}</td>
+            <td>{{ p.title }}</td>
             <td><span class="tag">{{ p.category }}</span></td>
             <td>{{ p.ministry }}</td>
+            <td>
+              <span class="status-pill" style="background:#E3F2FD; color:#0D47A1; border:1px solid #BBDEFB; font-weight:600;">
+                📄 {{ p.applicationCount || 0 }} Applied
+              </span>
+            </td>
             <td><span class="status-pill" [class]="'pill-' + p.status.toLowerCase()">{{ p.status }}</span></td>
             <td class="action-cell">
-              <button class="btn-small" *ngIf="p.status !== 'Approved'" (click)="approve(p)">Approve</button>
-              <button class="btn-small btn-danger" (click)="archive(p)">Archive</button>
+              <button class="btn-small btn-success" *ngIf="p.status !== 'Active'" (click)="approve(p)">✓ Approve</button>
+              <button class="btn-small btn-warning" *ngIf="p.status !== 'Archived'" (click)="reject(p)">✕ Reject</button>
+              <button class="btn-small btn-danger" (click)="deletePolicy(p)">🗑 Delete</button>
             </td>
           </tr>
+          <tr *ngIf="policies.length === 0">
+            <td colspan="6">No policies found. Create one using the Upload button.</td>
+          </tr>
+
         </tbody>
       </table>
     </div>

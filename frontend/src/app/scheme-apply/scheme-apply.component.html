@@ -1,0 +1,191 @@
+<div class="apply-page-container">
+  <div class="page-body">
+    <div class="checker-header">
+      <div class="header-icon">📝</div>
+      <h1>Apply for Scheme</h1>
+      <p *ngIf="scheme">Submit your application for <strong>{{ scheme.name }}</strong></p>
+    </div>
+
+    <div *ngIf="loading" class="loading-state"><p>Loading scheme details...</p></div>
+    <div *ngIf="error && !loading && !submitted" class="error-banner">{{ error }}</div>
+
+    <div *ngIf="submitted" class="card success-card">
+      <div class="success-icon">✓</div>
+      <h3>Application Submitted Successfully!</h3>
+      <p>Your application for <strong>{{ scheme?.name }}</strong> has been received. You can track its status in My Applications and Notifications.</p>
+      <div class="nav-row center-row">
+        <button class="btn-next" (click)="goToApplications()">View My Applications</button>
+        <a routerLink="/citizen/dashboard" class="btn-prev">Back to Dashboard</a>
+      </div>
+    </div>
+
+    <ng-container *ngIf="scheme && !loading && !submitted">
+      <div class="step-progress">
+        <div class="step-item" *ngFor="let s of steps; let i = index">
+          <div class="step-bar" [class.step-done]="i + 1 < currentStep" [class.step-active]="i + 1 === currentStep"></div>
+          <span class="step-label" [class.step-label-active]="i + 1 === currentStep">{{ s }}</span>
+        </div>
+      </div>
+
+      <!-- STEP 1: SCHEME INFO -->
+      <div class="card" *ngIf="currentStep === 1">
+        <h3 class="step-title">Step 1 of 4 — Scheme Overview</h3>
+        <div class="scheme-summary">
+          <span class="scheme-icon">{{ schemeIcon }}</span>
+          <div>
+            <h4>{{ scheme.name }}</h4>
+            <span class="scheme-cat-tag">{{ scheme.category }}</span>
+            <p>{{ scheme.summary || scheme.details }}</p>
+            <p class="meta-line">{{ scheme.ministry }} · {{ scheme.state || 'All India' }}</p>
+          </div>
+        </div>
+        <div class="info-box">
+          <strong>Application Mode:</strong> {{ scheme.applicationMode || 'Online' }}
+        </div>
+        <div class="nav-row">
+          <a [routerLink]="['/citizen/scheme', schemeId]" class="btn-prev">← Back to Scheme</a>
+          <button class="btn-next" (click)="nextStep()">Next: Eligibility →</button>
+        </div>
+      </div>
+
+      <!-- STEP 2: ELIGIBILITY -->
+      <div class="card" *ngIf="currentStep === 2">
+        <h3 class="step-title">Step 2 of 4 — Confirm Eligibility</h3>
+        <p class="hint-text">We use your profile to verify you qualify for this scheme before you apply.</p>
+
+        <div class="form-grid">
+          <div class="field-group">
+            <label>Age *</label>
+            <input type="number" [(ngModel)]="age" (change)="verifyEligibility()" placeholder="e.g. 32" />
+          </div>
+          <div class="field-group">
+            <label>Gender *</label>
+            <select [(ngModel)]="gender" (change)="verifyEligibility()">
+              <option value="" disabled>Select</option>
+              <option>Male</option>
+              <option>Female</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Annual Income *</label>
+            <select [(ngModel)]="income" (change)="verifyEligibility()">
+              <option>Below ₹1,00,000</option>
+              <option>₹1,00,000 - ₹2,50,000</option>
+              <option>₹2,50,000 - ₹5,00,000</option>
+              <option>Above ₹5,00,000</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Occupation *</label>
+            <select [(ngModel)]="occupation" (change)="verifyEligibility()">
+              <option>Farmer</option>
+              <option>Student</option>
+              <option>Self-Employed</option>
+              <option>Salaried</option>
+              <option>Unemployed</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Social Category *</label>
+            <select [(ngModel)]="socialCategory" (change)="verifyEligibility()">
+              <option>General</option>
+              <option>OBC</option>
+              <option>SC</option>
+              <option>ST</option>
+              <option>EWS</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>State *</label>
+            <select [(ngModel)]="state" (change)="verifyEligibility()">
+              <option value="" disabled>Select State</option>
+              <option>Rajasthan</option>
+              <option>Delhi</option>
+              <option>Maharashtra</option>
+              <option>Uttar Pradesh</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="eligibility-status" *ngIf="checkingEligibility">Checking eligibility...</div>
+        <div class="eligibility-status eligible" *ngIf="!checkingEligibility && isEligible">✓ You are eligible for this scheme</div>
+        <div class="eligibility-status not-eligible" *ngIf="!checkingEligibility && !isEligible && eligibilityError">{{ eligibilityError }}</div>
+
+        <div class="nav-row">
+          <button class="btn-prev" (click)="prevStep()">← Previous</button>
+          <button class="btn-next" [disabled]="!isEligible" (click)="nextStep()">Next: Application Form →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: APPLICATION DETAILS -->
+      <div class="card" *ngIf="currentStep === 3">
+        <h3 class="step-title">Step 3 of 4 — Application Details</h3>
+
+        <div class="form-grid">
+          <div class="field-group full-row">
+            <label>Full Address *</label>
+            <input type="text" [(ngModel)]="address" placeholder="House no., street, city, pin code" />
+          </div>
+          <div class="field-group">
+            <label>Aadhaar Number *</label>
+            <input type="text" [(ngModel)]="aadhaarNumber" placeholder="XXXX XXXX XXXX" maxlength="14" />
+          </div>
+          <div class="field-group">
+            <label>Bank Account (optional)</label>
+            <input type="text" [(ngModel)]="bankAccount" placeholder="For direct benefit transfer" />
+          </div>
+          <div class="field-group full-row">
+            <label>Additional Notes</label>
+            <textarea [(ngModel)]="additionalNotes" rows="3" placeholder="Any extra information for the reviewing officer"></textarea>
+          </div>
+        </div>
+
+        <div class="doc-checklist">
+          <label>Required Documents</label>
+          <ul>
+            <li *ngFor="let doc of requiredDocuments">{{ doc }}</li>
+          </ul>
+          <label class="checkbox-row">
+            <input type="checkbox" [(ngModel)]="documentsAcknowledged" />
+            I confirm that I have these documents ready for verification
+          </label>
+        </div>
+
+        <div class="nav-row">
+          <button class="btn-prev" (click)="prevStep()">← Previous</button>
+          <button class="btn-next" (click)="nextStep()">Next: Review →</button>
+        </div>
+      </div>
+
+      <!-- STEP 4: REVIEW -->
+      <div class="card" *ngIf="currentStep === 4">
+        <h3 class="step-title">Step 4 of 4 — Review & Submit</h3>
+
+        <div class="review-block">
+          <h4>Scheme</h4>
+          <p>{{ scheme.name }} ({{ scheme.category }})</p>
+        </div>
+        <div class="review-block">
+          <h4>Your Profile</h4>
+          <p>Age: {{ age }} · {{ gender }} · {{ occupation }} · {{ socialCategory }}</p>
+          <p>Location: {{ state }}{{ district ? ', ' + district : '' }}</p>
+        </div>
+        <div class="review-block">
+          <h4>Application Details</h4>
+          <p>{{ address }}</p>
+          <p>Aadhaar: {{ aadhaarNumber }}</p>
+          <p *ngIf="bankAccount">Bank: {{ bankAccount }}</p>
+          <p *ngIf="additionalNotes">{{ additionalNotes }}</p>
+        </div>
+
+        <div class="nav-row">
+          <button class="btn-prev" (click)="prevStep()">← Previous</button>
+          <button class="btn-next" [disabled]="submitting" (click)="onSubmit()">
+            {{ submitting ? 'Submitting...' : 'Submit Application' }}
+          </button>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>

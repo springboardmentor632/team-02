@@ -1,11 +1,25 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 exports.register = async (req, res) => {
-
-    const { name, email, password, confirmPassword } = req.body;
+console.log("REGISTER API HIT");
+   const {
+  firstName,
+  lastName,
+  email,
+  role,
+  password,
+  confirmPassword
+} = req.body;
 
     // Check if all fields are provided
-if (!name || !email || !password || !confirmPassword) {
+if (
+  !firstName ||
+  !lastName ||
+  !email ||
+  !role ||
+  !password ||
+  !confirmPassword
+) {
         return res.status(400).json({
             success: false,
             message: "All fields are required"
@@ -41,10 +55,12 @@ const hashedPassword = await bcrypt.hash(password, 10);
         success: true,
         message: "User registered successfully",
         data: {
-            name,
-            email,
-            password: hashedPassword
-        }
+    firstName,
+    lastName,
+    email,
+    role,
+    password: hashedPassword
+}
     });
 };
 

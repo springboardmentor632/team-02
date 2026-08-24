@@ -1,8 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-
-interface DeptReport { dept: string; policies: number; applications: number; status: 'On Track' | 'Delayed'; }
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+import { PolicyService } from '../services/policy.service';
+import { SchemeService } from '../services/scheme.service';
+import { NotificationService } from '../services/notification.service';
+import { StatsService } from '../services/stats.service';
+import { ApplicationService } from '../services/application.service';
+import { SchemeApplication } from '../models/policy.model';
 
 @Component({
   selector: 'app-government-dashboard',
@@ -11,46 +16,162 @@ interface DeptReport { dept: string; policies: number; applications: number; sta
   templateUrl: './government-dashboard.component.html',
   styleUrl: './government-dashboard.component.css'
 })
-export class GovernmentDashboardComponent {
-  officialName = 'Priya Verma';
-  department = 'Ministry of Rural Development';
+export class GovernmentDashboardComponent implements OnInit {
+  officialName = '';
+  department = '';
 
   stats = [
-    { label: 'Policies Published', value: '86', sub: '↑ 4 this quarter' },
-    { label: 'Active Schemes', value: '32', sub: '3 pending approval' },
-    { label: 'Total Applications', value: '2.4M', sub: '↑ 8% this month' },
-    { label: 'Notifications Sent', value: '145K', sub: 'Last 30 days' }
+    { label: 'Policies Published', value: '—', sub: 'Active policies' },
+    { label: 'Active Schemes', value: '—', sub: 'Live on platform' },
+    { label: 'Pending Policies', value: '—', sub: 'Awaiting approval' },
+    { label: 'Citizen Applications', value: '—', sub: 'Total applications' }
   ];
 
-  // Scheme Usage Analytics
-  schemeUsage = [
-    { name: 'PM Kisan Samman Nidhi', usage: 92 },
-    { name: 'MGNREGA', usage: 78 },
-    { name: 'PM Awas Yojana', usage: 65 },
-    { name: 'Jal Jeevan Mission', usage: 54 }
-  ];
-
-  // User Activity (weekly)
+  schemeUsage: { name: string; usage: number }[] = [];
+  deptReports: { dept: string; policies: number; applications: number; status: string }[] = [];
   userActivity = [
-    { day: 'Mon', value: 62 },
-    { day: 'Tue', value: 74 },
-    { day: 'Wed', value: 58 },
-    { day: 'Thu', value: 85 },
-    { day: 'Fri', value: 70 },
-    { day: 'Sat', value: 40 },
-    { day: 'Sun', value: 30 }
+    { day: 'Mon', value: 40 }, { day: 'Tue', value: 55 }, { day: 'Wed', value: 48 },
+    { day: 'Thu', value: 62 }, { day: 'Fri', value: 50 }, { day: 'Sat', value: 30 }, { day: 'Sun', value: 25 }
   ];
+  notifStats: { channel: string; sent: string; delivered: string }[] = [];
+  roleStats: { role: string; percent: number; count: string }[] = [];
+  applications: SchemeApplication[] = [];
+  loadingApps = false;
 
-  deptReports: DeptReport[] = [
-    { dept: 'Rural Development', policies: 18, applications: 620000, status: 'On Track' },
-    { dept: 'Agriculture', policies: 12, applications: 480000, status: 'On Track' },
-    { dept: 'Health & Family Welfare', policies: 9, applications: 310000, status: 'Delayed' },
-    { dept: 'Education', policies: 15, applications: 275000, status: 'On Track' }
-  ];
+  constructor(
+    private router: Router,
+    private auth: AuthService,
+    private policyService: PolicyService,
+    private schemeService: SchemeService,
+    private notificationService: NotificationService,
+    private statsService: StatsService,
+    private applicationService: ApplicationService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
-  notifStats = [
-    { channel: 'Email', sent: '68K', delivered: '96%' },
-    { channel: 'SMS', sent: '52K', delivered: '91%' },
-    { channel: 'In-App', sent: '25K', delivered: '99%' }
-  ];
+  ngOnInit(): void {
+    const user = this.auth.getCurrentUser();
+    this.officialName = this.auth.getUserDisplayName();
+    this.department = user?.organization || 'Government of India';
+
+    this.statsService.getPlatformStats().subscribe({
+      next: (res) => {
+        if (!res || !res.stats) return;
+        const s = res.stats;
+        this.stats = this.stats.map((item, i) => {
+          if (i === 0) return { ...item, value: String(s.policies) };
+          if (i === 1) return { ...item, value: String(s.schemes) };
+          if (i === 2) return { ...item, value: String(s.pendingPolicies ?? 0) };
+          return item;
+        });
+        this.roleStats = [
+          { role: 'Policies', percent: Math.min(s.policies * 4, 100), count: `${s.policies} active` },
+          { role: 'Schemes', percent: Math.min(s.schemes * 6, 100), count: `${s.schemes} active` },
+          { role: 'Pending', percent: Math.min((s.pendingPolicies ?? 0) * 10, 100), count: `${s.pendingPolicies ?? 0} pending` },
+        ];
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('[GovtDashboard] Stats error:', err)
+    });
+
+    this.policyService.getAll({ status: 'Active' }).subscribe({
+      next: (res) => {
+        const deptMap: Record<string, number> = {};
+        (res.policies || []).forEach((p) => {
+          const dept = p.department || p.ministry || 'Other';
+          deptMap[dept] = (deptMap[dept] || 0) + 1;
+        });
+        this.deptReports = Object.entries(deptMap).map(([dept, count]) => ({
+          dept,
+          policies: count,
+          applications: 0,
+          status: 'On Track',
+        }));
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('[GovtDashboard] Policies error:', err)
+    });
+
+    this.schemeService.getAll({ status: 'Active' }).subscribe({
+      next: (res) => {
+        const schemes = res.schemes || [];
+        const max = schemes.length || 1;
+        this.schemeUsage = schemes.slice(0, 4).map((s, i) => ({
+          name: s.name,
+          usage: Math.round(((max - i) / max) * 100),
+        }));
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('[GovtDashboard] Schemes error:', err)
+    });
+
+    this.notificationService.getAll().subscribe({
+      next: (res) => {
+        const total = (res.notifications || []).length;
+        const unread = (res.notifications || []).filter(n => !n.read).length;
+        this.notifStats = [
+          { channel: 'In-App', sent: String(total), delivered: '100%' },
+          { channel: 'Platform Alerts', sent: String(total), delivered: `${unread} unread` },
+        ];
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('[GovtDashboard] Notifications error:', err)
+    });
+
+    this.loadApplications();
+  }
+
+  loadApplications(): void {
+    this.loadingApps = true;
+    this.applicationService.getAll().subscribe({
+      next: (res) => {
+        this.applications = res.applications || [];
+        this.loadingApps = false;
+        this.stats = this.stats.map((s, i) => i === 3 ? { ...s, value: String(this.applications.length) } : s);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('[GovtDashboard] Applications error:', err);
+        this.loadingApps = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  updateApplicationStatus(app: SchemeApplication, status: 'Approved' | 'Rejected'): void {
+    const actionLabel = status === 'Approved' ? 'Accept / Approve' : 'Reject';
+    const note = prompt(`Enter optional official note for making this application "${actionLabel}":`) ?? '';
+    this.applicationService.updateStatus(app._id, status, note).subscribe({
+      next: () => {
+        app.status = status;
+        app.govNotes = note;
+        this.loadApplications();
+      },
+      error: (err) => alert(err?.error?.message || 'Failed to update application status')
+    });
+  }
+
+  getItemTitle(app: any): string {
+    if (app.applicationType === 'policy' && app.policy && typeof app.policy === 'object') {
+      return app.policy.title || 'Policy Application';
+    }
+    if (app.scheme && typeof app.scheme === 'object') {
+      return app.scheme.name || 'Scheme Application';
+    }
+    return 'Application';
+  }
+
+  getApplicantName(app: any): string {
+    if (app.applicantName) return app.applicantName;
+    if (app.user && typeof app.user === 'object') {
+      return `${app.user.firstName || ''} ${app.user.lastName || ''}`.trim() || app.user.email || 'Citizen';
+    }
+    return 'Citizen Applicant';
+  }
+
+  onLogout(): void {
+    if (confirm('Are you sure you want to logout?')) {
+      this.auth.logout();
+    }
+  }
 }

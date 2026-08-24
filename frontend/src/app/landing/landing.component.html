@@ -7,8 +7,8 @@
       <span class="brand-text">Government Policy<br />Intelligence Platform</span>
     </div>
     <div class="nav-links">
-      <a routerLink="/policy-search">Policies</a>
-      <a routerLink="/policy-search">Schemes</a>
+      <a routerLink="/login">Policies</a>
+      <a routerLink="/login">Schemes</a>
       <a routerLink="/login">About</a>
     </div>
     <div class="nav-actions">
@@ -21,10 +21,12 @@
   <section class="hero">
     <span class="hero-badge">⚡ Powered by Government Open Data Portal</span>
     <h1>Discover. Understand.<br />Access Government Policies</h1>
-    <p>Your intelligent platform to search, compare, and track Central & State Government schemes, policies, and welfare programmes in one place.</p>
+    <p>Your intelligent platform to search, compare, and track Central & State Government schemes, policies, and welfare
+      programmes in one place.</p>
 
     <div class="hero-search">
-      <input type="text" [(ngModel)]="searchQuery" placeholder="Search policies, schemes, departments..." (keyup.enter)="onSearch()" />
+      <input type="text" [(ngModel)]="searchQuery" placeholder="Search policies, schemes, departments..."
+        (keyup.enter)="onSearch()" />
       <button (click)="onSearch()">Search</button>
     </div>
 
@@ -46,7 +48,22 @@
     <h2>Everything you need to navigate government services</h2>
     <div class="features-grid">
       <a routerLink="/login" class="feature-card" *ngFor="let f of features">
-        <div class="feature-icon">{{ f.icon }}</div>
+
+
+        <div class="feature-icon" [ngStyle]="{'background-color': f.bgColor, 'color': f.iconColor}">
+          <div class="feature-icon" [ngStyle]="{'background-color': f.bgColor, 'color': f.iconColor}">
+            <!-- mainualy check icon -->
+            <mat-icon *ngIf="f.title === 'Smart Policy Search'">search</mat-icon>
+            <mat-icon *ngIf="f.title === 'Policy Alerts & Deadlines'">notifications</mat-icon>
+            <mat-icon *ngIf="f.title === 'Eligibility Checker'">assignment_turned_in</mat-icon>
+            <mat-icon *ngIf="f.title === 'Analytics Dashboard'">bar_chart</mat-icon>
+            <mat-icon *ngIf="f.title === 'Scheme Comparison'">compare_arrows</mat-icon>
+            <mat-icon *ngIf="f.title === 'Reports & Exports'">cloud_download</mat-icon>
+          </div>
+
+        </div>
+
+
         <h4>{{ f.title }}</h4>
         <p>{{ f.desc }}</p>
       </a>
@@ -58,7 +75,12 @@
     <h2>Designed for every stakeholder</h2>
     <div class="stakeholders-grid">
       <a routerLink="/login" class="stakeholder-card" *ngFor="let s of stakeholders">
-        <div class="stakeholder-icon">{{ s.icon }}</div>
+
+
+        <div class="stakeholder-icon">
+
+          <mat-icon [ngStyle]="{'color': s.iconColor}">{{ s.icon }}</mat-icon>
+        </div>
         <h5>{{ s.label }}</h5>
         <p>{{ s.desc }}</p>
       </a>

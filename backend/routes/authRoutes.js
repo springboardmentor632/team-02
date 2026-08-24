@@ -1,12 +1,2 @@
-const express = require("express");
-const router = express.Router();
-
-const {
-    register,
-    login
-} = require("../controllers/authController");
-
-router.post("/register", register);
-router.post("/login", login);
-
-module.exports = router;
+// Delegate all auth routes to backend/routes/auth.js to avoid duplicate/missing routes
+module.exports = require('./auth');
